@@ -1,0 +1,48 @@
+Index: buildar/data/theme/gnome-shell.css
+===================================================================
+--- buildar.orig/data/theme/gnome-shell.css
++++ buildar/data/theme/gnome-shell.css
+@@ -2508,9 +2508,9 @@ StScrollBar {
+   .login-dialog .modal-dialog-button,
+   .unlock-dialog .modal-dialog-button {
+     padding: 4px 18px;
+-    background-color: #1b1b1b;
+-    border-color: #1b1b1b;
+-    color: white; }
++    background-color: white;
++    border-color: white;
++    color:black; }
+     .login-dialog .modal-dialog-button:hover, .login-dialog .modal-dialog-button:focus,
+     .unlock-dialog .modal-dialog-button:hover,
+     .unlock-dialog .modal-dialog-button:focus {
+@@ -2563,8 +2563,8 @@ StScrollBar {
+     border-radius: 99px;
+     width: 2.18em;
+     height: 2.18em;
+-    border-color: #1b1b1b;
+-    background-color: #1b1b1b; }
++    border-color: white;
++    background-color: white; }
+     .login-dialog .cancel-button StIcon,
+     .login-dialog .switch-user-button StIcon,
+     .login-dialog .login-dialog-session-list-button StIcon,
+@@ -2576,7 +2576,7 @@ StScrollBar {
+   .login-dialog .login-dialog-message-warning,
+   .unlock-dialog .caps-lock-warning-label,
+   .unlock-dialog .login-dialog-message-warning {
+-    color: white; }
++    color:black; }
+ 
+ .login-dialog-logo-bin {
+   padding: 24px 0px; }
+@@ -2699,8 +2699,8 @@ StScrollBar {
+   padding-top: 1em; }
+ 
+ .login-dialog StEntry {
+-  background-color: #1b1b1b;
+-  color: white; }
++  background-color: white;
++  color:black; }
+ 
+ .unlock-dialog StEntry {
+   border: none !important; }
