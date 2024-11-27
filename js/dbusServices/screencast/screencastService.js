@@ -167,7 +167,7 @@ var Recorder = class {
             });
 
         this._streamProxy = new ScreenCastStreamProxy(Gio.DBus.session,
-            'org.gnome.Mutter.ScreenCast',
+            'org.gnome.ScreenCast.Stream',
             streamPath);
 
         this._streamProxy.connectSignal('PipeWireStreamAdded',

@@ -2774,11 +2774,7 @@ StScrollBar {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); }
 
 #lockDialogGroup {
-  background: #2c001e url(file:///usr/share/desktop-base/active-theme/login/background-nologo.svg);
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  }
+  background-color: #232323; }
 
 #unlockDialogNotifications StButton#vhandle, #unlockDialogNotifications StButton#hhandle {
   background-color: rgba(48, 48, 48, 0.3); }
