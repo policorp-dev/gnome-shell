@@ -1,0 +1,17 @@
+Index: gnome-shell-debian-bookworm/data/theme/gnome-shell.css
+===================================================================
+--- gnome-shell-debian-bookworm.orig/data/theme/gnome-shell.css
++++ gnome-shell-debian-bookworm/data/theme/gnome-shell.css
+@@ -2774,7 +2774,11 @@ StScrollBar {
+   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); }
+ 
+ #lockDialogGroup {
+-  background-color: #232323; }
++  background: #2c001e url(file:///usr/share/desktop-base/active-theme/login/background-nologo.svg);
++  background-repeat: no-repeat;
++  background-size: cover;
++  background-position: center;
++  }
+ 
+ #unlockDialogNotifications StButton#vhandle, #unlockDialogNotifications StButton#hhandle {
+   background-color: rgba(48, 48, 48, 0.3); }

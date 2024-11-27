@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    configure)
+        # trigger an update notification that recommends a reboot
+        # (used by unattended-upgrades etc.)
+        touch /var/run/reboot-required || true
+	cp /var/lib/login-background/background-nologo.svg  /usr/share/desktop-base/merini-theme/login/1920x1080.svg || true
+	cp /var/lib/login-background/background-nologo.svg  /usr/share/desktop-base/merini-theme/login/background-nologo.svg || true
+	cp /var/lib/login-background/background-nologo.svg  /usr/share/desktop-base/merini-theme/login/background.svg || true
+	cp /var/lib/login-background/background-nologo.svg  /usr/share/desktop-base/merini-theme/login/sddm-preview.jpg || true
+
+        # same thing for the older update-notifier interface
+        if [ -x /usr/share/update-notifier/notify-reboot-required ]; then
+            /usr/share/update-notifier/notify-reboot-required || true
+        fi
+        ;;
+esac
+
+#DEBHELPER#
