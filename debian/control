@@ -5,8 +5,8 @@
 Source: gnome-shell
 Section: gnome
 Priority: optional
-Maintainer: Debian GNOME Maintainers <pkg-gnome-maintainers@lists.alioth.debian.org>
-Uploaders: Jeremy Bicha <jbicha@ubuntu.com>
+Maintainer: Edson Juliano Drosdeck <edson@policorp.com.br>
+Uploaders: Edson Juliano Drosdeck <edson@policorp.com.br>
 Build-Depends: appstream,
                asciidoc-base,
                bash-completion,
@@ -112,6 +112,7 @@ Depends: gir1.2-accountsservice-1.0,
          gstreamer1.0-pipewire (>= 0.3.10) [linux-any],
          libglib2.0-bin,
          python3,
+	 desktop-base,
          ${gir:Depends},
          ${misc:Depends},
          ${shlibs:Depends}

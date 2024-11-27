@@ -1,7 +1,7 @@
-Index: buildar/data/theme/gnome-shell.css
+Index: gnome-shell-debian-bookworm/data/theme/gnome-shell.css
 ===================================================================
---- buildar.orig/data/theme/gnome-shell.css
-+++ buildar/data/theme/gnome-shell.css
+--- gnome-shell-debian-bookworm.orig/data/theme/gnome-shell.css
++++ gnome-shell-debian-bookworm/data/theme/gnome-shell.css
 @@ -2508,9 +2508,9 @@ StScrollBar {
    .login-dialog .modal-dialog-button,
    .unlock-dialog .modal-dialog-button {
@@ -11,7 +11,7 @@ Index: buildar/data/theme/gnome-shell.css
 -    color: white; }
 +    background-color: white;
 +    border-color: white;
-+    color:black; }
++    color: black; }
      .login-dialog .modal-dialog-button:hover, .login-dialog .modal-dialog-button:focus,
      .unlock-dialog .modal-dialog-button:hover,
      .unlock-dialog .modal-dialog-button:focus {
@@ -31,7 +31,7 @@ Index: buildar/data/theme/gnome-shell.css
    .unlock-dialog .caps-lock-warning-label,
    .unlock-dialog .login-dialog-message-warning {
 -    color: white; }
-+    color:black; }
++    color: black; }
  
  .login-dialog-logo-bin {
    padding: 24px 0px; }
@@ -42,7 +42,7 @@ Index: buildar/data/theme/gnome-shell.css
 -  background-color: #1b1b1b;
 -  color: white; }
 +  background-color: white;
-+  color:black; }
++  color: black; }
  
  .unlock-dialog StEntry {
    border: none !important; }
