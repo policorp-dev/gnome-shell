@@ -1,7 +1,16 @@
-Index: gnome-shell-debian-bookworm/data/theme/gnome-shell.css
+Index: b/data/theme/gnome-shell.css
 ===================================================================
---- gnome-shell-debian-bookworm.orig/data/theme/gnome-shell.css
-+++ gnome-shell-debian-bookworm/data/theme/gnome-shell.css
+--- b.orig/data/theme/gnome-shell.css
++++ b/data/theme/gnome-shell.css
+@@ -312,7 +312,7 @@ StEntry {
+     padding: 0 4px; }
+   StEntry StLabel.hint-text {
+     margin-left: 2px;
+-    color: rgba(255, 255, 255, 0.7); }
++    color: rgba(0,0,0, 0.7); }
+ 
+ /* Buttons */
+ .button, .icon-button {
 @@ -2508,9 +2508,9 @@ StScrollBar {
    .login-dialog .modal-dialog-button,
    .unlock-dialog .modal-dialog-button {
@@ -26,15 +35,6 @@ Index: gnome-shell-debian-bookworm/data/theme/gnome-shell.css
      .login-dialog .cancel-button StIcon,
      .login-dialog .switch-user-button StIcon,
      .login-dialog .login-dialog-session-list-button StIcon,
-@@ -2576,7 +2576,7 @@ StScrollBar {
-   .login-dialog .login-dialog-message-warning,
-   .unlock-dialog .caps-lock-warning-label,
-   .unlock-dialog .login-dialog-message-warning {
--    color: white; }
-+    color: black; }
- 
- .login-dialog-logo-bin {
-   padding: 24px 0px; }
 @@ -2699,8 +2699,8 @@ StScrollBar {
    padding-top: 1em; }
  
