@@ -1,0 +1,48 @@
+Index: b/data/theme/gnome-shell.css
+===================================================================
+--- b.orig/data/theme/gnome-shell.css
++++ b/data/theme/gnome-shell.css
+@@ -312,7 +312,7 @@ StEntry {
+     padding: 0 4px; }
+   StEntry StLabel.hint-text {
+     margin-left: 2px;
+-    color: rgba(255, 255, 255, 0.7); }
++    color: rgba(0,0,0, 0.7); }
+ 
+ /* Buttons */
+ .button, .icon-button {
+@@ -2508,9 +2508,9 @@ StScrollBar {
+   .login-dialog .modal-dialog-button,
+   .unlock-dialog .modal-dialog-button {
+     padding: 4px 18px;
+-    background-color: #1b1b1b;
+-    border-color: #1b1b1b;
+-    color: white; }
++    background-color: white;
++    border-color: white;
++    color: black; }
+     .login-dialog .modal-dialog-button:hover, .login-dialog .modal-dialog-button:focus,
+     .unlock-dialog .modal-dialog-button:hover,
+     .unlock-dialog .modal-dialog-button:focus {
+@@ -2563,8 +2563,8 @@ StScrollBar {
+     border-radius: 99px;
+     width: 2.18em;
+     height: 2.18em;
+-    border-color: #1b1b1b;
+-    background-color: #1b1b1b; }
++    border-color: white;
++    background-color: white; }
+     .login-dialog .cancel-button StIcon,
+     .login-dialog .switch-user-button StIcon,
+     .login-dialog .login-dialog-session-list-button StIcon,
+@@ -2699,8 +2699,8 @@ StScrollBar {
+   padding-top: 1em; }
+ 
+ .login-dialog StEntry {
+-  background-color: #1b1b1b;
+-  color: white; }
++  background-color: white;
++  color: black; }
+ 
+ .unlock-dialog StEntry {
+   border: none !important; }

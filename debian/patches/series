@@ -3,3 +3,4 @@ debian/gnome-shell-extension-prefs-Give-Debian-specific-advice.patch
 debian/Revert-build-Port-to-gcr4.patch
 screencast-Correct-expected-bus-name-for-streams.patch
 add-active-theme-background-in-login.patch
+change-gdm-input-background.patch
