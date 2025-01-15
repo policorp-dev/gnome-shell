@@ -1,3 +1,9 @@
+gnome-shell (47.Policorp-2) stable; urgency=medium
+
+  * Added  favorites-apps and set enable-extensions
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Wed, 15 Jan 2025 17:43:33 +0000
+
 gnome-shell (47.2-2) unstable; urgency=medium
 
   [ Jeremy Bícha ]
