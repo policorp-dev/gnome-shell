@@ -7,12 +7,9 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
 #include <glib.h>
 #include <gio/gio.h>
 #include <meta/display.h>
-#include <meta/group.h>
 #include <meta/window.h>
 
 #include "shell-app-usage.h"
@@ -27,8 +24,9 @@
  */
 
 /**
- * SECTION:shell-app-usage
- * @short_description: Track application usage/state data
+ * ShellAppUsage:
+ *
+ *Track application usage/state data
  *
  * This class maintains some usage and state statistics for
  * applications by keeping track of the approximate time an application's
@@ -765,10 +763,5 @@ on_enable_monitoring_key_changed (GSettings     *settings,
 ShellAppUsage *
 shell_app_usage_get_default (void)
 {
-  static ShellAppUsage *instance;
-
-  if (instance == NULL)
-    instance = g_object_new (SHELL_TYPE_APP_USAGE, NULL);
-
-  return instance;
+  return shell_global_get_app_usage (shell_global_get ());
 }

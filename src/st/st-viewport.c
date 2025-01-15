@@ -36,8 +36,9 @@
  */
 
 /**
- * SECTION:st-viewport
- * @short_description: a scrollable container
+ * StViewport:
+ *
+ * Scrollable container
  *
  * The #StViewport is a generic #StScrollable implementation.
  *
@@ -89,7 +90,7 @@ adjustment_value_notify_cb (StAdjustment *adjustment,
 {
   clutter_actor_invalidate_transform (CLUTTER_ACTOR (viewport));
   clutter_actor_invalidate_paint_volume (CLUTTER_ACTOR (viewport));
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (viewport));
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (viewport));
 }
 
 static void
@@ -283,10 +284,10 @@ st_viewport_allocate (ClutterActor           *actor,
   st_theme_node_get_content_box (theme_node, box, &viewport_box);
   clutter_actor_box_get_size (&viewport_box, &avail_width, &avail_height);
 
-  clutter_layout_manager_get_preferred_width (layout, CLUTTER_CONTAINER (actor),
+  clutter_layout_manager_get_preferred_width (layout, actor,
                                               avail_height,
                                               &min_width, &natural_width);
-  clutter_layout_manager_get_preferred_height (layout, CLUTTER_CONTAINER (actor),
+  clutter_layout_manager_get_preferred_height (layout, actor,
                                                MAX (avail_width, min_width),
                                                &min_height, &natural_height);
 
@@ -302,40 +303,37 @@ st_viewport_allocate (ClutterActor           *actor,
   if (priv->vadjustment)
     content_box.y2 += MAX (0, min_height - avail_height);
 
-  clutter_layout_manager_allocate (layout, CLUTTER_CONTAINER (actor),
-                                   &content_box);
+  clutter_layout_manager_allocate (layout, actor, &content_box);
 
   /* update adjustments for scrolling */
   if (priv->vadjustment)
     {
       double prev_value;
 
-      g_object_set (G_OBJECT (priv->vadjustment),
-                    "lower", 0.0,
-                    "upper", MAX (min_height, avail_height),
-                    "page-size", avail_height,
-                    "step-increment", avail_height / 6,
-                    "page-increment", avail_height - avail_height / 6,
-                    NULL);
-
       prev_value = st_adjustment_get_value (priv->vadjustment);
-      st_adjustment_set_value (priv->vadjustment, prev_value);
+
+      st_adjustment_set_values (priv->vadjustment,
+                                prev_value,
+                                0.0,
+                                MAX (min_height, avail_height),
+                                avail_height / 6,
+                                avail_height - avail_height / 6,
+                                avail_height);
     }
 
   if (priv->hadjustment)
     {
       double prev_value;
 
-      g_object_set (G_OBJECT (priv->hadjustment),
-                    "lower", 0.0,
-                    "upper", MAX (min_width, avail_width),
-                    "page-size", avail_width,
-                    "step-increment", avail_width / 6,
-                    "page-increment", avail_width - avail_width / 6,
-                    NULL);
-
       prev_value = st_adjustment_get_value (priv->hadjustment);
-      st_adjustment_set_value (priv->hadjustment, prev_value);
+
+      st_adjustment_set_values (priv->hadjustment,
+                                prev_value,
+                                0.0,
+                                MAX (min_width, avail_width),
+                                avail_width / 6,
+                                avail_width - avail_width / 6,
+                                avail_width);
     }
 }
 
@@ -402,6 +400,32 @@ get_border_paint_offsets (StViewport *viewport,
 
 
 static void
+st_viewport_paint_node (ClutterActor        *actor,
+                        ClutterPaintNode    *node,
+                        ClutterPaintContext *paint_context)
+{
+  StViewport *viewport = ST_VIEWPORT (actor);
+  int x, y;
+
+  get_border_paint_offsets (viewport, &x, &y);
+  if (x != 0 || y != 0)
+    {
+      g_autoptr (ClutterPaintNode) transform_node = NULL;
+      graphene_matrix_t transform;
+
+      graphene_matrix_init_translate (&transform,
+                                      &GRAPHENE_POINT3D_INIT (x, y, 0));
+
+      transform_node = clutter_transform_node_new (&transform);
+      clutter_paint_node_add_child (node, transform_node);
+
+      node = transform_node;
+    }
+
+  st_widget_paint_background (ST_WIDGET (actor), node, paint_context);
+}
+
+static void
 st_viewport_paint (ClutterActor        *actor,
                    ClutterPaintContext *paint_context)
 {
@@ -414,23 +438,13 @@ st_viewport_paint (ClutterActor        *actor,
   ClutterActor *child;
   CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
 
-  get_border_paint_offsets (viewport, &x, &y);
-  if (x != 0 || y != 0)
-    {
-      cogl_framebuffer_push_matrix (fb);
-      cogl_framebuffer_translate (fb, x, y, 0);
-    }
-
-  st_widget_paint_background (ST_WIDGET (actor), paint_context);
-
-  if (x != 0 || y != 0)
-    cogl_framebuffer_pop_matrix (fb);
-
   if (clutter_actor_get_n_children (actor) == 0)
     return;
 
   clutter_actor_get_allocation_box (actor, &allocation_box);
   st_theme_node_get_content_box (theme_node, &allocation_box, &content_box);
+
+  get_border_paint_offsets (viewport, &x, &y);
 
   content_box.x1 += x;
   content_box.y1 += y;
@@ -567,14 +581,13 @@ st_viewport_class_init (StViewportClass *klass)
   actor_class->allocate = st_viewport_allocate;
   actor_class->apply_transform = st_viewport_apply_transform;
 
+  actor_class->paint_node = st_viewport_paint_node;
   actor_class->paint = st_viewport_paint;
   actor_class->get_paint_volume = st_viewport_get_paint_volume;
   actor_class->pick = st_viewport_pick;
 
   props[PROP_CLIP_TO_VIEW] =
-    g_param_spec_boolean ("clip-to-view",
-                          "Clip to view",
-                          "Clip to view",
+    g_param_spec_boolean ("clip-to-view", NULL, NULL,
                           TRUE,
                           ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 

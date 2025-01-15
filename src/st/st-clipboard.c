@@ -18,8 +18,9 @@
  */
 
 /**
- * SECTION:st-clipboard
- * @short_description: a simple representation of the clipboard
+ * StClipboard:
+ *
+ * A simple representation of the clipboard
  *
  * #StCliboard is a very simple object representation of the clipboard
  * available to applications. Text is always assumed to be UTF-8 and non-text
@@ -297,15 +298,25 @@ st_clipboard_set_content (StClipboard     *clipboard,
 {
   MetaSelectionType selection_type;
   MetaSelectionSource *source;
+  g_autoptr (GError) error = NULL;
 
   g_return_if_fail (ST_IS_CLIPBOARD (clipboard));
   g_return_if_fail (meta_selection != NULL);
   g_return_if_fail (bytes != NULL);
+  g_return_if_fail (mimetype != NULL);
 
   if (!convert_type (type, &selection_type))
     return;
 
-  source = meta_selection_source_memory_new (mimetype, bytes);
+  source = meta_selection_source_memory_new (mimetype, bytes, &error);
+
+  if (!source)
+    {
+      g_warning ("Failed to create new MetaSelectionSourceMemory: %s",
+                 error->message);
+      return;
+    }
+
   meta_selection_set_owner (meta_selection, selection_type, source);
   g_object_unref (source);
 }

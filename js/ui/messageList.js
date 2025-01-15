@@ -1,38 +1,24 @@
-/* exported MessageListSection */
-const {
-    Atk, Clutter, Gio, GLib, GObject, Graphene, Meta, Pango, St,
-} = imports.gi;
-const Main = imports.ui.main;
-const MessageTray = imports.ui.messageTray;
+import Atk from 'gi://Atk';
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Graphene from 'gi://Graphene';
+import Meta from 'gi://Meta';
+import Pango from 'gi://Pango';
+import St from 'gi://St';
 
-const Util = imports.misc.util;
+import * as Main from './main.js';
+import * as MessageTray from './messageTray.js';
 
-var MESSAGE_ANIMATION_TIME = 100;
+import * as Util from '../misc/util.js';
+import {formatTimeSpan} from '../misc/dateUtils.js';
 
-var DEFAULT_EXPAND_LINES = 6;
+const MESSAGE_ANIMATION_TIME = 100;
 
-function _fixMarkup(text, allowMarkup) {
-    if (allowMarkup) {
-        // Support &amp;, &quot;, &apos;, &lt; and &gt;, escape all other
-        // occurrences of '&'.
-        let _text = text.replace(/&(?!amp;|quot;|apos;|lt;|gt;)/g, '&amp;');
+const DEFAULT_EXPAND_LINES = 6;
 
-        // Support <b>, <i>, and <u>, escape anything else
-        // so it displays as raw markup.
-        // Ref: https://developer.gnome.org/notification-spec/#markup
-        _text = _text.replace(/<(?!\/?[biu]>)/g, '&lt;');
-
-        try {
-            Pango.parse_markup(_text, -1, '');
-            return _text;
-        } catch (e) {}
-    }
-
-    // !allowMarkup, or invalid markup
-    return GLib.markup_escape_text(text, -1);
-}
-
-var URLHighlighter = GObject.registerClass(
+export const URLHighlighter = GObject.registerClass(
 class URLHighlighter extends St.Label {
     _init(text = '', lineWrap, allowMarkup) {
         super._init({
@@ -45,8 +31,8 @@ class URLHighlighter extends St.Label {
         this.connect('style-changed', () => {
             let [hasColor, color] = this.get_theme_node().lookup_color('link-color', false);
             if (hasColor) {
-                let linkColor = color.to_string().substr(0, 7);
-                if (linkColor != this._linkColor) {
+                let linkColor = color.to_string().substring(0, 7);
+                if (linkColor !== this._linkColor) {
                     this._linkColor = linkColor;
                     this._highlightUrls();
                 }
@@ -58,25 +44,25 @@ class URLHighlighter extends St.Label {
         this.setMarkup(text, allowMarkup);
     }
 
-    vfunc_button_press_event(buttonEvent) {
+    vfunc_button_press_event(event) {
         // Don't try to URL highlight when invisible.
         // The MessageTray doesn't actually hide us, so
         // we need to check for paint opacities as well.
-        if (!this.visible || this.get_paint_opacity() == 0)
+        if (!this.visible || this.get_paint_opacity() === 0)
             return Clutter.EVENT_PROPAGATE;
 
         // Keep Notification from seeing this and taking
         // a pointer grab, which would block our button-release-event
         // handler, if an URL is clicked
-        return this._findUrlAtPos(buttonEvent) != -1;
+        return this._findUrlAtPos(event) !== -1;
     }
 
-    vfunc_button_release_event(buttonEvent) {
-        if (!this.visible || this.get_paint_opacity() == 0)
+    vfunc_button_release_event(event) {
+        if (!this.visible || this.get_paint_opacity() === 0)
             return Clutter.EVENT_PROPAGATE;
 
-        let urlId = this._findUrlAtPos(buttonEvent);
-        if (urlId != -1) {
+        const urlId = this._findUrlAtPos(event);
+        if (urlId !== -1) {
             let url = this._urls[urlId].url;
             if (!url.includes(':'))
                 url = `http://${url}`;
@@ -88,34 +74,34 @@ class URLHighlighter extends St.Label {
         return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_motion_event(motionEvent) {
-        if (!this.visible || this.get_paint_opacity() == 0)
+    vfunc_motion_event(event) {
+        if (!this.visible || this.get_paint_opacity() === 0)
             return Clutter.EVENT_PROPAGATE;
 
-        let urlId = this._findUrlAtPos(motionEvent);
-        if (urlId != -1 && !this._cursorChanged) {
+        const urlId = this._findUrlAtPos(event);
+        if (urlId !== -1 && !this._cursorChanged) {
             global.display.set_cursor(Meta.Cursor.POINTING_HAND);
             this._cursorChanged = true;
-        } else if (urlId == -1) {
+        } else if (urlId === -1) {
             global.display.set_cursor(Meta.Cursor.DEFAULT);
             this._cursorChanged = false;
         }
         return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_leave_event(crossingEvent) {
-        if (!this.visible || this.get_paint_opacity() == 0)
+    vfunc_leave_event(event) {
+        if (!this.visible || this.get_paint_opacity() === 0)
             return Clutter.EVENT_PROPAGATE;
 
         if (this._cursorChanged) {
             this._cursorChanged = false;
             global.display.set_cursor(Meta.Cursor.DEFAULT);
         }
-        return super.vfunc_leave_event(crossingEvent);
+        return super.vfunc_leave_event(event);
     }
 
     setMarkup(text, allowMarkup) {
-        text = text ? _fixMarkup(text, allowMarkup) : '';
+        text = text ? Util.fixMarkup(text, allowMarkup) : '';
         this._text = text;
 
         this.clutter_text.set_markup(text);
@@ -131,16 +117,16 @@ class URLHighlighter extends St.Label {
         let pos = 0;
         for (let i = 0; i < urls.length; i++) {
             let url = urls[i];
-            let str = this._text.substr(pos, url.pos - pos);
+            let str = this._text.substring(pos, url.pos);
             markup += `${str}<span foreground="${this._linkColor}"><u>${url.url}</u></span>`;
             pos = url.pos + url.url.length;
         }
-        markup += this._text.substr(pos);
+        markup += this._text.substring(pos);
         this.clutter_text.set_markup(markup);
     }
 
     _findUrlAtPos(event) {
-        let { x, y } = event;
+        let [x, y] = event.get_coords();
         [, x, y] = this.transform_stage_point(x, y);
         let findPos = -1;
         for (let i = 0; i < this.clutter_text.text.length; i++) {
@@ -149,7 +135,7 @@ class URLHighlighter extends St.Label {
                 continue;
             findPos = i;
         }
-        if (findPos != -1) {
+        if (findPos !== -1) {
             for (let i = 0; i < this._urls.length; i++) {
                 if (findPos >= this._urls[i].pos &&
                     this._urls[i].pos + this._urls[i].url.length > findPos)
@@ -160,7 +146,7 @@ class URLHighlighter extends St.Label {
     }
 });
 
-var ScaleLayout = GObject.registerClass(
+const ScaleLayout = GObject.registerClass(
 class ScaleLayout extends Clutter.BinLayout {
     _init(params) {
         this._container = null;
@@ -168,7 +154,7 @@ class ScaleLayout extends Clutter.BinLayout {
     }
 
     _connectContainer(container) {
-        if (this._container == container)
+        if (this._container === container)
             return;
 
         this._container?.disconnectObject(this);
@@ -203,21 +189,19 @@ class ScaleLayout extends Clutter.BinLayout {
     }
 });
 
-var LabelExpanderLayout = GObject.registerClass({
+const LabelExpanderLayout = GObject.registerClass({
     Properties: {
-        'expansion': GObject.ParamSpec.double('expansion',
-                                              'Expansion',
-                                              'Expansion of the layout, between 0 (collapsed) ' +
-                                              'and 1 (fully expanded',
-                                              GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
-                                              0, 1, 0),
+        'expansion': GObject.ParamSpec.double(
+            'expansion', null, null,
+            GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
+            0, 1, 0),
     },
-}, class LabelExpanderLayout extends Clutter.LayoutManager {
-    _init(params) {
+}, class LabelExpanderLayout extends Clutter.BinLayout {
+    constructor(params) {
+        super(params);
+
         this._expansion = 0;
         this._expandLines = DEFAULT_EXPAND_LINES;
-
-        super._init(params);
     }
 
     get expansion() {
@@ -225,92 +209,216 @@ var LabelExpanderLayout = GObject.registerClass({
     }
 
     set expansion(v) {
-        if (v == this._expansion)
+        if (v === this._expansion)
             return;
         this._expansion = v;
         this.notify('expansion');
-
-        let visibleIndex = this._expansion > 0 ? 1 : 0;
-        for (let i = 0; this._container && i < this._container.get_n_children(); i++)
-            this._container.get_child_at_index(i).visible = i == visibleIndex;
 
         this.layout_changed();
     }
 
     set expandLines(v) {
-        if (v == this._expandLines)
+        if (v === this._expandLines)
             return;
         this._expandLines = v;
         if (this._expansion > 0)
             this.layout_changed();
     }
 
-    vfunc_set_container(container) {
-        this._container = container;
-    }
-
-    vfunc_get_preferred_width(container, forHeight) {
-        let [min, nat] = [0, 0];
-
-        for (let i = 0; i < container.get_n_children(); i++) {
-            if (i > 1)
-                break; // we support one unexpanded + one expanded child
-
-            let child = container.get_child_at_index(i);
-            let [childMin, childNat] = child.get_preferred_width(forHeight);
-            [min, nat] = [Math.max(min, childMin), Math.max(nat, childNat)];
-        }
-
-        return [min, nat];
-    }
-
     vfunc_get_preferred_height(container, forWidth) {
         let [min, nat] = [0, 0];
 
-        let children = container.get_children();
-        if (children[0])
-            [min, nat] = children[0].get_preferred_height(forWidth);
+        const [child] = container;
 
-        if (children[1]) {
-            let [min2, nat2] = children[1].get_preferred_height(forWidth);
-            const [expMin, expNat] = [
-                Math.min(min2, min * this._expandLines),
-                Math.min(nat2, nat * this._expandLines),
-            ];
+        if (child) {
+            [min, nat] = child.get_preferred_height(-1);
+
+            const [, nat2] = child.get_preferred_height(forWidth);
+            const expHeight =
+                Math.min(nat2, nat * this._expandLines);
             [min, nat] = [
-                min + this._expansion * (expMin - min),
-                nat + this._expansion * (expNat - nat),
+                min + this._expansion * (expHeight - min),
+                nat + this._expansion * (expHeight - nat),
             ];
         }
 
         return [min, nat];
     }
+});
 
-    vfunc_allocate(container, box) {
-        for (let i = 0; i < container.get_n_children(); i++) {
-            let child = container.get_child_at_index(i);
+export const Source = GObject.registerClass({
+    Properties: {
+        'title': GObject.ParamSpec.string(
+            'title', null, null,
+            GObject.ParamFlags.READWRITE,
+            null),
+        'icon': GObject.ParamSpec.object(
+            'icon', null, null,
+            GObject.ParamFlags.READWRITE,
+            Gio.Icon),
+        'icon-name': GObject.ParamSpec.string(
+            'icon-name', null, null,
+            GObject.ParamFlags.READWRITE,
+            null),
+    },
+}, class Source extends GObject.Object {
+    get iconName() {
+        if (this.gicon instanceof Gio.ThemedIcon)
+            return this.gicon.iconName;
+        else
+            return null;
+    }
 
-            if (child.visible)
-                child.allocate(box);
-        }
+    set iconName(iconName) {
+        this.icon = new Gio.ThemedIcon({name: iconName});
     }
 });
 
+const TimeLabel = GObject.registerClass(
+class TimeLabel extends St.Label {
+    _init() {
+        super._init({
+            style_class: 'event-time',
+            x_expand: true,
+            y_expand: true,
+            x_align: Clutter.ActorAlign.START,
+            y_align: Clutter.ActorAlign.END,
+            visible: false,
+        });
+    }
 
-var Message = GObject.registerClass({
+    get datetime() {
+        return this._datetime;
+    }
+
+    set datetime(datetime) {
+        if (this._datetime?.equal(datetime))
+            return;
+
+        this._datetime = datetime;
+
+        this.visible = !!this._datetime;
+
+        if (this.mapped)
+            this._updateText();
+    }
+
+    _updateText() {
+        if (this._datetime)
+            this.text = formatTimeSpan(this._datetime);
+    }
+
+    vfunc_map() {
+        this._updateText();
+
+        super.vfunc_map();
+    }
+});
+
+const MessageHeader = GObject.registerClass(
+class MessageHeader extends St.BoxLayout {
+    constructor(source) {
+        super({
+            style_class: 'message-header',
+            x_expand: true,
+        });
+
+        const sourceIconEffect = new Clutter.DesaturateEffect();
+        const sourceIcon = new St.Icon({
+            style_class: 'message-source-icon',
+            y_align: Clutter.ActorAlign.CENTER,
+            fallback_icon_name: 'application-x-executable-symbolic',
+        });
+        sourceIcon.add_effect(sourceIconEffect);
+        this.add_child(sourceIcon);
+
+        sourceIcon.connect('style-changed', () => {
+            const themeNode = sourceIcon.get_theme_node();
+            sourceIconEffect.enabled = themeNode.get_icon_style() === St.IconStyle.SYMBOLIC;
+        });
+
+        const headerContent = new St.BoxLayout({
+            style_class: 'message-header-content',
+            y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true,
+        });
+        this.add_child(headerContent);
+
+        this.expandButton = new St.Button({
+            style_class: 'message-expand-button',
+            icon_name: 'notification-expand-symbolic',
+            y_align: Clutter.ActorAlign.CENTER,
+            pivot_point: new Graphene.Point({x: 0.5, y: 0.5}),
+        });
+        this.add_child(this.expandButton);
+
+        this.closeButton = new St.Button({
+            style_class: 'message-close-button',
+            icon_name: 'window-close-symbolic',
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        this.add_child(this.closeButton);
+
+        const sourceTitle = new St.Label({
+            style_class: 'message-source-title',
+            y_align: Clutter.ActorAlign.END,
+        });
+        headerContent.add_child(sourceTitle);
+
+        source.bind_property_full('title',
+            sourceTitle,
+            'text',
+            GObject.BindingFlags.SYNC_CREATE,
+            // Translators: this is the string displayed in the header when a message
+            // source doesn't have a name
+            (bind, value) => [true, value === null || value === '' ? _('Unknown App') : value],
+            null);
+        source.bind_property('icon',
+            sourceIcon,
+            'gicon',
+            GObject.BindingFlags.SYNC_CREATE);
+
+        this.timeLabel = new TimeLabel();
+        headerContent.add_child(this.timeLabel);
+    }
+});
+
+export const Message = GObject.registerClass({
+    Properties: {
+        'title': GObject.ParamSpec.string(
+            'title', null, null,
+            GObject.ParamFlags.READWRITE,
+            null),
+        'body': GObject.ParamSpec.string(
+            'body', null, null,
+            GObject.ParamFlags.READWRITE,
+            null),
+        'use-body-markup': GObject.ParamSpec.boolean(
+            'use-body-markup', null, null,
+            GObject.ParamFlags.READWRITE,
+            false),
+        'icon': GObject.ParamSpec.object(
+            'icon', null, null,
+            GObject.ParamFlags.READWRITE,
+            Gio.Icon),
+        'datetime': GObject.ParamSpec.boxed(
+            'datetime', null, null,
+            GObject.ParamFlags.READWRITE,
+            GLib.DateTime),
+    },
     Signals: {
         'close': {},
         'expanded': {},
         'unexpanded': {},
     },
 }, class Message extends St.Button {
-    _init(title, body) {
-        super._init({
+    constructor(source) {
+        super({
             style_class: 'message',
             accessible_role: Atk.Role.NOTIFICATION,
             can_focus: true,
             x_expand: true,
-            y_expand: true,
+            y_expand: false,
         });
 
         this.expanded = false;
@@ -322,116 +430,147 @@ var Message = GObject.registerClass({
         });
         this.set_child(vbox);
 
-        let hbox = new St.BoxLayout();
-        vbox.add_actor(hbox);
+        this._header = new MessageHeader(source);
+        vbox.add_child(this._header);
 
-        this._actionBin = new St.Widget({
+        const hbox = new St.BoxLayout({
+            style_class: 'message-box',
+        });
+        vbox.add_child(hbox);
+
+        this._actionBin = new St.Bin({
+            style_class: 'message-action-bin',
             layout_manager: new ScaleLayout(),
             visible: false,
         });
-        vbox.add_actor(this._actionBin);
+        vbox.add_child(this._actionBin);
 
-        this._iconBin = new St.Bin({
-            style_class: 'message-icon-bin',
+        this._icon = new St.Icon({
+            style_class: 'message-icon',
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
             visible: false,
         });
-        hbox.add_actor(this._iconBin);
+        hbox.add_child(this._icon);
+
+        this._icon.connect('notify::is-symbolic', () => {
+            if (this._icon.is_symbolic)
+                this._icon.add_style_class_name('message-themed-icon');
+            else
+                this._icon.remove_style_class_name('message-themed-icon');
+        });
 
         const contentBox = new St.BoxLayout({
             style_class: 'message-content',
             vertical: true,
             x_expand: true,
         });
-        hbox.add_actor(contentBox);
+        hbox.add_child(contentBox);
 
         this._mediaControls = new St.BoxLayout();
-        hbox.add_actor(this._mediaControls);
+        hbox.add_child(this._mediaControls);
 
-        let titleBox = new St.BoxLayout();
-        contentBox.add_actor(titleBox);
-
-        this.titleLabel = new St.Label({ style_class: 'message-title' });
-        this.setTitle(title);
-        titleBox.add_actor(this.titleLabel);
-
-        this._secondaryBin = new St.Bin({
-            style_class: 'message-secondary-bin',
-            x_expand: true, y_expand: true,
+        this.titleLabel = new St.Label({
+            style_class: 'message-title',
+            y_align: Clutter.ActorAlign.END,
         });
-        titleBox.add_actor(this._secondaryBin);
+        contentBox.add_child(this.titleLabel);
 
-        this._closeButton = new St.Button({
-            style_class: 'message-close-button',
-            icon_name: 'window-close-symbolic',
-            y_align: Clutter.ActorAlign.CENTER,
-            opacity: 0,
+        this._bodyLabel = new URLHighlighter('', true, this._useBodyMarkup);
+        this._bodyLabel.add_style_class_name('message-body');
+        this._bodyBin = new St.Bin({
+            x_expand: true,
+            layout_manager: new LabelExpanderLayout(),
+            child: this._bodyLabel,
         });
-        titleBox.add_actor(this._closeButton);
+        contentBox.add_child(this._bodyBin);
 
-        this._bodyStack = new St.Widget({ x_expand: true });
-        this._bodyStack.layout_manager = new LabelExpanderLayout();
-        contentBox.add_actor(this._bodyStack);
-
-        this.bodyLabel = new URLHighlighter('', false, this._useBodyMarkup);
-        this.bodyLabel.add_style_class_name('message-body');
-        this._bodyStack.add_actor(this.bodyLabel);
-        this.setBody(body);
-
-        this._closeButton.connect('clicked', this.close.bind(this));
-        let actorHoverId = this.connect('notify::hover', this._sync.bind(this));
-        this._closeButton.connect('destroy', this.disconnect.bind(this, actorHoverId));
         this.connect('destroy', this._onDestroy.bind(this));
-        this._sync();
+
+        this._header.closeButton.connect('clicked', this.close.bind(this));
+        this._header.closeButton.visible = this.canClose();
+
+        this._header.expandButton.connect('clicked', () => {
+            if (this.expanded)
+                this.unexpand(true);
+            else
+                this.expand(true);
+        });
+        this._bodyLabel.connect('notify::allocation', this._updateExpandButton.bind(this));
+        this._updateExpandButton();
+    }
+
+    _updateExpandButton() {
+        if (!this._bodyLabel.has_allocation())
+            return;
+        const layout = this._bodyLabel.clutter_text.get_layout();
+        const canExpand = layout.is_ellipsized() || this.expanded || !!this._actionBin.child;
+        // Use opacity to not trigger a relayout
+        this._header.expandButton.opacity = canExpand ? 255 : 0;
     }
 
     close() {
         this.emit('close');
     }
 
-    setIcon(actor) {
-        this._iconBin.child = actor;
-        this._iconBin.visible = actor != null;
+    set icon(icon) {
+        this._icon.gicon = icon;
+
+        this._icon.visible = !!icon;
+        this.notify('icon');
     }
 
-    setSecondaryActor(actor) {
-        this._secondaryBin.child = actor;
+    get icon() {
+        return this._icon.gicon;
     }
 
-    setTitle(text) {
-        let title = text ? _fixMarkup(text.replace(/\n/g, ' '), false) : '';
+    set datetime(datetime) {
+        this._header.timeLabel.datetime = datetime;
+        this.notify('datetime');
+    }
+
+    get datetime() {
+        return this._header.timeLabel.datetime;
+    }
+
+    set title(text) {
+        this._titleText = text;
+        const title = text ? Util.fixMarkup(text.replace(/\n/g, ' '), false) : '';
         this.titleLabel.clutter_text.set_markup(title);
+        this.notify('title');
     }
 
-    setBody(text) {
+    get title() {
+        return this._titleText;
+    }
+
+    set body(text) {
         this._bodyText = text;
-        this.bodyLabel.setMarkup(text ? text.replace(/\n/g, ' ') : '',
-                                 this._useBodyMarkup);
-        if (this._expandedLabel)
-            this._expandedLabel.setMarkup(text, this._useBodyMarkup);
+        this._bodyLabel.setMarkup(text ? text.replace(/\n/g, ' ') : '',
+            this._useBodyMarkup);
+        this.notify('body');
     }
 
-    setUseBodyMarkup(enable) {
+    get body() {
+        return this._bodyText;
+    }
+
+    set useBodyMarkup(enable) {
         if (this._useBodyMarkup === enable)
             return;
         this._useBodyMarkup = enable;
-        if (this.bodyLabel)
-            this.setBody(this._bodyText);
+        this.body = this._bodyText;
+        this.notify('use-body-markup');
+    }
+
+    get useBodyMarkup() {
+        return this._useBodyMarkup;
     }
 
     setActionArea(actor) {
-        if (actor == null) {
-            if (this._actionBin.get_n_children() > 0)
-                this._actionBin.get_child_at_index(0).destroy();
-            return;
-        }
-
-        if (this._actionBin.get_n_children() > 0)
-            throw new Error('Message already has an action area');
-
-        this._actionBin.add_actor(actor);
-        this._actionBin.visible = this.expanded;
+        this._actionBin.child = actor;
+        this._actionBin.visible = actor && this.expanded;
+        this._updateExpandButton();
     }
 
     addMediaControl(iconName, callback) {
@@ -440,79 +579,57 @@ var Message = GObject.registerClass({
             iconName,
         });
         button.connect('clicked', callback);
-        this._mediaControls.add_actor(button);
+        this._mediaControls.add_child(button);
         return button;
-    }
-
-    setExpandedBody(actor) {
-        if (actor == null) {
-            if (this._bodyStack.get_n_children() > 1)
-                this._bodyStack.get_child_at_index(1).destroy();
-            return;
-        }
-
-        if (this._bodyStack.get_n_children() > 1)
-            throw new Error('Message already has an expanded body actor');
-
-        this._bodyStack.insert_child_at_index(actor, 1);
-    }
-
-    setExpandedLines(nLines) {
-        this._bodyStack.layout_manager.expandLines = nLines;
     }
 
     expand(animate) {
         this.expanded = true;
 
-        this._actionBin.visible = this._actionBin.get_n_children() > 0;
+        this._actionBin.visible = !!this._actionBin.child;
 
-        if (this._bodyStack.get_n_children() < 2) {
-            this._expandedLabel = new URLHighlighter(this._bodyText,
-                                                     true, this._useBodyMarkup);
-            this.setExpandedBody(this._expandedLabel);
-        }
+        const duration = animate ? MessageTray.ANIMATION_TIME : 0;
+        this._bodyBin.ease_property('@layout.expansion', 1, {
+            progress_mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            duration,
+        });
 
-        if (animate) {
-            this._bodyStack.ease_property('@layout.expansion', 1, {
-                progress_mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                duration: MessageTray.ANIMATION_TIME,
-            });
+        this._actionBin.scale_y = 0;
+        this._actionBin.ease({
+            scale_y: 1,
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+        });
 
-            this._actionBin.scale_y = 0;
-            this._actionBin.ease({
-                scale_y: 1,
-                duration: MessageTray.ANIMATION_TIME,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            });
-        } else {
-            this._bodyStack.layout_manager.expansion = 1;
-            this._actionBin.scale_y = 1;
-        }
+        this._header.expandButton.ease({
+            rotation_angle_z: 180,
+            duration,
+        });
 
         this.emit('expanded');
     }
 
     unexpand(animate) {
-        if (animate) {
-            this._bodyStack.ease_property('@layout.expansion', 0, {
-                progress_mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                duration: MessageTray.ANIMATION_TIME,
-            });
+        const duration = animate ? MessageTray.ANIMATION_TIME : 0;
+        this._bodyBin.ease_property('@layout.expansion', 0, {
+            progress_mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            duration,
+        });
 
-            this._actionBin.ease({
-                scale_y: 0,
-                duration: MessageTray.ANIMATION_TIME,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                onComplete: () => {
-                    this._actionBin.hide();
-                    this.expanded = false;
-                },
-            });
-        } else {
-            this._bodyStack.layout_manager.expansion = 0;
-            this._actionBin.scale_y = 0;
-            this.expanded = false;
-        }
+        this._actionBin.ease({
+            scale_y: 0,
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._actionBin.hide();
+                this.expanded = false;
+            },
+        });
+
+        this._header.expandButton.ease({
+            rotation_angle_z: 0,
+            duration,
+        });
 
         this.emit('unexpanded');
     }
@@ -521,17 +638,11 @@ var Message = GObject.registerClass({
         return false;
     }
 
-    _sync() {
-        let visible = this.hover && this.canClose();
-        this._closeButton.opacity = visible ? 255 : 0;
-        this._closeButton.reactive = visible;
-    }
-
     _onDestroy() {
     }
 
-    vfunc_key_press_event(keyEvent) {
-        let keysym = keyEvent.keyval;
+    vfunc_key_press_event(event) {
+        let keysym = event.get_key_symbol();
 
         if (keysym === Clutter.KEY_Delete ||
             keysym === Clutter.KEY_KP_Delete ||
@@ -541,25 +652,25 @@ var Message = GObject.registerClass({
                 return Clutter.EVENT_STOP;
             }
         }
-        return super.vfunc_key_press_event(keyEvent);
+        return super.vfunc_key_press_event(event);
     }
 });
 
-var MessageListSection = GObject.registerClass({
+export const MessageListSection = GObject.registerClass({
     Properties: {
         'can-clear': GObject.ParamSpec.boolean(
-            'can-clear', 'can-clear', 'can-clear',
+            'can-clear', null, null,
             GObject.ParamFlags.READABLE,
             false),
         'empty': GObject.ParamSpec.boolean(
-            'empty', 'empty', 'empty',
+            'empty', null, null,
             GObject.ParamFlags.READABLE,
             true),
     },
     Signals: {
         'can-clear-changed': {},
         'empty-changed': {},
-        'message-focused': { param_types: [Message.$gtype] },
+        'message-focused': {param_types: [Message.$gtype]},
     },
 }, class MessageListSection extends St.BoxLayout {
     _init() {
@@ -574,10 +685,10 @@ var MessageListSection = GObject.registerClass({
             style_class: 'message-list-section-list',
             vertical: true,
         });
-        this.add_actor(this._list);
+        this.add_child(this._list);
 
-        this._list.connect('actor-added', this._sync.bind(this));
-        this._list.connect('actor-removed', this._sync.bind(this));
+        this._list.connect('child-added', this._sync.bind(this));
+        this._list.connect('child-removed', this._sync.bind(this));
 
         Main.sessionMode.connectObject(
             'updated', () => this._sync(), this);
@@ -618,7 +729,7 @@ var MessageListSection = GObject.registerClass({
         let listItem = new St.Bin({
             child: message,
             layout_manager: new ScaleLayout(),
-            pivot_point: new Graphene.Point({ x: .5, y: .5 }),
+            pivot_point: new Graphene.Point({x: .5, y: .5}),
         });
         listItem._connectionsIds = [];
 
@@ -634,20 +745,19 @@ var MessageListSection = GObject.registerClass({
 
         this._list.insert_child_at_index(listItem, index);
 
-        if (animate) {
-            listItem.set({ scale_x: 0, scale_y: 0 });
-            listItem.ease({
-                scale_x: 1,
-                scale_y: 1,
-                duration: MESSAGE_ANIMATION_TIME,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            });
-        }
+        const duration = animate ? MESSAGE_ANIMATION_TIME : 0;
+        listItem.set({scale_x: 0, scale_y: 0});
+        listItem.ease({
+            scale_x: 1,
+            scale_y: 1,
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+        });
     }
 
     moveMessage(message, index, animate) {
         if (!this._messages.includes(message))
-            throw new Error(`Impossible to move untracked message`);
+            throw new Error('Impossible to move untracked message');
 
         let listItem = message.get_parent();
 
@@ -678,7 +788,7 @@ var MessageListSection = GObject.registerClass({
         const messages = this._messages;
 
         if (!messages.includes(message))
-            throw new Error(`Impossible to remove untracked message`);
+            throw new Error('Impossible to remove untracked message');
 
         let listItem = message.get_parent();
         listItem._connectionsIds.forEach(id => message.disconnect(id));
@@ -693,21 +803,17 @@ var MessageListSection = GObject.registerClass({
                 this._list;
         }
 
-        if (animate) {
-            listItem.ease({
-                scale_x: 0,
-                scale_y: 0,
-                duration: MESSAGE_ANIMATION_TIME,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                onComplete: () => {
-                    listItem.destroy();
-                    nextMessage?.grab_key_focus();
-                },
-            });
-        } else {
-            listItem.destroy();
-            nextMessage?.grab_key_focus();
-        }
+        const duration = animate ? MESSAGE_ANIMATION_TIME : 0;
+        listItem.ease({
+            scale_x: 0,
+            scale_y: 0,
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                listItem.destroy();
+                nextMessage?.grab_key_focus();
+            },
+        });
     }
 
     clear() {
@@ -742,15 +848,15 @@ var MessageListSection = GObject.registerClass({
 
     _sync() {
         let messages = this._messages;
-        let empty = messages.length == 0;
+        let empty = messages.length === 0;
 
-        if (this._empty != empty) {
+        if (this._empty !== empty) {
             this._empty = empty;
             this.notify('empty');
         }
 
         let canClear = messages.some(m => m.canClose());
-        if (this._canClear != canClear) {
+        if (this._canClear !== canClear) {
             this._canClear = canClear;
             this.notify('can-clear');
         }

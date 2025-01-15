@@ -1,5 +1,5 @@
 # ![logo] GNOME Extensions
-GNOME Extensions is a small application for managing GNOME Shell
+GNOME Extensions is a small app for managing GNOME Shell
 extensions. It is usually built as part of gnome-shell, but can be
 used as a stand-alone project as well.
 
@@ -21,6 +21,17 @@ To do that, simply run the included script:
 ```sh
 $ ./generate-translations.sh
 ```
+
+You can then build and install the project:
+
+```
+$ meson setup --prefix=/usr _build
+$ meson compile -C _build
+$ meson install -C _build
+$ /usr/bin/gnome-extensions-app
+```
+
+For development you can also install the project to a temporary directory (e.g. replace `/usr` with `/tmp/install` above).
 
 ## License
 gnome-extensions-app is distributed under the terms of the GNU General Public

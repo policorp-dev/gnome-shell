@@ -1,18 +1,21 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported Component */
+import Clutter from 'gi://Clutter';
+import Gcr from 'gi://Gcr';
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import Pango from 'gi://Pango';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
-const { Clutter, Gcr, Gio, GObject, Pango, Shell, St } = imports.gi;
+import * as Dialog from '../dialog.js';
+import * as ModalDialog from '../modalDialog.js';
+import * as ShellEntry from '../shellEntry.js';
+import * as CheckBox from '../checkBox.js';
+import {wiggle} from '../../misc/animationUtils.js';
 
-const Dialog = imports.ui.dialog;
-const ModalDialog = imports.ui.modalDialog;
-const ShellEntry = imports.ui.shellEntry;
-const CheckBox = imports.ui.checkBox;
-const Util = imports.misc.util;
-
-var KeyringDialog = GObject.registerClass(
+const KeyringDialog = GObject.registerClass(
 class KeyringDialog extends ModalDialog.ModalDialog {
     _init() {
-        super._init({ styleClass: 'prompt-dialog' });
+        super._init({styleClass: 'prompt-dialog'});
 
         this.prompt = new Shell.KeyringPrompt();
         this.prompt.connect('show-password', this._onShowPassword.bind(this));
@@ -56,7 +59,7 @@ class KeyringDialog extends ModalDialog.ModalDialog {
         this.prompt.set_password_actor(this._passwordEntry.clutter_text);
         this.prompt.set_confirm_actor(this._confirmEntry.clutter_text);
 
-        let warningBox = new St.BoxLayout({ vertical: true });
+        let warningBox = new St.BoxLayout({vertical: true});
 
         let capsLockWarning = new ShellEntry.CapsLockWarning();
         let syncCapsLockWarningVisibility = () => {
@@ -67,7 +70,7 @@ class KeyringDialog extends ModalDialog.ModalDialog {
         this.prompt.connect('notify::confirm-visible', syncCapsLockWarningVisibility);
         warningBox.add_child(capsLockWarning);
 
-        let warning = new St.Label({ style_class: 'prompt-dialog-error-label' });
+        let warning = new St.Label({style_class: 'prompt-dialog-error-label'});
         warning.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         warning.clutter_text.line_wrap = true;
         this.prompt.bind_property('warning',
@@ -77,7 +80,7 @@ class KeyringDialog extends ModalDialog.ModalDialog {
         });
         this.prompt.connect('notify::warning', () => {
             if (this._passwordEntry && this.prompt.warning !== '')
-                Util.wiggle(this._passwordEntry);
+                wiggle(this._passwordEntry);
         });
         warningBox.add_child(warning);
 
@@ -178,7 +181,7 @@ class KeyringDialog extends ModalDialog.ModalDialog {
     }
 });
 
-var KeyringDummyDialog = class {
+class KeyringDummyDialog {
     constructor() {
         this.prompt = new Shell.KeyringPrompt();
         this.prompt.connect('show-password', this._cancelPrompt.bind(this));
@@ -188,9 +191,9 @@ var KeyringDummyDialog = class {
     _cancelPrompt() {
         this.prompt.cancel();
     }
-};
+}
 
-var KeyringPrompter = GObject.registerClass(
+const KeyringPrompter = GObject.registerClass(
 class KeyringPrompter extends Gcr.SystemPrompter {
     _init() {
         super._init();
@@ -211,7 +214,7 @@ class KeyringPrompter extends Gcr.SystemPrompter {
         if (!this._registered) {
             this.register(Gio.DBus.session);
             this._dbusId = Gio.DBus.session.own_name('org.gnome.keyring.SystemPrompter',
-                                                     Gio.BusNameOwnerFlags.ALLOW_REPLACEMENT, null, null);
+                Gio.BusNameOwnerFlags.ALLOW_REPLACEMENT, null, null);
             this._registered = true;
         }
         this._enabled = true;
@@ -226,4 +229,4 @@ class KeyringPrompter extends Gcr.SystemPrompter {
     }
 });
 
-var Component = KeyringPrompter;
+export {KeyringPrompter as Component};

@@ -138,7 +138,6 @@ extension_pack_add_schemas (ExtensionPack  *pack,
 {
   g_autoptr (GSubprocess) proc = NULL;
   g_autoptr (GFile) dstdir = NULL;
-  g_autofree char *dstpath = NULL;
   char **s;
 
   if (!ensure_tmpdir (pack, error))
@@ -162,13 +161,6 @@ extension_pack_add_schemas (ExtensionPack  *pack,
       if (!g_file_copy (src, dst, G_FILE_COPY_NONE, NULL, NULL, NULL, error))
         return FALSE;
     }
-
-  dstpath = g_file_get_path (dstdir);
-  proc = g_subprocess_new (G_SUBPROCESS_FLAGS_STDERR_SILENCE, error,
-                           "glib-compile-schemas", "--strict", dstpath, NULL);
-
-  if (!g_subprocess_wait_check (proc, NULL, error))
-    return FALSE;
 
   g_hash_table_insert (pack->files,
                        g_strdup ("schemas"), g_steal_pointer (&dstdir));
@@ -383,6 +375,8 @@ pack_extension (char      *srcdir,
   pack = extension_pack_new (srcdir);
   extension_pack_add_source (pack, "extension.js");
   extension_pack_add_source (pack, "metadata.json");
+  extension_pack_add_source (pack, "stylesheet-dark.css");
+  extension_pack_add_source (pack, "stylesheet-light.css");
   extension_pack_add_source (pack, "stylesheet.css");
   extension_pack_add_source (pack, "prefs.js");
 

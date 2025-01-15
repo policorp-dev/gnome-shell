@@ -1,18 +1,20 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported ModalDialog */
+import Atk from 'gi://Atk';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
-const { Atk, Clutter, GObject, Shell, St } = imports.gi;
+import * as Dialog from './dialog.js';
+import * as Layout from './layout.js';
+import * as Lightbox from './lightbox.js';
+import * as Main from './main.js';
+import * as Params from '../misc/params.js';
 
-const Dialog = imports.ui.dialog;
-const Layout = imports.ui.layout;
-const Lightbox = imports.ui.lightbox;
-const Main = imports.ui.main;
-const Params = imports.misc.params;
+const OPEN_AND_CLOSE_TIME = 100;
+const FADE_OUT_DIALOG_TIME = 1000;
 
-var OPEN_AND_CLOSE_TIME = 100;
-var FADE_OUT_DIALOG_TIME = 1000;
-
-var State = {
+/** @enum {number} */
+export const State = {
     OPENED: 0,
     CLOSED: 1,
     OPENING: 2,
@@ -20,15 +22,16 @@ var State = {
     FADED_OUT: 4,
 };
 
-var ModalDialog = GObject.registerClass({
+export const ModalDialog = GObject.registerClass({
     Properties: {
-        'state': GObject.ParamSpec.int('state', 'Dialog state', 'state',
-                                       GObject.ParamFlags.READABLE,
-                                       Math.min(...Object.values(State)),
-                                       Math.max(...Object.values(State)),
-                                       State.CLOSED),
+        'state': GObject.ParamSpec.int(
+            'state', null, null,
+            GObject.ParamFlags.READABLE,
+            Math.min(...Object.values(State)),
+            Math.max(...Object.values(State)),
+            State.CLOSED),
     },
-    Signals: { 'opened': {}, 'closed': {} },
+    Signals: {'opened': {}, 'closed': {}},
 }, class ModalDialog extends St.Widget {
     _init(params) {
         super._init({
@@ -56,7 +59,7 @@ var ModalDialog = GObject.registerClass({
         this._shouldFadeOut = params.shouldFadeOut;
         this._destroyOnClose = params.destroyOnClose;
 
-        Main.layoutManager.modalDialogGroup.add_actor(this);
+        Main.layoutManager.modalDialogGroup.add_child(this);
 
         const constraint = new Clutter.BindConstraint({
             source: global.stage,
@@ -69,10 +72,10 @@ var ModalDialog = GObject.registerClass({
             x_expand: true,
             y_expand: true,
         });
-        this._backgroundBin = new St.Bin({ child: this.backgroundStack });
+        this._backgroundBin = new St.Bin({child: this.backgroundStack});
         this._monitorConstraint = new Layout.MonitorConstraint();
         this._backgroundBin.add_constraint(this._monitorConstraint);
-        this.add_actor(this._backgroundBin);
+        this.add_child(this._backgroundBin);
 
         this.dialogLayout = new Dialog.Dialog(this.backgroundStack, params.styleClass);
         this.contentLayout = this.dialogLayout.contentLayout;
@@ -85,8 +88,8 @@ var ModalDialog = GObject.registerClass({
             });
             this._lightbox.highlight(this._backgroundBin);
 
-            this._eventBlocker = new Clutter.Actor({ reactive: true });
-            this.backgroundStack.add_actor(this._eventBlocker);
+            this._eventBlocker = new Clutter.Actor({reactive: true});
+            this.backgroundStack.add_child(this._eventBlocker);
         }
 
         global.focus_manager.add_group(this.dialogLayout);
@@ -100,15 +103,15 @@ var ModalDialog = GObject.registerClass({
     }
 
     _setState(state) {
-        if (this._state == state)
+        if (this._state === state)
             return;
 
         this._state = state;
         this.notify('state');
     }
 
-    vfunc_key_press_event() {
-        if (global.focus_manager.navigate_from_event(Clutter.get_current_event()))
+    vfunc_key_press_event(event) {
+        if (global.focus_manager.navigate_from_event(event))
             return Clutter.EVENT_STOP;
 
         return Clutter.EVENT_PROPAGATE;
@@ -136,11 +139,8 @@ var ModalDialog = GObject.registerClass({
         return this.dialogLayout.addButton(buttonInfo);
     }
 
-    _fadeOpen(onPrimary) {
-        if (onPrimary)
-            this._monitorConstraint.primary = true;
-        else
-            this._monitorConstraint.index = global.display.get_current_monitor();
+    _fadeOpen() {
+        this._monitorConstraint.index = global.display.get_current_monitor();
 
         this._setState(State.OPENING);
 
@@ -169,14 +169,14 @@ var ModalDialog = GObject.registerClass({
             () => (this._initialKeyFocus = null), this);
     }
 
-    open(timestamp, onPrimary) {
-        if (this.state == State.OPENED || this.state == State.OPENING)
+    open() {
+        if (this.state === State.OPENED || this.state === State.OPENING)
             return true;
 
-        if (!this.pushModal(timestamp))
+        if (!this.pushModal())
             return false;
 
-        this._fadeOpen(onPrimary);
+        this._fadeOpen();
         return true;
     }
 
@@ -189,12 +189,12 @@ var ModalDialog = GObject.registerClass({
             this.destroy();
     }
 
-    close(timestamp) {
-        if (this.state == State.CLOSED || this.state == State.CLOSING)
+    close() {
+        if (this.state === State.CLOSED || this.state === State.CLOSING)
             return;
 
         this._setState(State.CLOSING);
-        this.popModal(timestamp);
+        this.popModal();
         this._savedKeyFocus = null;
 
         if (this._shouldFadeOut) {
@@ -212,7 +212,7 @@ var ModalDialog = GObject.registerClass({
     // Drop modal status without closing the dialog; this makes the
     // dialog insensitive as well, so it needs to be followed shortly
     // by either a close() or a pushModal()
-    popModal(timestamp) {
+    popModal() {
         if (!this._hasModal)
             return;
 
@@ -221,7 +221,7 @@ var ModalDialog = GObject.registerClass({
             this._savedKeyFocus = focus;
         else
             this._savedKeyFocus = null;
-        Main.popModal(this._grab, timestamp);
+        Main.popModal(this._grab);
         this._grab = null;
         this._hasModal = false;
 
@@ -229,14 +229,11 @@ var ModalDialog = GObject.registerClass({
             this.backgroundStack.set_child_above_sibling(this._eventBlocker, null);
     }
 
-    pushModal(timestamp) {
+    pushModal() {
         if (this._hasModal)
             return true;
 
-        let params = { actionMode: this._actionMode };
-        if (timestamp)
-            params['timestamp'] = timestamp;
-        let grab = Main.pushModal(this, params);
+        const grab = Main.pushModal(this, {actionMode: this._actionMode});
         if (grab.get_seat_state() !== Clutter.GrabState.ALL) {
             Main.popModal(grab);
             return false;
@@ -270,14 +267,14 @@ var ModalDialog = GObject.registerClass({
     // e.g., if a user clicked "Log Out" then the dialog should go away
     // immediately, but the lightbox should remain until the logout is
     // complete.
-    _fadeOutDialog(timestamp) {
-        if (this.state == State.CLOSED || this.state == State.CLOSING)
+    _fadeOutDialog() {
+        if (this.state === State.CLOSED || this.state === State.CLOSING)
             return;
 
-        if (this.state == State.FADED_OUT)
+        if (this.state === State.FADED_OUT)
             return;
 
-        this.popModal(timestamp);
+        this.popModal();
         this.dialogLayout.ease({
             opacity: 0,
             duration: FADE_OUT_DIALOG_TIME,

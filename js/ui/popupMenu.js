@@ -1,20 +1,23 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported PopupMenuItem, PopupSeparatorMenuItem, Switch, PopupSwitchMenuItem,
-            PopupImageMenuItem, PopupMenu, PopupDummyMenu, PopupSubMenu,
-            PopupMenuSection, PopupSubMenuMenuItem, PopupMenuManager */
+import Atk from 'gi://Atk';
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import Graphene from 'gi://Graphene';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+import * as Signals from '../misc/signals.js';
 
-const { Atk, Clutter, Gio, GObject, Graphene, Shell, St } = imports.gi;
-const Signals = imports.misc.signals;
+import * as BoxPointer from './boxpointer.js';
+import * as Main from './main.js';
+import * as Params from '../misc/params.js';
 
-const BoxPointer = imports.ui.boxpointer;
-const Main = imports.ui.main;
-const Params = imports.misc.params;
-
-var Ornament = {
+/** @enum {number} */
+export const Ornament = {
     NONE: 0,
     DOT: 1,
     CHECK: 2,
     HIDDEN: 3,
+    NO_DOT: 4,
 };
 
 function isPopupMenuItemVisible(child) {
@@ -27,10 +30,11 @@ function isPopupMenuItemVisible(child) {
 
 /**
  * arrowIcon
+ *
  * @param {St.Side} side - Side to which the arrow points.
  * @returns {St.Icon} a new arrow icon
  */
-function arrowIcon(side) {
+export function arrowIcon(side) {
     let iconName;
     switch (side) {
     case St.Side.TOP:
@@ -58,17 +62,19 @@ function arrowIcon(side) {
     return arrow;
 }
 
-var PopupBaseMenuItem = GObject.registerClass({
+export const PopupBaseMenuItem = GObject.registerClass({
     Properties: {
-        'active': GObject.ParamSpec.boolean('active', 'active', 'active',
-                                            GObject.ParamFlags.READWRITE,
-                                            false),
-        'sensitive': GObject.ParamSpec.boolean('sensitive', 'sensitive', 'sensitive',
-                                               GObject.ParamFlags.READWRITE,
-                                               true),
+        'active': GObject.ParamSpec.boolean(
+            'active', null, null,
+            GObject.ParamFlags.READWRITE,
+            false),
+        'sensitive': GObject.ParamSpec.boolean(
+            'sensitive', null, null,
+            GObject.ParamFlags.READWRITE,
+            true),
     },
     Signals: {
-        'activate': { param_types: [Clutter.Event.$gtype] },
+        'activate': {param_types: [Clutter.Event.$gtype]},
     },
 }, class PopupBaseMenuItem extends St.BoxLayout {
     _init(params) {
@@ -88,14 +94,27 @@ var PopupBaseMenuItem = GObject.registerClass({
         });
         this._delegate = this;
 
-        this._ornament = Ornament.NONE;
-        this._ornamentLabel = new St.Label({ style_class: 'popup-menu-ornament' });
-        this.add(this._ornamentLabel);
+        this._ornamentIcon = new St.Icon({style_class: 'popup-menu-ornament'});
+        this.add_child(this._ornamentIcon);
+        this.setOrnament(Ornament.HIDDEN);
 
         this._parent = null;
         this._active = false;
         this._activatable = params.reactive && params.activate;
         this._sensitive = true;
+
+        this._clickAction = new Clutter.ClickAction({
+            enabled: this._activatable,
+        });
+        this._clickAction.connect('clicked',
+            () => this.activate(Clutter.get_current_event()));
+        this._clickAction.connect('notify::pressed', () => {
+            if (this._clickAction.pressed)
+                this.add_style_pseudo_class('active');
+            else
+                this.remove_style_pseudo_class('active');
+        });
+        this.add_action(this._clickAction);
 
         if (!this._activatable)
             this.add_style_class_name('popup-inactive-menu-item');
@@ -124,47 +143,14 @@ var PopupBaseMenuItem = GObject.registerClass({
         this._parent = parent;
     }
 
-    vfunc_button_press_event() {
-        if (!this._activatable)
-            return Clutter.EVENT_PROPAGATE;
-
-        // This is the CSS active state
-        this.add_style_pseudo_class('active');
-        return Clutter.EVENT_PROPAGATE;
-    }
-
-    vfunc_button_release_event() {
-        if (!this._activatable)
-            return Clutter.EVENT_PROPAGATE;
-
-        this.remove_style_pseudo_class('active');
-        this.activate(Clutter.get_current_event());
-        return Clutter.EVENT_STOP;
-    }
-
-    vfunc_touch_event(touchEvent) {
-        if (!this._activatable)
-            return Clutter.EVENT_PROPAGATE;
-
-        if (touchEvent.type == Clutter.EventType.TOUCH_END) {
-            this.remove_style_pseudo_class('active');
-            this.activate(Clutter.get_current_event());
-            return Clutter.EVENT_STOP;
-        } else if (touchEvent.type == Clutter.EventType.TOUCH_BEGIN) {
-            // This is the CSS active state
-            this.add_style_pseudo_class('active');
-        }
-        return Clutter.EVENT_PROPAGATE;
-    }
-
-    vfunc_key_press_event(keyEvent) {
-        if (global.focus_manager.navigate_from_event(Clutter.get_current_event()))
+    vfunc_key_press_event(event) {
+        if (global.focus_manager.navigate_from_event(event))
             return Clutter.EVENT_STOP;
 
         if (!this._activatable)
-            return super.vfunc_key_press_event(keyEvent);
+            return super.vfunc_key_press_event(event);
 
-        let state = keyEvent.modifier_state;
+        let state = event.get_state();
 
         // if user has a modifier down (except capslock and numlock)
         // then don't handle the key press here
@@ -175,10 +161,20 @@ var PopupBaseMenuItem = GObject.registerClass({
         if (state)
             return Clutter.EVENT_PROPAGATE;
 
-        let symbol = keyEvent.keyval;
-        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
-            this.activate(Clutter.get_current_event());
+        let symbol = event.get_key_symbol();
+        if (symbol === Clutter.KEY_space || symbol === Clutter.KEY_Return) {
+            this.activate(event);
             return Clutter.EVENT_STOP;
+        }
+
+        // Support wrapping navigation in the menu
+        if (symbol === Clutter.KEY_Up || symbol === Clutter.KEY_Down) {
+            const group = global.focus_manager.get_group(this);
+            const direction = symbol === Clutter.KEY_Up
+                ? St.DirectionType.UP
+                : St.DirectionType.DOWN;
+            if (group?.navigate_focus(this, direction, true))
+                return Clutter.EVENT_STOP;
         }
         return Clutter.EVENT_PROPAGATE;
     }
@@ -202,15 +198,15 @@ var PopupBaseMenuItem = GObject.registerClass({
     }
 
     set active(active) {
-        let activeChanged = active != this.active;
+        let activeChanged = active !== this.active;
         if (activeChanged) {
             this._active = active;
             if (active) {
-                this.add_style_class_name('selected');
+                this.add_style_pseudo_class('selected');
                 if (this.can_focus)
                     this.grab_key_focus();
             } else {
-                this.remove_style_class_name('selected');
+                this.remove_style_pseudo_class('selected');
                 // Remove the CSS active state if the user press the button and
                 // while holding moves to another menu item, so we don't paint all items.
                 // The correct behaviour would be to set the new item with the CSS
@@ -237,7 +233,7 @@ var PopupBaseMenuItem = GObject.registerClass({
     }
 
     setSensitive(sensitive) {
-        if (this._sensitive == sensitive)
+        if (this._sensitive === sensitive)
             return;
 
         this._sensitive = sensitive;
@@ -253,27 +249,38 @@ var PopupBaseMenuItem = GObject.registerClass({
     }
 
     setOrnament(ornament) {
-        if (ornament == this._ornament)
+        if (ornament === this._ornament)
             return;
 
         this._ornament = ornament;
 
-        if (ornament == Ornament.DOT) {
-            this._ornamentLabel.text = '\u2022';
+        if (ornament === Ornament.DOT) {
+            this._ornamentIcon.icon_name = 'ornament-dot-checked-symbolic';
             this.add_accessible_state(Atk.StateType.CHECKED);
-        } else if (ornament == Ornament.CHECK) {
-            this._ornamentLabel.text = '\u2713';
+        } else if (ornament === Ornament.NO_DOT) {
+            this._ornamentIcon.icon_name = 'ornament-dot-unchecked-symbolic';
+            this.remove_accessible_state(Atk.StateType.CHECKED);
+        } else if (ornament === Ornament.CHECK) {
+            this._ornamentIcon.icon_name = 'ornament-check-symbolic';
             this.add_accessible_state(Atk.StateType.CHECKED);
-        } else if (ornament == Ornament.NONE || ornament == Ornament.HIDDEN) {
-            this._ornamentLabel.text = '';
+        } else if (ornament === Ornament.NONE || ornament === Ornament.HIDDEN) {
+            this._ornamentIcon.icon_name = '';
             this.remove_accessible_state(Atk.StateType.CHECKED);
         }
 
-        this._ornamentLabel.visible = ornament != Ornament.HIDDEN;
+        this._ornamentIcon.visible = ornament !== Ornament.HIDDEN;
+        this._updateOrnamentStyle();
+    }
+
+    _updateOrnamentStyle() {
+        if (this._ornament === Ornament.CHECK || this._ornament === Ornament.NONE)
+            this.add_style_class_name('popup-ornamented-menu-item');
+        else
+            this.remove_style_class_name('popup-ornamented-menu-item');
     }
 });
 
-var PopupMenuItem = GObject.registerClass(
+export const PopupMenuItem = GObject.registerClass(
 class PopupMenuItem extends PopupBaseMenuItem {
     _init(text, params) {
         super._init(params);
@@ -289,7 +296,7 @@ class PopupMenuItem extends PopupBaseMenuItem {
 });
 
 
-var PopupSeparatorMenuItem = GObject.registerClass(
+export const PopupSeparatorMenuItem = GObject.registerClass(
 class PopupSeparatorMenuItem extends PopupBaseMenuItem {
     _init(text) {
         super._init({
@@ -298,12 +305,12 @@ class PopupSeparatorMenuItem extends PopupBaseMenuItem {
             can_focus: false,
         });
 
-        this.label = new St.Label({ text: text || '' });
-        this.add(this.label);
+        this.label = new St.Label({text: text || ''});
+        this.add_child(this.label);
         this.label_actor = this.label;
 
         this.label.connect('notify::text',
-                           this._syncVisibility.bind(this));
+            this._syncVisibility.bind(this));
         this._syncVisibility();
 
         this._separator = new St.Widget({
@@ -316,26 +323,94 @@ class PopupSeparatorMenuItem extends PopupBaseMenuItem {
     }
 
     _syncVisibility() {
-        this.label.visible = this.label.text != '';
+        this.label.visible = this.label.text !== '';
     }
 });
 
-var Switch = GObject.registerClass({
+export const Switch = GObject.registerClass({
     Properties: {
         'state': GObject.ParamSpec.boolean(
-            'state', 'state', 'state',
+            'state', null, null,
             GObject.ParamFlags.READWRITE,
             false),
     },
-}, class Switch extends St.Bin {
+}, class Switch extends St.Widget {
     _init(state) {
         this._state = false;
+        this._dragging = false;
 
         super._init({
             style_class: 'toggle-switch',
             accessible_role: Atk.Role.CHECK_BOX,
-            state,
+            y_align: Clutter.ActorAlign.CENTER,
+            track_hover: true,
+            reactive: true,
         });
+
+        const box = new St.BoxLayout({
+            x_expand: true,
+            y_expand: true,
+            constraints: new Clutter.BindConstraint({
+                source: this,
+                coordinate: Clutter.BindCoordinate.SIZE,
+            }),
+        });
+        this.add_child(box);
+
+        this._onIcon = new St.Icon({
+            icon_name: 'switch-on-symbolic',
+            x_expand: true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        box.add_child(this._onIcon);
+
+        this._offIcon = new St.Icon({
+            icon_name: 'switch-off-symbolic',
+            x_expand: true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        box.add_child(this._offIcon);
+
+        this._handle = new St.Widget({
+            style_class: 'handle',
+            y_align: Clutter.ActorAlign.CENTER,
+            constraints: new Clutter.BindConstraint({
+                source: this,
+                coordinate: Clutter.BindCoordinate.HEIGHT,
+            }),
+        });
+        this.bind_property('reactive', this._handle, 'reactive', GObject.BindingFlags.SYNC_CREATE);
+
+        this._handleAlignConstraint = new Clutter.AlignConstraint({
+            name: 'align',
+            align_axis: Clutter.AlignAxis.X_AXIS,
+            source: this,
+        });
+        this._handle.add_constraint(this._handleAlignConstraint);
+        this._handle.connect('button-press-event', (actor, event) => this._startDragging(event));
+        this._handle.connect('touch-event', this._touchDragging.bind(this));
+        this.add_child(this._handle);
+
+        this.state = state;
+
+        this._a11ySettings = new Gio.Settings({
+            schema_id: 'org.gnome.desktop.a11y.interface',
+        });
+
+        this._a11ySettings.connectObject('changed::show-status-shapes',
+            () => this._updateIconOpacity(),
+            this);
+        this._updateIconOpacity();
+    }
+
+    _updateIconOpacity() {
+        const activeOpacity = this._a11ySettings.get_boolean('show-status-shapes')
+            ? 255. : 0.;
+
+        this._onIcon.opacity = activeOpacity;
+        this._offIcon.opacity = activeOpacity;
     }
 
     get state() {
@@ -343,25 +418,120 @@ var Switch = GObject.registerClass({
     }
 
     set state(state) {
-        if (this._state === state)
-            return;
+        let handleAlignFactor;
+        // Calling get_theme_node() while unmapped is an error, avoid that
+        const duration = this._handle.mapped
+            ? this._handle.get_theme_node().get_transition_duration()
+            : 0;
 
-        if (state)
+        if (state) {
             this.add_style_pseudo_class('checked');
-        else
+            handleAlignFactor = 1.0;
+        } else {
             this.remove_style_pseudo_class('checked');
+            handleAlignFactor = 0.0;
+        }
 
-        this._state = state;
-        this.notify('state');
+        this._handle.ease_property('@constraints.align.factor', handleAlignFactor, {
+            duration,
+        });
+
+        if (this._state !== state) {
+            this._state = state;
+            this.notify('state');
+        }
     }
 
     toggle() {
         this.state = !this.state;
     }
+
+    _startDragging(event) {
+        if (this._dragging)
+            return Clutter.EVENT_PROPAGATE;
+
+        this._dragging = true;
+        [this._initialGrabX] = event.get_coords();
+        let device = event.get_device();
+        let sequence = event.get_event_sequence();
+
+        this._grab = global.stage.grab(this);
+
+        this._grabbedDevice = device;
+        this._grabbedSequence = sequence;
+
+        return Clutter.EVENT_STOP;
+    }
+
+    vfunc_motion_event() {
+        if (this._dragging && !this._grabbedSequence)
+            return this._motionEvent(this, Clutter.get_current_event());
+
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    vfunc_button_release_event() {
+        if (this._dragging && !this._grabbedSequence)
+            return this._endDragging();
+
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    _touchDragging(actor, event) {
+        let sequence = event.get_event_sequence();
+
+        if (!this._dragging &&
+            event.type() === Clutter.EventType.TOUCH_BEGIN) {
+            this.startDragging(event);
+            return Clutter.EVENT_STOP;
+        } else if (this._grabbedSequence &&
+                   sequence.get_slot() === this._grabbedSequence.get_slot()) {
+            if (event.type() === Clutter.EventType.TOUCH_UPDATE)
+                return this._motionEvent(this, event);
+            else if (event.type() === Clutter.EventType.TOUCH_END)
+                return this._endDragging();
+        }
+
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    _endDragging() {
+        if (!this._dragging)
+            return Clutter.EVENT_PROPAGATE;
+
+        if (this._grab) {
+            this._grab.dismiss();
+            this._grab = null;
+        }
+
+        if (this._dragged)
+            this.state = this._handleAlignConstraint.get_factor() > 0.5;
+        else
+            this.toggle();
+
+        this._dragged = false;
+        this._grabbedSequence = null;
+        this._grabbedDevice = null;
+        this._dragging = false;
+
+        return Clutter.EVENT_STOP;
+    }
+
+    _motionEvent(actor, event) {
+        this._dragged = true;
+
+        let [absX] = event.get_coords();
+        let factorDiff = (absX - this._initialGrabX) / (this.get_width() - this._handle.get_width());
+        let factor = factorDiff + (this.state ? 1.0 : 0.0);
+
+        this._handleAlignConstraint.set_factor(Math.clamp(factor, 0, 1));
+
+        return Clutter.EVENT_STOP;
+    }
 });
 
-var PopupSwitchMenuItem = GObject.registerClass({
-    Signals: { 'toggled': { param_types: [GObject.TYPE_BOOLEAN] } },
+export const PopupSwitchMenuItem = GObject.registerClass({
+    Signals: {'toggled': {param_types: [GObject.TYPE_BOOLEAN]}},
 }, class PopupSwitchMenuItem extends PopupBaseMenuItem {
     _init(text, active, params) {
         super._init(params);
@@ -371,7 +541,10 @@ var PopupSwitchMenuItem = GObject.registerClass({
             y_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
         });
+
         this._switch = new Switch(active);
+        this._switch.connect('notify::state', this._onToggled.bind(this));
+        this.bind_property('reactive', this._switch, 'reactive', GObject.BindingFlags.SYNC_CREATE);
 
         this.accessible_role = Atk.Role.CHECK_MENU_ITEM;
         this.checkAccessibleState();
@@ -414,8 +587,8 @@ var PopupSwitchMenuItem = GObject.registerClass({
 
         // we allow pressing space to toggle the switch
         // without closing the menu
-        if (event.type() == Clutter.EventType.KEY_PRESS &&
-            event.get_key_symbol() == Clutter.KEY_space)
+        if (event.type() === Clutter.EventType.KEY_PRESS &&
+            event.get_key_symbol() === Clutter.KEY_space)
             return;
 
         super.activate(event);
@@ -423,8 +596,6 @@ var PopupSwitchMenuItem = GObject.registerClass({
 
     toggle() {
         this._switch.toggle();
-        this.emit('toggled', this._switch.state);
-        this.checkAccessibleState();
     }
 
     get state() {
@@ -433,6 +604,11 @@ var PopupSwitchMenuItem = GObject.registerClass({
 
     setToggleState(state) {
         this._switch.state = state;
+        this.checkAccessibleState();
+    }
+
+    _onToggled() {
+        this.emit('toggled', this._switch.state);
         this.checkAccessibleState();
     }
 
@@ -450,7 +626,7 @@ var PopupSwitchMenuItem = GObject.registerClass({
     }
 });
 
-var PopupImageMenuItem = GObject.registerClass(
+export const PopupImageMenuItem = GObject.registerClass(
 class PopupImageMenuItem extends PopupBaseMenuItem {
     _init(text, icon, params) {
         super._init(params);
@@ -468,7 +644,7 @@ class PopupImageMenuItem extends PopupBaseMenuItem {
         this.add_child(this.label);
         this.label_actor = this.label;
 
-        this.set_child_above_sibling(this._ornamentLabel, this.label);
+        this.set_child_above_sibling(this._ornamentIcon, this.label);
 
         this.setIcon(icon);
     }
@@ -480,9 +656,14 @@ class PopupImageMenuItem extends PopupBaseMenuItem {
         else
             this._icon.icon_name = icon;
     }
+
+    _updateOrnamentStyle() {
+        // we move the ornament after the label, so we don't need
+        // additional padding regardless of ornament visibility
+    }
 });
 
-var PopupMenuBase = class extends Signals.EventEmitter {
+export class PopupMenuBase extends Signals.EventEmitter {
     constructor(sourceActor, styleClass) {
         super();
 
@@ -549,7 +730,7 @@ var PopupMenuBase = class extends Signals.EventEmitter {
 
     addAction(title, callback, icon) {
         let menuItem;
-        if (icon != undefined)
+        if (icon !== undefined)
             menuItem = new PopupImageMenuItem(title, icon);
         else
             menuItem = new PopupMenuItem(title);
@@ -600,14 +781,14 @@ var PopupMenuBase = class extends Signals.EventEmitter {
     }
 
     itemActivated(animate) {
-        if (animate == undefined)
+        if (animate === undefined)
             animate = BoxPointer.PopupAnimation.FULL;
 
         this._getTopMenu().close(animate);
     }
 
     _subMenuActiveChanged(submenu, submenuItem) {
-        if (this._activeMenuItem && this._activeMenuItem != submenuItem)
+        if (this._activeMenuItem && this._activeMenuItem !== submenuItem)
             this._activeMenuItem.active = false;
         this._activeMenuItem = submenuItem;
         this.emit('active-changed', submenuItem);
@@ -616,7 +797,7 @@ var PopupMenuBase = class extends Signals.EventEmitter {
     _connectItemSignals(menuItem) {
         menuItem.connectObject(
             'notify::active', () => {
-                const { active } = menuItem;
+                const {active} = menuItem;
                 if (active && this._activeMenuItem !== menuItem) {
                     if (this._activeMenuItem)
                         this._activeMenuItem.active = false;
@@ -628,7 +809,7 @@ var PopupMenuBase = class extends Signals.EventEmitter {
                 }
             },
             'notify::sensitive', () => {
-                const { sensitive } = menuItem;
+                const {sensitive} = menuItem;
                 if (!sensitive && this._activeMenuItem === menuItem) {
                     if (!this.actor.navigate_focus(menuItem.actor,
                         St.DirectionType.TAB_FORWARD, true))
@@ -692,13 +873,13 @@ var PopupMenuBase = class extends Signals.EventEmitter {
         let i = 0;
 
         while (i < items.length && position > 0) {
-            if (items[i] != menuItem)
+            if (items[i] !== menuItem)
                 position--;
             i++;
         }
 
         if (i < items.length) {
-            if (items[i] != menuItem)
+            if (items[i] !== menuItem)
                 this.box.set_child_below_sibling(menuItem.actor, items[i].actor);
         } else {
             this.box.set_child_above_sibling(menuItem.actor, null);
@@ -707,15 +888,15 @@ var PopupMenuBase = class extends Signals.EventEmitter {
 
     addMenuItem(menuItem, position) {
         let beforeItem = null;
-        if (position == undefined) {
-            this.box.add(menuItem.actor);
+        if (position === undefined) {
+            this.box.add_child(menuItem.actor);
         } else {
             let items = this._getMenuItems();
             if (position < items.length) {
                 beforeItem = items[position].actor;
                 this.box.insert_child_below(menuItem.actor, beforeItem);
             } else {
-                this.box.add(menuItem.actor);
+                this.box.add_child(menuItem.actor);
             }
         }
 
@@ -736,7 +917,7 @@ var PopupMenuBase = class extends Signals.EventEmitter {
                 menuItem);
         } else if (menuItem instanceof PopupSubMenuMenuItem) {
             if (beforeItem == null)
-                this.box.add(menuItem.menu.actor);
+                this.box.add_child(menuItem.menu.actor);
             else
                 this.box.insert_child_below(menuItem.menu.actor, beforeItem);
 
@@ -759,7 +940,7 @@ var PopupMenuBase = class extends Signals.EventEmitter {
         } else if (menuItem instanceof PopupBaseMenuItem) {
             this._connectItemSignals(menuItem);
         } else {
-            throw TypeError("Invalid argument to PopupMenuBase.addMenuItem()");
+            throw TypeError('Invalid argument to PopupMenuBase.addMenuItem()');
         }
 
         menuItem._setParent(this);
@@ -809,9 +990,9 @@ var PopupMenuBase = class extends Signals.EventEmitter {
 
         Main.sessionMode.disconnectObject(this);
     }
-};
+}
 
-var PopupMenu = class extends PopupMenuBase {
+export class PopupMenu extends PopupMenuBase {
     constructor(sourceActor, arrowAlignment, arrowSide) {
         super(sourceActor, 'popup-menu-content');
 
@@ -884,10 +1065,10 @@ var PopupMenu = class extends PopupMenuBase {
 
         let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
+        if (symbol === Clutter.KEY_space || symbol === Clutter.KEY_Return) {
             this.toggle();
             return Clutter.EVENT_STOP;
-        } else if (symbol == navKey) {
+        } else if (symbol === navKey) {
             if (!this.isOpen)
                 this.toggle();
             this.actor.navigate_focus(null, St.DirectionType.TAB_FORWARD, false);
@@ -953,9 +1134,9 @@ var PopupMenu = class extends PopupMenuBase {
 
         super.destroy();
     }
-};
+}
 
-var PopupDummyMenu = class extends Signals.EventEmitter {
+export class PopupDummyMenu extends Signals.EventEmitter {
     constructor(sourceActor) {
         super();
 
@@ -991,9 +1172,9 @@ var PopupDummyMenu = class extends Signals.EventEmitter {
     destroy() {
         this.emit('destroy');
     }
-};
+}
 
-var PopupSubMenu = class extends PopupMenuBase {
+export class PopupSubMenu extends PopupMenuBase {
     constructor(sourceActor, sourceArrow) {
         super(sourceActor);
 
@@ -1004,11 +1185,10 @@ var PopupSubMenu = class extends PopupMenuBase {
         // effect if a CSS max-height is set on the top menu.
         this.actor = new St.ScrollView({
             style_class: 'popup-sub-menu',
-            hscrollbar_policy: St.PolicyType.NEVER,
             vscrollbar_policy: St.PolicyType.NEVER,
+            child: this.box,
         });
 
-        this.actor.add_actor(this.box);
         this.actor._delegate = this;
         this.actor.clip_to_allocation = true;
         this.actor.connect('key-press-event', this._onKeyPressEvent.bind(this));
@@ -1064,25 +1244,22 @@ var PopupSubMenu = class extends PopupMenuBase {
         if (animate && needsScrollbar)
             animate = false;
 
-        let targetAngle = this.actor.text_direction == Clutter.TextDirection.RTL ? -90 : 90;
+        let targetAngle = this.actor.text_direction === Clutter.TextDirection.RTL ? -90 : 90;
 
-        if (animate) {
-            let [, naturalHeight] = this.actor.get_preferred_height(-1);
-            this.actor.height = 0;
-            this.actor.ease({
-                height: naturalHeight,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_EXPO,
-                onComplete: () => this.actor.set_height(-1),
-            });
-            this._arrow.ease({
-                rotation_angle_z: targetAngle,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_EXPO,
-            });
-        } else {
-            this._arrow.rotation_angle_z = targetAngle;
-        }
+        const duration = animate ? 250 : 0;
+        let [, naturalHeight] = this.actor.get_preferred_height(-1);
+        this.actor.height = 0;
+        this.actor.ease({
+            height: naturalHeight,
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_EXPO,
+            onComplete: () => this.actor.set_height(-1),
+        });
+        this._arrow.ease({
+            rotation_angle_z: targetAngle,
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_EXPO,
+        });
     }
 
     close(animate) {
@@ -1098,31 +1275,27 @@ var PopupSubMenu = class extends PopupMenuBase {
         if (animate && this._needsScrollbar())
             animate = false;
 
-        if (animate) {
-            this.actor.ease({
-                height: 0,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_EXPO,
-                onComplete: () => {
-                    this.actor.hide();
-                    this.actor.set_height(-1);
-                },
-            });
-            this._arrow.ease({
-                rotation_angle_z: 0,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_EXPO,
-            });
-        } else {
-            this._arrow.rotation_angle_z = 0;
-            this.actor.hide();
-        }
+        const duration = animate ? 250 : 0;
+        this.actor.ease({
+            height: 0,
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_EXPO,
+            onComplete: () => {
+                this.actor.hide();
+                this.actor.set_height(-1);
+            },
+        });
+        this._arrow.ease({
+            rotation_angle_z: 0,
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_EXPO,
+        });
     }
 
     _onKeyPressEvent(actor, event) {
         // Move focus back to parent menu if the user types Left.
 
-        if (this.isOpen && event.get_key_symbol() == Clutter.KEY_Left) {
+        if (this.isOpen && event.get_key_symbol() === Clutter.KEY_Left) {
             this.close(BoxPointer.PopupAnimation.FULL);
             this.sourceActor._delegate.active = true;
             return Clutter.EVENT_STOP;
@@ -1130,7 +1303,7 @@ var PopupSubMenu = class extends PopupMenuBase {
 
         return Clutter.EVENT_PROPAGATE;
     }
-};
+}
 
 /**
  * PopupMenuSection:
@@ -1140,7 +1313,7 @@ var PopupSubMenu = class extends PopupMenuBase {
  * can add it to another menu), but is completely transparent
  * to the user
  */
-var PopupMenuSection = class extends PopupMenuBase {
+export class PopupMenuSection extends PopupMenuBase {
     constructor() {
         super();
 
@@ -1160,9 +1333,9 @@ var PopupMenuSection = class extends PopupMenuBase {
     close() {
         this.emit('open-state-changed', false);
     }
-};
+}
 
-var PopupSubMenuMenuItem = GObject.registerClass(
+export const PopupSubMenuMenuItem = GObject.registerClass(
 class PopupSubMenuMenuItem extends PopupBaseMenuItem {
     _init(text, wantIcon) {
         super._init();
@@ -1170,7 +1343,7 @@ class PopupSubMenuMenuItem extends PopupBaseMenuItem {
         this.add_style_class_name('popup-submenu-menu-item');
 
         if (wantIcon) {
-            this.icon = new St.Icon({ style_class: 'popup-menu-icon' });
+            this.icon = new St.Icon({style_class: 'popup-menu-icon'});
             this.add_child(this.icon);
         }
 
@@ -1189,7 +1362,7 @@ class PopupSubMenuMenuItem extends PopupBaseMenuItem {
         this.add_child(expander);
 
         this._triangle = arrowIcon(St.Side.RIGHT);
-        this._triangle.pivot_point = new Graphene.Point({ x: 0.5, y: 0.6 });
+        this._triangle.pivot_point = new Graphene.Point({x: 0.5, y: 0.6});
 
         this._triangleBin = new St.Widget({
             y_expand: true,
@@ -1246,61 +1419,33 @@ class PopupSubMenuMenuItem extends PopupBaseMenuItem {
         return this.menu.isOpen;
     }
 
-    vfunc_key_press_event(keyPressEvent) {
-        let symbol = keyPressEvent.keyval;
+    vfunc_key_press_event(event) {
+        let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.KEY_Right) {
+        if (symbol === Clutter.KEY_Right) {
             this._setOpenState(true);
             this.menu.actor.navigate_focus(null, St.DirectionType.DOWN, false);
             return Clutter.EVENT_STOP;
-        } else if (symbol == Clutter.KEY_Left && this._getOpenState()) {
+        } else if (symbol === Clutter.KEY_Left && this._getOpenState()) {
             this._setOpenState(false);
             return Clutter.EVENT_STOP;
         }
 
-        return super.vfunc_key_press_event(keyPressEvent);
+        return super.vfunc_key_press_event(event);
     }
 
     activate(_event) {
-        this._setOpenState(true);
-    }
-
-    vfunc_button_release_event() {
-        // Since we override the parent, we need to manage what the parent does
-        // with the active style class
-        this.remove_style_pseudo_class('active');
         this._setOpenState(!this._getOpenState());
-        return Clutter.EVENT_PROPAGATE;
-    }
-
-    vfunc_touch_event(touchEvent) {
-        if (touchEvent.type == Clutter.EventType.TOUCH_END) {
-            // Since we override the parent, we need to manage what the parent does
-            // with the active style class
-            this.remove_style_pseudo_class('active');
-            this._setOpenState(!this._getOpenState());
-        }
-        return Clutter.EVENT_PROPAGATE;
     }
 });
 
 /* Basic implementation of a menu manager.
  * Call addMenu to add menus
  */
-var PopupMenuManager = class {
+export class PopupMenuManager {
     constructor(owner, grabParams) {
         this._grabParams = Params.parse(grabParams,
-            { actionMode: Shell.ActionMode.POPUP });
-        global.stage.connect('notify::key-focus', () => {
-            if (!this.activeMenu)
-                return;
-
-            let actor = global.stage.get_key_focus();
-            let newMenu = this._findMenuForSource(actor);
-
-            if (newMenu)
-                this._changeMenu(newMenu);
-        });
+            {actionMode: Shell.ActionMode.POPUP});
         this._menus = [];
     }
 
@@ -1314,7 +1459,7 @@ var PopupMenuManager = class {
         menu.actor.connectObject('captured-event',
             this._onCapturedEvent.bind(this), this);
 
-        if (position == undefined)
+        if (position === undefined)
             this._menus.push(menu);
         else
             this._menus.splice(position, 0, menu);
@@ -1324,10 +1469,15 @@ var PopupMenuManager = class {
         if (menu === this.activeMenu) {
             Main.popModal(this._grab);
             this._grab = null;
+
+            if (this._keyFocusId) {
+                global.stage.disconnect(this._keyFocusId);
+                delete this._keyFocusId;
+            }
         }
 
         const position = this._menus.indexOf(menu);
-        if (position == -1) // not a menu we manage
+        if (position === -1) // not a menu we manage
             return;
 
         menu.disconnectObject(this);
@@ -1351,10 +1501,29 @@ var PopupMenuManager = class {
             oldMenu?.close(BoxPointer.PopupAnimation.FADE);
             if (oldGrab)
                 Main.popModal(oldGrab);
+
+            if (!this._keyFocusId) {
+                this._keyFocusId =
+                    global.stage.connect('notify::key-focus', () => {
+                        if (!this.activeMenu)
+                            return;
+
+                        let actor = global.stage.get_key_focus();
+                        let newMenu = this._findMenuForSource(actor);
+
+                        if (newMenu)
+                            this._changeMenu(newMenu);
+                    });
+            }
         } else if (this.activeMenu === menu) {
             this.activeMenu = null;
             Main.popModal(this._grab);
             this._grab = null;
+
+            if (this._keyFocusId) {
+                global.stage.disconnect(this._keyFocusId);
+                delete this._keyFocusId;
+            }
         }
     }
 
@@ -1412,4 +1581,4 @@ var PopupMenuManager = class {
         if (isUser)
             menu.close(BoxPointer.PopupAnimation.FULL);
     }
-};
+}

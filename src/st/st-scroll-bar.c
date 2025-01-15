@@ -21,16 +21,15 @@
  */
 
 /**
- * SECTION:st-scroll-bar
- * @short_description: a user interface element to control scrollable areas.
+ * StScrollBar:
+ *
+ * A user interface element to control scrollable areas.
  *
  * The #StScrollBar allows users to scroll scrollable actors, either by
  * the step or page amount, or by manually dragging the handle.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include <math.h>
 #include <clutter/clutter.h>
@@ -97,9 +96,9 @@ enum
 static guint signals[LAST_SIGNAL] = { 0, };
 
 static gboolean
-handle_button_press_event_cb (ClutterActor       *actor,
-                              ClutterButtonEvent *event,
-                              StScrollBar        *bar);
+handle_button_press_event_cb (ClutterActor *actor,
+                              ClutterEvent *event,
+                              StScrollBar  *bar);
 
 static void stop_scrolling (StScrollBar *bar);
 
@@ -462,25 +461,26 @@ adjust_with_direction (StAdjustment           *adj,
 }
 
 static gboolean
-st_scroll_bar_scroll_event (ClutterActor       *actor,
-                            ClutterScrollEvent *event)
+st_scroll_bar_scroll_event (ClutterActor *actor,
+                            ClutterEvent *event)
 {
   StScrollBarPrivate *priv = ST_SCROLL_BAR_PRIVATE (actor);
   ClutterTextDirection direction;
   ClutterScrollDirection scroll_dir;
 
-  if (clutter_event_is_pointer_emulated ((ClutterEvent *) event))
+  if (!!(clutter_event_get_flags (event) &
+         CLUTTER_EVENT_FLAG_POINTER_EMULATED))
     return TRUE;
 
   direction = clutter_actor_get_text_direction (actor);
-  scroll_dir = event->direction;
+  scroll_dir = clutter_event_get_scroll_direction (event);
 
   switch (scroll_dir)
     {
     case CLUTTER_SCROLL_SMOOTH:
       {
         gdouble delta_x, delta_y;
-        clutter_event_get_scroll_delta ((ClutterEvent *)event, &delta_x, &delta_y);
+        clutter_event_get_scroll_delta (event, &delta_x, &delta_y);
 
         if (direction == CLUTTER_TEXT_DIRECTION_RTL)
           delta_x *= -1;
@@ -532,7 +532,7 @@ st_scroll_bar_class_init (StScrollBarClass *klass)
    * The #StAdjustment controlling the #StScrollBar.
    */
   props[PROP_ADJUSTMENT] =
-    g_param_spec_object ("adjustment", "Adjustment", "The adjustment",
+    g_param_spec_object ("adjustment", NULL, NULL,
                          ST_TYPE_ADJUSTMENT,
                          ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -542,9 +542,7 @@ st_scroll_bar_class_init (StScrollBarClass *klass)
    * Whether the #StScrollBar is vertical. If %FALSE it is horizontal.
    */
   props[PROP_VERTICAL] =
-    g_param_spec_boolean ("vertical",
-                          "Vertical Orientation",
-                          "Vertical Orientation",
+    g_param_spec_boolean ("vertical", NULL, NULL,
                           FALSE,
                           ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -643,7 +641,7 @@ stop_scrolling (StScrollBar *bar)
   if (priv->grab)
     {
       clutter_grab_dismiss (priv->grab);
-      g_clear_pointer (&priv->grab, clutter_grab_unref);
+      g_clear_object (&priv->grab);
     }
 
   priv->grab_device = NULL;
@@ -651,24 +649,27 @@ stop_scrolling (StScrollBar *bar)
 }
 
 static gboolean
-handle_motion_event_cb (ClutterActor       *trough,
-                        ClutterMotionEvent *event,
-                        StScrollBar        *bar)
+handle_motion_event_cb (ClutterActor *trough,
+                        ClutterEvent *event,
+                        StScrollBar  *bar)
 {
   StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
+  graphene_point_t coords;
+
   if (!priv->grab_device)
     return FALSE;
 
-  move_slider (bar, event->x, event->y);
+  clutter_event_get_position (event, &coords);
+  move_slider (bar, coords.x, coords.y);
   return TRUE;
 }
 
 static gboolean
-handle_button_release_event_cb (ClutterActor       *trough,
-                                ClutterButtonEvent *event,
-                                StScrollBar        *bar)
+handle_button_release_event_cb (ClutterActor *trough,
+                                ClutterEvent *event,
+                                StScrollBar  *bar)
 {
-  if (event->button != 1)
+  if (clutter_event_get_button (event) != 1)
     return FALSE;
 
   stop_scrolling (bar);
@@ -676,20 +677,23 @@ handle_button_release_event_cb (ClutterActor       *trough,
 }
 
 static gboolean
-handle_button_press_event_cb (ClutterActor       *actor,
-                              ClutterButtonEvent *event,
-                              StScrollBar        *bar)
+handle_button_press_event_cb (ClutterActor *actor,
+                              ClutterEvent *event,
+                              StScrollBar  *bar)
 {
   StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
-  ClutterInputDevice *device = clutter_event_get_device ((ClutterEvent*) event);
+  ClutterInputDevice *device = clutter_event_get_device (event);
+  graphene_point_t coords;
   ClutterActor *stage;
 
-  if (event->button != 1)
+  if (clutter_event_get_button (event) != 1)
     return FALSE;
 
+  clutter_event_get_position (event, &coords);
+
   if (!clutter_actor_transform_stage_point (priv->handle,
-                                            event->x,
-                                            event->y,
+                                            coords.x,
+                                            coords.y,
                                             &priv->x_origin,
                                             &priv->y_origin))
     return FALSE;
@@ -831,23 +835,26 @@ trough_paging_cb (StScrollBar *self)
 }
 
 static gboolean
-trough_button_press_event_cb (ClutterActor       *actor,
-                              ClutterButtonEvent *event,
-                              StScrollBar        *self)
+trough_button_press_event_cb (ClutterActor *actor,
+                              ClutterEvent *event,
+                              StScrollBar  *self)
 {
   StScrollBarPrivate *priv;
+  graphene_point_t coords;
 
   g_return_val_if_fail (self, FALSE);
 
-  if (event->button != 1)
+  if (clutter_event_get_button (event) != 1)
     return FALSE;
 
   priv = st_scroll_bar_get_instance_private (self);
   if (priv->adjustment == NULL)
     return FALSE;
 
-  priv->move_x = event->x;
-  priv->move_y = event->y;
+  clutter_event_get_position (event, &coords);
+
+  priv->move_x = coords.x;
+  priv->move_y = coords.y;
   priv->paging_direction = NONE;
   priv->paging_event_no = 0;
   trough_paging_cb (self);
@@ -856,13 +863,13 @@ trough_button_press_event_cb (ClutterActor       *actor,
 }
 
 static gboolean
-trough_button_release_event_cb (ClutterActor       *actor,
-                                ClutterButtonEvent *event,
-                                StScrollBar        *self)
+trough_button_release_event_cb (ClutterActor *actor,
+                                ClutterEvent *event,
+                                StScrollBar  *self)
 {
   StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (self);
 
-  if (event->button != 1)
+  if (clutter_event_get_button (event) != 1)
     return FALSE;
 
   g_clear_handle_id (&priv->paging_source_id, g_source_remove);

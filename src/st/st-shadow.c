@@ -27,16 +27,6 @@ G_DEFINE_BOXED_TYPE (StShadow, st_shadow, st_shadow_ref, st_shadow_unref)
 G_DEFINE_BOXED_TYPE (StShadowHelper, st_shadow_helper, st_shadow_helper_copy, st_shadow_helper_free)
 
 /**
- * SECTION: st-shadow
- * @short_description: Boxed type for -st-shadow attributes
- *
- * #StShadow is a boxed type for storing attributes of the -st-shadow
- * property, modelled liberally after the CSS3 box-shadow property.
- * See http://www.css3.info/preview/box-shadow/
- *
- */
-
-/**
  * st_shadow_new:
  * @color: shadow's color
  * @xoffset: horizontal offset
@@ -50,7 +40,7 @@ G_DEFINE_BOXED_TYPE (StShadowHelper, st_shadow_helper, st_shadow_helper_copy, st
  * Returns: the newly allocated shadow. Use st_shadow_free() when done
  */
 StShadow *
-st_shadow_new (ClutterColor *color,
+st_shadow_new (CoglColor    *color,
                gdouble       xoffset,
                gdouble       yoffset,
                gdouble       blur,
@@ -59,7 +49,7 @@ st_shadow_new (ClutterColor *color,
 {
   StShadow *shadow;
 
-  shadow = g_new (StShadow, 1);
+  shadow = g_atomic_rc_box_new (StShadow);
 
   shadow->color     = *color;
   shadow->xoffset   = xoffset;
@@ -67,7 +57,6 @@ st_shadow_new (ClutterColor *color,
   shadow->blur      = blur;
   shadow->spread    = spread;
   shadow->inset     = inset;
-  shadow->ref_count = 1;
 
   return shadow;
 }
@@ -84,10 +73,8 @@ StShadow *
 st_shadow_ref (StShadow *shadow)
 {
   g_return_val_if_fail (shadow != NULL, NULL);
-  g_return_val_if_fail (shadow->ref_count > 0, shadow);
 
-  g_atomic_int_inc (&shadow->ref_count);
-  return shadow;
+  return g_atomic_rc_box_acquire (shadow);
 }
 
 /**
@@ -102,10 +89,8 @@ void
 st_shadow_unref (StShadow *shadow)
 {
   g_return_if_fail (shadow != NULL);
-  g_return_if_fail (shadow->ref_count > 0);
 
-  if (g_atomic_int_dec_and_test (&shadow->ref_count))
-    g_free (shadow);
+  g_atomic_rc_box_release (shadow);
 }
 
 /**
@@ -135,7 +120,7 @@ st_shadow_equal (StShadow *shadow,
    * that a few false negatives are mostly harmless.
    */
 
-  return (clutter_color_equal (&shadow->color, &other->color) &&
+  return (cogl_color_equal (&shadow->color, &other->color) &&
           shadow->xoffset == other->xoffset &&
           shadow->yoffset == other->yoffset &&
           shadow->blur == other->blur &&
@@ -183,9 +168,9 @@ st_shadow_get_box (StShadow              *shadow,
 }
 
 /**
- * SECTION: st-shadow-helper
+ * StShadowHelper:
  *
- * An helper for implementing a drop shadow on a actor.
+ * A helper for implementing a drop shadow on a actor.
  * The actor is expected to recreate the helper whenever its contents
  * or size change. Then, it would call st_shadow_helper_paint() inside
  * its paint() virtual function.
@@ -223,12 +208,14 @@ st_shadow_helper_new (StShadow     *shadow)
  * st_shadow_helper_update:
  * @helper: a #StShadowHelper
  * @source: a #ClutterActor
+ * @paint_context: a #ClutterPaintContext
  *
  * Update @helper from @source.
  */
 void
-st_shadow_helper_update (StShadowHelper *helper,
-                         ClutterActor   *source)
+st_shadow_helper_update (StShadowHelper      *helper,
+                         ClutterActor        *source,
+                         ClutterPaintContext *paint_context)
 {
   gfloat width, height;
 
@@ -239,9 +226,11 @@ st_shadow_helper_update (StShadowHelper *helper,
       helper->height != height)
     {
       if (helper->pipeline)
-        cogl_object_unref (helper->pipeline);
+        g_object_unref (helper->pipeline);
 
-      helper->pipeline = _st_create_shadow_pipeline_from_actor (helper->shadow, source);
+      helper->pipeline = _st_create_shadow_pipeline_from_actor (helper->shadow,
+                                                                source,
+                                                                paint_context);
       helper->width = width;
       helper->height = height;
     }
@@ -261,7 +250,7 @@ st_shadow_helper_copy (StShadowHelper *helper)
   copy = g_new (StShadowHelper, 1);
   *copy = *helper;
   if (copy->pipeline)
-    cogl_object_ref (copy->pipeline);
+    g_object_ref (copy->pipeline);
   st_shadow_ref (copy->shadow);
 
   return copy;
@@ -277,7 +266,7 @@ void
 st_shadow_helper_free (StShadowHelper *helper)
 {
   if (helper->pipeline)
-    cogl_object_unref (helper->pipeline);
+    g_object_unref (helper->pipeline);
   st_shadow_unref (helper->shadow);
 
   g_free (helper);
@@ -286,7 +275,7 @@ st_shadow_helper_free (StShadowHelper *helper)
 /**
  * st_shadow_helper_paint:
  * @helper: a #StShadowHelper
- * @framebuffer: a #CoglFramebuffer
+ * @node: a #ClutterPaintNode
  * @actor_box: the bounding box of the shadow
  * @paint_opacity: the opacity at which the shadow is painted
  *
@@ -294,13 +283,13 @@ st_shadow_helper_free (StShadowHelper *helper)
  * be called from the implementation of ClutterActor::paint().
  */
 void
-st_shadow_helper_paint (StShadowHelper  *helper,
-                        CoglFramebuffer *framebuffer,
-                        ClutterActorBox *actor_box,
-                        guint8           paint_opacity)
+st_shadow_helper_paint (StShadowHelper   *helper,
+                        ClutterPaintNode *node,
+                        ClutterActorBox  *actor_box,
+                        uint8_t           paint_opacity)
 {
   _st_paint_shadow_with_opacity (helper->shadow,
-                                 framebuffer,
+                                 node,
                                  helper->pipeline,
                                  actor_box,
                                  paint_opacity);

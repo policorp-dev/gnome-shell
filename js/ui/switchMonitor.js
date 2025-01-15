@@ -1,19 +1,19 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported SwitchMonitorPopup */
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import Meta from 'gi://Meta';
+import St from 'gi://St';
 
-const { Clutter, GObject, Meta, St } = imports.gi;
+import * as SwitcherPopup from './switcherPopup.js';
 
-const SwitcherPopup = imports.ui.switcherPopup;
+const APP_ICON_SIZE = 96;
 
-var APP_ICON_SIZE = 96;
-
-var SwitchMonitorPopup = GObject.registerClass(
+export const SwitchMonitorPopup = GObject.registerClass(
 class SwitchMonitorPopup extends SwitcherPopup.SwitcherPopup {
     _init() {
         let items = [];
 
         items.push({
-            icon: 'view-mirror-symbolic',
+            icon: 'shell-display-mirror-symbolic',
             /* Translators: this is for display mirroring i.e. cloning.
              * Try to keep it under around 15 characters.
              */
@@ -22,7 +22,7 @@ class SwitchMonitorPopup extends SwitcherPopup.SwitcherPopup {
         });
 
         items.push({
-            icon: 'video-joined-displays-symbolic',
+            icon: 'shell-display-extend-all-symbolic',
             /* Translators: this is for the desktop spanning displays.
              * Try to keep it under around 15 characters.
              */
@@ -32,15 +32,15 @@ class SwitchMonitorPopup extends SwitcherPopup.SwitcherPopup {
 
         if (global.backend.get_monitor_manager().has_builtin_panel) {
             items.push({
-                icon: 'video-single-display-symbolic',
-                /* Translators: this is for using only an external display.
+                icon: 'shell-display-external-only-symbolic',
+                /* Translators: this is for using only external displays.
                  * Try to keep it under around 15 characters.
                  */
                 label: _('External Only'),
                 configType: Meta.MonitorSwitchConfigType.EXTERNAL,
             });
             items.push({
-                icon: 'computer-symbolic',
+                icon: 'shell-display-built-in-only-symbolic',
                 /* Translators: this is for using only the laptop display.
                  * Try to keep it under around 15 characters.
                  */
@@ -55,24 +55,24 @@ class SwitchMonitorPopup extends SwitcherPopup.SwitcherPopup {
     }
 
     show(backward, binding, mask) {
-        if (!Meta.MonitorManager.get().can_switch_config())
+        if (!global.backend.get_monitor_manager().can_switch_config())
             return false;
 
         return super.show(backward, binding, mask);
     }
 
     _initialSelection() {
-        let currentConfig = Meta.MonitorManager.get().get_switch_config();
+        let currentConfig = global.backend.get_monitor_manager().get_switch_config();
         let selectConfig = (currentConfig + 1) % this._items.length;
         this._select(selectConfig);
     }
 
     _keyPressHandler(keysym, action) {
-        if (action == Meta.KeyBindingAction.SWITCH_MONITOR)
+        if (action === Meta.KeyBindingAction.SWITCH_MONITOR)
             this._select(this._next());
-        else if (keysym == Clutter.KEY_Left)
+        else if (keysym === Clutter.KEY_Left)
             this._select(this._previous());
-        else if (keysym == Clutter.KEY_Right)
+        else if (keysym === Clutter.KEY_Right)
             this._select(this._next());
         else
             return Clutter.EVENT_PROPAGATE;
@@ -90,7 +90,7 @@ class SwitchMonitorPopup extends SwitcherPopup.SwitcherPopup {
     }
 });
 
-var SwitchMonitorSwitcher = GObject.registerClass(
+const SwitchMonitorSwitcher = GObject.registerClass(
 class SwitchMonitorSwitcher extends SwitcherPopup.SwitcherList {
     _init(items) {
         super._init(true);

@@ -1,20 +1,20 @@
-/* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
-/* exported BarLevel */
+import Atk from 'gi://Atk';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
 
-const { Atk, Clutter, GObject, St } = imports.gi;
-
-var BarLevel = GObject.registerClass({
+export const BarLevel = GObject.registerClass({
     Properties: {
         'value': GObject.ParamSpec.double(
-            'value', 'value', 'value',
+            'value', null, null,
             GObject.ParamFlags.READWRITE,
             0, 2, 0),
         'maximum-value': GObject.ParamSpec.double(
-            'maximum-value', 'maximum-value', 'maximum-value',
+            'maximum-value', null, null,
             GObject.ParamFlags.READWRITE,
             1, 2, 1),
         'overdrive-start': GObject.ParamSpec.double(
-            'overdrive-start', 'overdrive-start', 'overdrive-start',
+            'overdrive-start', null, null,
             GObject.ParamFlags.READWRITE,
             1, 2, 1),
     },
@@ -24,12 +24,19 @@ var BarLevel = GObject.registerClass({
         this._value = 0;
         this._overdriveStart = 1;
         this._barLevelWidth = 0;
+        this._barLevelHeight = 0;
 
-        let defaultParams = {
+        this._overdriveSeparatorWidth = 0;
+
+        this._barLevelColor = null;
+        this._barLevelActiveColor = null;
+        this._barLevelOverdriveColor = null;
+
+        super._init({
             style_class: 'barlevel',
             accessible_role: Atk.Role.LEVEL_BAR,
-        };
-        super._init(Object.assign(defaultParams, params));
+            ...params,
+        });
         this.connect('notify::allocation', () => {
             this._barLevelWidth = this.allocation.get_width();
         });
@@ -52,7 +59,7 @@ var BarLevel = GObject.registerClass({
     set value(value) {
         value = Math.max(Math.min(value, this._maxValue), 0);
 
-        if (this._value == value)
+        if (this._value === value)
             return;
 
         this._value = value;
@@ -67,7 +74,7 @@ var BarLevel = GObject.registerClass({
     set maximumValue(value) {
         value = Math.max(value, 1);
 
-        if (this._maxValue == value)
+        if (this._maxValue === value)
             return;
 
         this._maxValue = value;
@@ -81,7 +88,7 @@ var BarLevel = GObject.registerClass({
     }
 
     set overdriveStart(value) {
-        if (this._overdriveStart == value)
+        if (this._overdriveStart === value)
             return;
 
         if (value > this._maxValue) {
@@ -94,33 +101,27 @@ var BarLevel = GObject.registerClass({
         this.queue_repaint();
     }
 
+    vfunc_style_changed() {
+        const themeNode = this.get_theme_node();
+        this._barLevelHeight = themeNode.get_length('-barlevel-height');
+        this._overdriveSeparatorWidth =
+            themeNode.get_length('-barlevel-overdrive-separator-width');
+
+        this._barLevelColor = themeNode.get_color('-barlevel-background-color');
+        this._barLevelActiveColor = themeNode.get_color('-barlevel-active-background-color');
+        this._barLevelOverdriveColor = themeNode.get_color('-barlevel-overdrive-color');
+
+        super.vfunc_style_changed();
+    }
+
     vfunc_repaint() {
         let cr = this.get_context();
         let themeNode = this.get_theme_node();
         let [width, height] = this.get_surface_size();
         const rtl = this.get_text_direction() === Clutter.TextDirection.RTL;
 
-        let barLevelHeight = themeNode.get_length('-barlevel-height');
-        let barLevelBorderRadius = Math.min(width, barLevelHeight) / 2;
+        const barLevelBorderRadius = Math.min(width, this._barLevelHeight) / 2;
         let fgColor = themeNode.get_foreground_color();
-
-        let barLevelColor = themeNode.get_color('-barlevel-background-color');
-        let barLevelActiveColor = themeNode.get_color('-barlevel-active-background-color');
-        let barLevelOverdriveColor = themeNode.get_color('-barlevel-overdrive-color');
-
-        let barLevelBorderWidth = Math.min(themeNode.get_length('-barlevel-border-width'), 1);
-        let [hasBorderColor, barLevelBorderColor] =
-            themeNode.lookup_color('-barlevel-border-color', false);
-        if (!hasBorderColor)
-            barLevelBorderColor = barLevelColor;
-        let [hasActiveBorderColor, barLevelActiveBorderColor] =
-            themeNode.lookup_color('-barlevel-active-border-color', false);
-        if (!hasActiveBorderColor)
-            barLevelActiveBorderColor = barLevelActiveColor;
-        let [hasOverdriveBorderColor, barLevelOverdriveBorderColor] =
-            themeNode.lookup_color('-barlevel-overdrive-border-color', false);
-        if (!hasOverdriveBorderColor)
-            barLevelOverdriveBorderColor = barLevelOverdriveColor;
 
         const TAU = Math.PI * 2;
 
@@ -138,11 +139,10 @@ var BarLevel = GObject.registerClass({
         let overdriveSeparatorX = barLevelBorderRadius + (width - 2 * barLevelBorderRadius) * overdriveRatio;
 
         let overdriveActive = this._overdriveStart !== this._maxValue;
-        let overdriveSeparatorWidth = 0;
-        if (overdriveActive)
-            overdriveSeparatorWidth = themeNode.get_length('-barlevel-overdrive-separator-width');
+        const overdriveSeparatorWidth = overdriveActive
+            ? this._overdriveSeparatorWidth : 0;
 
-        let xcArcStart = barLevelBorderRadius + barLevelBorderWidth;
+        let xcArcStart = barLevelBorderRadius;
         let xcArcEnd = width - xcArcStart;
         if (rtl)
             [xcArcStart, xcArcEnd] = [xcArcEnd, xcArcStart];
@@ -152,14 +152,12 @@ var BarLevel = GObject.registerClass({
             cr.arc(xcArcEnd, height / 2, barLevelBorderRadius, TAU * (3 / 4), TAU * (1 / 4));
         else
             cr.arcNegative(xcArcEnd, height / 2, barLevelBorderRadius, TAU * (3 / 4), TAU * (1 / 4));
-        cr.lineTo(endX, (height + barLevelHeight) / 2);
-        cr.lineTo(endX, (height - barLevelHeight) / 2);
-        cr.lineTo(xcArcEnd, (height - barLevelHeight) / 2);
-        Clutter.cairo_set_source_color(cr, barLevelColor);
+        cr.lineTo(endX, (height + this._barLevelHeight) / 2);
+        cr.lineTo(endX, (height - this._barLevelHeight) / 2);
+        cr.lineTo(xcArcEnd, (height - this._barLevelHeight) / 2);
+        cr.setSourceColor(this._barLevelColor);
         cr.fillPreserve();
-        Clutter.cairo_set_source_color(cr, barLevelBorderColor);
-        cr.setLineWidth(barLevelBorderWidth);
-        cr.stroke();
+        cr.fill();
 
         /* normal progress bar */
         let x = 0;
@@ -170,15 +168,13 @@ var BarLevel = GObject.registerClass({
             x = Math.max(endX, overdriveSeparatorX + overdriveSeparatorWidth / 2);
             cr.arcNegative(xcArcStart, height / 2, barLevelBorderRadius, TAU * (1 / 4), TAU * (3 / 4));
         }
-        cr.lineTo(x, (height - barLevelHeight) / 2);
-        cr.lineTo(x, (height + barLevelHeight) / 2);
-        cr.lineTo(xcArcStart, (height + barLevelHeight) / 2);
+        cr.lineTo(x, (height - this._barLevelHeight) / 2);
+        cr.lineTo(x, (height + this._barLevelHeight) / 2);
+        cr.lineTo(xcArcStart, (height + this._barLevelHeight) / 2);
         if (this._value > 0)
-            Clutter.cairo_set_source_color(cr, barLevelActiveColor);
+            cr.setSourceColor(this._barLevelActiveColor);
         cr.fillPreserve();
-        Clutter.cairo_set_source_color(cr, barLevelActiveBorderColor);
-        cr.setLineWidth(barLevelBorderWidth);
-        cr.stroke();
+        cr.fill();
 
         /* overdrive progress barLevel */
         if (!rtl)
@@ -186,54 +182,70 @@ var BarLevel = GObject.registerClass({
         else
             x = Math.max(endX, overdriveSeparatorX) - overdriveSeparatorWidth / 2;
         if (this._value > this._overdriveStart) {
-            cr.moveTo(x, (height - barLevelHeight) / 2);
-            cr.lineTo(endX, (height - barLevelHeight) / 2);
-            cr.lineTo(endX, (height + barLevelHeight) / 2);
-            cr.lineTo(x, (height + barLevelHeight) / 2);
-            cr.lineTo(x, (height - barLevelHeight) / 2);
-            Clutter.cairo_set_source_color(cr, barLevelOverdriveColor);
+            cr.moveTo(x, (height - this._barLevelHeight) / 2);
+            cr.lineTo(endX, (height - this._barLevelHeight) / 2);
+            cr.lineTo(endX, (height + this._barLevelHeight) / 2);
+            cr.lineTo(x, (height + this._barLevelHeight) / 2);
+            cr.lineTo(x, (height - this._barLevelHeight) / 2);
+            cr.setSourceColor(this._barLevelOverdriveColor);
             cr.fillPreserve();
-            Clutter.cairo_set_source_color(cr, barLevelOverdriveBorderColor);
-            cr.setLineWidth(barLevelBorderWidth);
-            cr.stroke();
+            cr.fill();
         }
 
         /* end progress bar arc */
         if (this._value > 0) {
             if (this._value <= this._overdriveStart)
-                Clutter.cairo_set_source_color(cr, barLevelActiveColor);
+                cr.setSourceColor(this._barLevelActiveColor);
             else
-                Clutter.cairo_set_source_color(cr, barLevelOverdriveColor);
+                cr.setSourceColor(this._barLevelOverdriveColor);
             if (!rtl) {
                 cr.arc(endX, height / 2, barLevelBorderRadius, TAU * (3 / 4), TAU * (1 / 4));
-                cr.lineTo(Math.floor(endX), (height + barLevelHeight) / 2);
-                cr.lineTo(Math.floor(endX), (height - barLevelHeight) / 2);
+                cr.lineTo(Math.floor(endX), (height + this._barLevelHeight) / 2);
+                cr.lineTo(Math.floor(endX), (height - this._barLevelHeight) / 2);
             } else {
                 cr.arcNegative(endX, height / 2, barLevelBorderRadius, TAU * (3 / 4), TAU * (1 / 4));
-                cr.lineTo(Math.ceil(endX), (height + barLevelHeight) / 2);
-                cr.lineTo(Math.ceil(endX), (height - barLevelHeight) / 2);
+                cr.lineTo(Math.ceil(endX), (height + this._barLevelHeight) / 2);
+                cr.lineTo(Math.ceil(endX), (height - this._barLevelHeight) / 2);
             }
-            cr.lineTo(endX, (height - barLevelHeight) / 2);
+            cr.lineTo(endX, (height - this._barLevelHeight) / 2);
             cr.fillPreserve();
-            cr.setLineWidth(barLevelBorderWidth);
-            cr.stroke();
         }
 
         /* draw overdrive separator */
         if (overdriveActive) {
-            cr.moveTo(overdriveSeparatorX - overdriveSeparatorWidth / 2, (height - barLevelHeight) / 2);
-            cr.lineTo(overdriveSeparatorX + overdriveSeparatorWidth / 2, (height - barLevelHeight) / 2);
-            cr.lineTo(overdriveSeparatorX + overdriveSeparatorWidth / 2, (height + barLevelHeight) / 2);
-            cr.lineTo(overdriveSeparatorX - overdriveSeparatorWidth / 2, (height + barLevelHeight) / 2);
-            cr.lineTo(overdriveSeparatorX - overdriveSeparatorWidth / 2, (height - barLevelHeight) / 2);
+            cr.moveTo(overdriveSeparatorX - overdriveSeparatorWidth / 2, (height - this._barLevelHeight) / 2);
+            cr.lineTo(overdriveSeparatorX + overdriveSeparatorWidth / 2, (height - this._barLevelHeight) / 2);
+            cr.lineTo(overdriveSeparatorX + overdriveSeparatorWidth / 2, (height + this._barLevelHeight) / 2);
+            cr.lineTo(overdriveSeparatorX - overdriveSeparatorWidth / 2, (height + this._barLevelHeight) / 2);
+            cr.lineTo(overdriveSeparatorX - overdriveSeparatorWidth / 2, (height - this._barLevelHeight) / 2);
             if (this._value <= this._overdriveStart)
-                Clutter.cairo_set_source_color(cr, fgColor);
+                cr.setSourceColor(fgColor);
             else
-                Clutter.cairo_set_source_color(cr, barLevelColor);
+                cr.setSourceColor(this._barLevelColor);
             cr.fill();
         }
 
         cr.$dispose();
+    }
+
+    vfunc_get_preferred_height(_forWidth) {
+        const themeNode = this.get_theme_node();
+        const height = this._getPreferredHeight();
+        return themeNode.adjust_preferred_height(height, height);
+    }
+
+    vfunc_get_preferred_width(_forHeight) {
+        const themeNode = this.get_theme_node();
+        const width = this._getPreferredWidth();
+        return themeNode.adjust_preferred_width(width, width);
+    }
+
+    _getPreferredHeight() {
+        return this._barLevelHeight;
+    }
+
+    _getPreferredWidth() {
+        return this._overdriveSeparatorWidth;
     }
 
     _getCurrentValue() {
@@ -257,6 +269,6 @@ var BarLevel = GObject.registerClass({
     }
 
     _valueChanged() {
-        this._customAccessible.notify("accessible-value");
+        this._customAccessible.notify('accessible-value');
     }
 });

@@ -31,10 +31,10 @@ extension_state_to_string (ExtensionState state)
 {
   switch (state)
     {
-    case STATE_ENABLED:
-      return "ENABLED";
-    case STATE_DISABLED:
-      return "DISABLED";
+    case STATE_ACTIVE:
+      return "ACTIVE";
+    case STATE_INACTIVE:
+      return "INACTIVE";
     case STATE_ERROR:
       return "ERROR";
     case STATE_OUT_OF_DATE:
@@ -43,6 +43,10 @@ extension_state_to_string (ExtensionState state)
       return "DOWNLOADING";
     case STATE_INITIALIZED:
       return "INITIALIZED";
+    case STATE_DEACTIVATING:
+      return "DEACTIVATING";
+    case STATE_ACTIVATING:
+      return "ACTIVATING";
     case STATE_UNINSTALLED:
       return "UNINSTALLED";
     }
@@ -225,8 +229,9 @@ void
 print_extension_info (GVariantDict  *info,
                       DisplayFormat  format)
 {
-  const char *uuid, *name, *desc, *path, *url, *author;
+  const char *uuid, *name, *desc, *path, *url, *author, *version_name;
   double state, version;
+  gboolean has_version, has_version_name, enabled;
 
   g_variant_dict_lookup (info, "uuid", "&s", &uuid);
   g_print ("%s\n", uuid);
@@ -249,8 +254,18 @@ print_extension_info (GVariantDict  *info,
   if (g_variant_dict_lookup (info, "original-author", "&s", &author))
     g_print ("  %s: %s\n", _("Original author"), author);
 
-  if (g_variant_dict_lookup (info, "version", "d", &version))
+  has_version = g_variant_dict_lookup (info, "version", "d", &version);
+  has_version_name = g_variant_dict_lookup (info, "version-name", "&s", &version_name);
+
+  if (has_version_name && has_version)
+    g_print ("  %s: %s (%.0f)\n", _("Version"), version_name, version);
+  else if (has_version_name)
+    g_print ("  %s: %s\n", _("Version"), version_name);
+  else if (has_version)
     g_print ("  %s: %.0f\n", _("Version"), version);
+
+  g_variant_dict_lookup (info, "enabled", "b", &enabled);
+  g_print ("  %s: %s\n", _("Enabled"), enabled ? _("Yes") : _("No"));
 
   g_variant_dict_lookup (info, "state", "d", &state);
   g_print ("  %s: %s\n", _("State"), extension_state_to_string (state));

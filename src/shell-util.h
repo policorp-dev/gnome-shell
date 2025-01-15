@@ -1,7 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
-#ifndef __SHELL_UTIL_H__
-#define __SHELL_UTIL_H__
+#pragma once
 
 #include <gio/gio.h>
 #include <clutter/clutter.h>
@@ -46,14 +45,6 @@ GdkPixbuf *shell_util_create_pixbuf_from_data (const guchar      *data,
                                                int                height,
                                                int                rowstride);
 
-cairo_surface_t * shell_util_composite_capture_images (ClutterCapture  *captures,
-                                                       int              n_captures,
-                                                       int              x,
-                                                       int              y,
-                                                       int              target_width,
-                                                       int              target_height,
-                                                       float            target_scale);
-
 void shell_util_check_cloexec_fds (void);
 
 void   shell_util_start_systemd_unit          (const char           *unit,
@@ -88,6 +79,43 @@ char *shell_util_get_translated_folder_name (const char *name);
 
 gint shell_util_get_uid (void);
 
-G_END_DECLS
+GPid shell_util_spawn_async_with_pipes_and_fds (const char          *working_directory,
+                                                const char * const  *argv,
+                                                const char * const  *envp,
+                                                GSpawnFlags          flags,
+                                                int                  stdin_fd,
+                                                int                  stdout_fd,
+                                                int                  stderr_fd,
+                                                const int           *source_fds,
+                                                const int           *target_fds,
+                                                size_t               n_fds,
+                                                int                 *stdin_pipe_out,
+                                                int                 *stdout_pipe_out,
+                                                int                 *stderr_pipe_out,
+                                                GError             **error);
 
-#endif /* __SHELL_UTIL_H__ */
+GPid shell_util_spawn_async_with_pipes (const char          *working_directory,
+                                        const char * const  *argv,
+                                        const char * const  *envp,
+                                        GSpawnFlags          flags,
+                                        int                 *standard_input,
+                                        int                 *standard_output,
+                                        int                 *standard_error,
+                                        GError             **error);
+
+GPid shell_util_spawn_async_with_fds (const char          *working_directory,
+                                      const char * const  *argv,
+                                      const char * const  *envp,
+                                      GSpawnFlags          flags,
+                                      int                  stdin_fd,
+                                      int                  stdout_fd,
+                                      int                  stderr_fd,
+                                      GError             **error);
+
+GPid shell_util_spawn_async (const char          *working_directory,
+                             const char * const  *argv,
+                             const char * const  *envp,
+                             GSpawnFlags          flags,
+                             GError             **error);
+
+G_END_DECLS

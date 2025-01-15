@@ -4,6 +4,7 @@
 
 #include "shell-global.h"
 #include <meta/meta-workspace-manager.h>
+#include <mtk/mtk.h>
 
 #define BACKGROUND_MARGIN 12
 
@@ -27,8 +28,8 @@ struct _ShellWorkspaceBackground
   int monitor_index;
   double state_adjustment_value;
 
-  MetaRectangle work_area;
-  MetaRectangle monitor_geometry;
+  MtkRectangle work_area;
+  MtkRectangle monitor_geometry;
 };
 
 G_DEFINE_TYPE (ShellWorkspaceBackground, shell_workspace_background, ST_TYPE_WIDGET);
@@ -194,7 +195,7 @@ shell_workspace_background_class_init (ShellWorkspaceBackgroundClass *klass)
    * ShellWorkspaceBackground:monitor-index:
    */
   obj_props[PROP_MONITOR_INDEX] =
-    g_param_spec_int ("monitor-index", "", "",
+    g_param_spec_int ("monitor-index", NULL, NULL,
                       0, G_MAXINT, 0,
                       G_PARAM_READWRITE |
                       G_PARAM_CONSTRUCT_ONLY |
@@ -205,7 +206,7 @@ shell_workspace_background_class_init (ShellWorkspaceBackgroundClass *klass)
    * ShellWorkspaceBackground:state-adjustment-value:
    */
   obj_props[PROP_STATE_ADJUSTMENT_VALUE] =
-    g_param_spec_double ("state-adjustment-value", "", "",
+    g_param_spec_double ("state-adjustment-value", NULL, NULL,
                          -G_MAXDOUBLE, G_MAXDOUBLE, 0.0,
                          G_PARAM_READWRITE |
                          G_PARAM_STATIC_STRINGS |

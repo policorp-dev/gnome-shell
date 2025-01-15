@@ -1,30 +1,28 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported Component */
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import * as Params from '../../misc/params.js';
 
-const { Gio, GLib } = imports.gi;
-const Params = imports.misc.params;
+import * as GnomeSession from '../../misc/gnomeSession.js';
+import * as Main from '../main.js';
+import * as ShellMountOperation from '../shellMountOperation.js';
 
-const GnomeSession = imports.misc.gnomeSession;
-const Main = imports.ui.main;
-const ShellMountOperation = imports.ui.shellMountOperation;
-
-var GNOME_SESSION_AUTOMOUNT_INHIBIT = 16;
+const GNOME_SESSION_AUTOMOUNT_INHIBIT = 16;
 
 // GSettings keys
 const SETTINGS_SCHEMA = 'org.gnome.desktop.media-handling';
 const SETTING_ENABLE_AUTOMOUNT = 'automount';
 
-var AUTORUN_EXPIRE_TIMEOUT_SECS = 10;
+const AUTORUN_EXPIRE_TIMEOUT_SECS = 10;
 
-var AutomountManager = class {
+class AutomountManager {
     constructor() {
-        this._settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
+        this._settings = new Gio.Settings({schema_id: SETTINGS_SCHEMA});
         this._activeOperations = new Map();
         this._session = new GnomeSession.SessionManager();
         this._session.connectSignal('InhibitorAdded',
-                                    this._InhibitorsChanged.bind(this));
+            this._InhibitorsChanged.bind(this));
         this._session.connectSignal('InhibitorRemoved',
-                                    this._InhibitorsChanged.bind(this));
+            this._InhibitorsChanged.bind(this));
         this._inhibited = false;
 
         this._volumeMonitor = Gio.VolumeMonitor.get();
@@ -81,8 +79,8 @@ var AutomountManager = class {
 
         let player = global.display.get_sound_player();
         player.play_from_theme('device-added-media',
-                               _("External drive connected"),
-                               null);
+            _('External drive connected'),
+            null);
     }
 
     _onDriveDisconnected() {
@@ -93,8 +91,8 @@ var AutomountManager = class {
 
         let player = global.display.get_sound_player();
         player.play_from_theme('device-removed-media',
-                               _("External drive disconnected"),
-                               null);
+            _('External drive disconnected'),
+            null);
     }
 
     _onDriveEjectButton(monitor, drive) {
@@ -180,7 +178,7 @@ var AutomountManager = class {
         this._activeOperations.set(volume, operation);
 
         volume.mount(0, mountOp, null,
-                     this._onVolumeMounted.bind(this));
+            this._onVolumeMounted.bind(this));
     }
 
     _onVolumeMounted(volume, res) {
@@ -199,13 +197,16 @@ var AutomountManager = class {
                 e.message.includes('No key available to unlock device') ||     // udisks (no password)
                 // libblockdev wrong password opening LUKS device
                 e.message.includes('Failed to activate device: Incorrect passphrase') ||
-                // cryptsetup returns EINVAL in many cases, including wrong TCRYPT password/parameters
-                e.message.includes('Failed to load device\'s parameters: Invalid argument')) {
+                // cryptsetup returns EINVAL (< v2.5.0) or EPERM (>= v2.5.0)
+                // when the TCRYPT header can't be decrypted with the provided
+                // password/parameters.
+                e.message.includes('Failed to load device\'s parameters: Invalid argument') ||
+                e.message.includes('Failed to load device\'s parameters: Operation not permitted')) {
                 this._reaskPassword(volume);
             } else {
                 if (e.message.includes('Compiled against a version of libcryptsetup that does not support the VeraCrypt PIM setting')) {
-                    Main.notifyError(_("Unable to unlock volume"),
-                        _("The installed udisks version does not support the PIM setting"));
+                    Main.notifyError(_('Unable to unlock volume'),
+                        _('The installed udisks version does not support the PIM setting'));
                 }
 
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.FAILED_HANDLED))
@@ -226,8 +227,7 @@ var AutomountManager = class {
         let prevOperation = this._activeOperations.get(volume);
         const existingDialog = prevOperation?.borrowDialog();
         let operation =
-            new ShellMountOperation.ShellMountOperation(volume,
-                                                        { existingDialog });
+            new ShellMountOperation.ShellMountOperation(volume, {existingDialog});
         this._mountVolume(volume, operation);
     }
 
@@ -252,5 +252,6 @@ var AutomountManager = class {
         volume._allowAutorunExpireId = id;
         GLib.Source.set_name_by_id(id, '[gnome-shell] volume.allowAutorun');
     }
-};
-var Component = AutomountManager;
+}
+
+export {AutomountManager as Component};

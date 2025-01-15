@@ -31,12 +31,7 @@
 StIconColors *
 st_icon_colors_new (void)
 {
-  StIconColors *colors;
-
-  colors = g_new0 (StIconColors, 1);
-  colors->ref_count = 1;
-
-  return colors;
+  return g_atomic_rc_box_new0 (StIconColors);
 }
 
 /**
@@ -51,10 +46,8 @@ StIconColors *
 st_icon_colors_ref (StIconColors *colors)
 {
   g_return_val_if_fail (colors != NULL, NULL);
-  g_return_val_if_fail (colors->ref_count > 0, colors);
 
-  g_atomic_int_inc ((volatile int *)&colors->ref_count);
-  return colors;
+  return g_atomic_rc_box_acquire (colors);
 }
 
 /**
@@ -69,10 +62,8 @@ void
 st_icon_colors_unref (StIconColors *colors)
 {
   g_return_if_fail (colors != NULL);
-  g_return_if_fail (colors->ref_count > 0);
 
-  if (g_atomic_int_dec_and_test ((volatile int *)&colors->ref_count))
-    g_free (colors);
+  g_atomic_rc_box_release (colors);
 }
 
 /**
@@ -121,10 +112,10 @@ st_icon_colors_equal (StIconColors *colors,
   if (colors == NULL || other == NULL)
     return FALSE;
 
-  return clutter_color_equal (&colors->foreground, &other->foreground) &&
-         clutter_color_equal (&colors->warning, &other->warning) &&
-         clutter_color_equal (&colors->error, &other->error) &&
-         clutter_color_equal (&colors->success, &other->success);
+  return cogl_color_equal (&colors->foreground, &other->foreground) &&
+         cogl_color_equal (&colors->warning, &other->warning) &&
+         cogl_color_equal (&colors->error, &other->error) &&
+         cogl_color_equal (&colors->success, &other->success);
 }
 
 G_DEFINE_BOXED_TYPE (StIconColors,

@@ -1,14 +1,20 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported ScreenshotService, ScreenshotUI, showScreenshotUI, captureScreenshot */
+import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import GLib from 'gi://GLib';
+import Graphene from 'gi://Graphene';
+import Meta from 'gi://Meta';
+import Mtk from 'gi://Mtk';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
-const { Clutter, Cogl, Gio, GObject, GLib, Graphene, Gtk, Meta, Shell, St } = imports.gi;
-
-const GrabHelper = imports.ui.grabHelper;
-const Layout = imports.ui.layout;
-const Lightbox = imports.ui.lightbox;
-const Main = imports.ui.main;
-const MessageTray = imports.ui.messageTray;
-const Workspace = imports.ui.workspace;
+import * as GrabHelper from './grabHelper.js';
+import * as Layout from './layout.js';
+import * as Lightbox from './lightbox.js';
+import * as Main from './main.js';
+import * as MessageTray from './messageTray.js';
+import * as Workspace from './workspace.js';
 
 Gio._promisify(Shell.Screenshot.prototype, 'pick_color');
 Gio._promisify(Shell.Screenshot.prototype, 'screenshot');
@@ -17,15 +23,16 @@ Gio._promisify(Shell.Screenshot.prototype, 'screenshot_area');
 Gio._promisify(Shell.Screenshot.prototype, 'screenshot_stage_to_content');
 Gio._promisify(Shell.Screenshot, 'composite_to_stream');
 
-const { loadInterfaceXML } = imports.misc.fileUtils;
-const { DBusSenderChecker } = imports.misc.util;
+import {ScreencastErrors, ScreencastError} from '../misc/dbusErrors.js';
+import {loadInterfaceXML} from '../misc/fileUtils.js';
+import {DBusSenderChecker} from '../misc/util.js';
 
 const ScreenshotIface = loadInterfaceXML('org.gnome.Shell.Screenshot');
 
 const ScreencastIface = loadInterfaceXML('org.gnome.Shell.Screencast');
 const ScreencastProxy = Gio.DBusProxy.makeProxyWrapper(ScreencastIface);
 
-var IconLabelButton = GObject.registerClass(
+const IconLabelButton = GObject.registerClass(
 class IconLabelButton extends St.Button {
     _init(iconName, label, params) {
         super._init(params);
@@ -36,7 +43,7 @@ class IconLabelButton extends St.Button {
         });
         this.set_child(this._container);
 
-        this._container.add_child(new St.Icon({ icon_name: iconName }));
+        this._container.add_child(new St.Icon({icon_name: iconName}));
         this._container.add_child(new St.Label({
             text: label,
             x_align: Clutter.ActorAlign.CENTER,
@@ -44,7 +51,7 @@ class IconLabelButton extends St.Button {
     }
 });
 
-var Tooltip = GObject.registerClass(
+export const Tooltip = GObject.registerClass(
 class Tooltip extends St.Label {
     _init(widget, params) {
         super._init(params);
@@ -112,12 +119,12 @@ class Tooltip extends St.Label {
     }
 });
 
-var UIAreaIndicator = GObject.registerClass(
+const UIAreaIndicator = GObject.registerClass(
 class UIAreaIndicator extends St.Widget {
     _init(params) {
         super._init(params);
 
-        this._topRect = new St.Widget({ style_class: 'screenshot-ui-area-indicator-shade' });
+        this._topRect = new St.Widget({style_class: 'screenshot-ui-area-indicator-shade'});
         this._topRect.add_constraint(new Clutter.BindConstraint({
             source: this,
             coordinate: Clutter.BindCoordinate.WIDTH,
@@ -134,7 +141,7 @@ class UIAreaIndicator extends St.Widget {
         }));
         this.add_child(this._topRect);
 
-        this._bottomRect = new St.Widget({ style_class: 'screenshot-ui-area-indicator-shade' });
+        this._bottomRect = new St.Widget({style_class: 'screenshot-ui-area-indicator-shade'});
         this._bottomRect.add_constraint(new Clutter.BindConstraint({
             source: this,
             coordinate: Clutter.BindCoordinate.WIDTH,
@@ -151,7 +158,7 @@ class UIAreaIndicator extends St.Widget {
         }));
         this.add_child(this._bottomRect);
 
-        this._leftRect = new St.Widget({ style_class: 'screenshot-ui-area-indicator-shade' });
+        this._leftRect = new St.Widget({style_class: 'screenshot-ui-area-indicator-shade'});
         this._leftRect.add_constraint(new Clutter.SnapConstraint({
             source: this,
             from_edge: Clutter.SnapEdge.LEFT,
@@ -169,7 +176,7 @@ class UIAreaIndicator extends St.Widget {
         }));
         this.add_child(this._leftRect);
 
-        this._rightRect = new St.Widget({ style_class: 'screenshot-ui-area-indicator-shade' });
+        this._rightRect = new St.Widget({style_class: 'screenshot-ui-area-indicator-shade'});
         this._rightRect.add_constraint(new Clutter.SnapConstraint({
             source: this,
             from_edge: Clutter.SnapEdge.RIGHT,
@@ -187,7 +194,7 @@ class UIAreaIndicator extends St.Widget {
         }));
         this.add_child(this._rightRect);
 
-        this._selectionRect = new St.Widget({ style_class: 'screenshot-ui-area-indicator-selection' });
+        this._selectionRect = new St.Widget({style_class: 'screenshot-ui-area-indicator-selection'});
         this.add_child(this._selectionRect);
 
         this._topRect.add_constraint(new Clutter.SnapConstraint({
@@ -221,8 +228,8 @@ class UIAreaIndicator extends St.Widget {
     }
 });
 
-var UIAreaSelector = GObject.registerClass({
-    Signals: { 'drag-started': {}, 'drag-ended': {} },
+const UIAreaSelector = GObject.registerClass({
+    Signals: {'drag-started': {}, 'drag-ended': {}},
 }, class UIAreaSelector extends St.Widget {
     _init(params) {
         super._init(params);
@@ -240,13 +247,13 @@ var UIAreaSelector = GObject.registerClass({
         }));
         this.add_child(this._areaIndicator);
 
-        this._topLeftHandle = new St.Widget({ style_class: 'screenshot-ui-area-selector-handle' });
+        this._topLeftHandle = new St.Widget({style_class: 'screenshot-ui-area-selector-handle'});
         this.add_child(this._topLeftHandle);
-        this._topRightHandle = new St.Widget({ style_class: 'screenshot-ui-area-selector-handle' });
+        this._topRightHandle = new St.Widget({style_class: 'screenshot-ui-area-selector-handle'});
         this.add_child(this._topRightHandle);
-        this._bottomLeftHandle = new St.Widget({ style_class: 'screenshot-ui-area-selector-handle' });
+        this._bottomLeftHandle = new St.Widget({style_class: 'screenshot-ui-area-selector-handle'});
         this.add_child(this._bottomLeftHandle);
-        this._bottomRightHandle = new St.Widget({ style_class: 'screenshot-ui-area-selector-handle' });
+        this._bottomRightHandle = new St.Widget({style_class: 'screenshot-ui-area-selector-handle'});
         this.add_child(this._bottomRightHandle);
 
         // This will be updated before the first drawn frame.
@@ -423,19 +430,20 @@ var UIAreaSelector = GObject.registerClass({
         if (this._dragButton)
             return Clutter.EVENT_PROPAGATE;
 
-        const cursor = this._computeCursorType(event.x, event.y);
+        const [x, y] = event.get_coords();
+        const cursor = this._computeCursorType(x, y);
 
         // Clicking outside of the selection, or using the right mouse button,
         // or with Ctrl results in dragging a new selection from scratch.
         if (cursor === Meta.Cursor.CROSSHAIR ||
             button === Clutter.BUTTON_SECONDARY ||
-            (event.modifier_state & Clutter.ModifierType.CONTROL_MASK)) {
+            (event.get_state() & Clutter.ModifierType.CONTROL_MASK)) {
             this._dragButton = button;
 
             this._dragCursor = Meta.Cursor.CROSSHAIR;
             global.display.set_cursor(Meta.Cursor.CROSSHAIR);
 
-            [this._startX, this._startY] = [event.x, event.y];
+            [this._startX, this._startY] = event.get_coords();
             this._lastX = this._startX = Math.floor(this._startX);
             this._lastY = this._startY = Math.floor(this._startY);
 
@@ -445,8 +453,7 @@ var UIAreaSelector = GObject.registerClass({
             this._dragButton = button;
 
             this._dragCursor = cursor;
-            this._dragStartX = event.x;
-            this._dragStartY = event.y;
+            [this._dragStartX, this._dragStartY] = event.get_coords();
 
             const [leftX, topY, width, height] = this.getGeometry();
             const rightX = leftX + width - 1;
@@ -510,14 +517,16 @@ var UIAreaSelector = GObject.registerClass({
 
         // We might have finished creating a new selection, so we need to
         // update the cursor.
-        this._updateCursor(event.x, event.y);
+        const [x, y] = event.get_coords();
+        this._updateCursor(x, y);
 
         return Clutter.EVENT_STOP;
     }
 
     _onMotion(event, sequence) {
         if (!this._dragButton) {
-            this._updateCursor(event.x, event.y);
+            const [x, y] = event.get_coords();
+            this._updateCursor(x, y);
             return Clutter.EVENT_PROPAGATE;
         }
 
@@ -525,12 +534,13 @@ var UIAreaSelector = GObject.registerClass({
             return Clutter.EVENT_PROPAGATE;
 
         if (this._dragCursor === Meta.Cursor.CROSSHAIR) {
-            [this._lastX, this._lastY] = [event.x, event.y];
+            [this._lastX, this._lastY] = event.get_coords();
             this._lastX = Math.floor(this._lastX);
             this._lastY = Math.floor(this._lastY);
         } else {
-            let dx = Math.round(event.x - this._dragStartX);
-            let dy = Math.round(event.y - this._dragStartY);
+            const [x, y] = event.get_coords();
+            let dx = Math.round(x - this._dragStartX);
+            let dy = Math.round(y - this._dragStartY);
 
             if (this._dragCursor === Meta.Cursor.MOVE_OR_RESIZE_WINDOW) {
                 const [,, selectionWidth, selectionHeight] = this.getGeometry();
@@ -651,17 +661,19 @@ var UIAreaSelector = GObject.registerClass({
     }
 
     vfunc_button_press_event(event) {
-        if (event.button === Clutter.BUTTON_PRIMARY ||
-            event.button === Clutter.BUTTON_SECONDARY)
-            return this._onPress(event, event.button, null);
+        const button = event.get_button();
+        if (button === Clutter.BUTTON_PRIMARY ||
+            button === Clutter.BUTTON_SECONDARY)
+            return this._onPress(event, button, null);
 
         return Clutter.EVENT_PROPAGATE;
     }
 
     vfunc_button_release_event(event) {
-        if (event.button === Clutter.BUTTON_PRIMARY ||
-            event.button === Clutter.BUTTON_SECONDARY)
-            return this._onRelease(event, event.button, null);
+        const button = event.get_button();
+        if (button === Clutter.BUTTON_PRIMARY ||
+            button === Clutter.BUTTON_SECONDARY)
+            return this._onRelease(event, button, null);
 
         return Clutter.EVENT_PROPAGATE;
     }
@@ -671,12 +683,13 @@ var UIAreaSelector = GObject.registerClass({
     }
 
     vfunc_touch_event(event) {
-        if (event.type === Clutter.EventType.TOUCH_BEGIN)
-            return this._onPress(event, 'touch', event.sequence);
-        else if (event.type === Clutter.EventType.TOUCH_END)
-            return this._onRelease(event, 'touch', event.sequence);
-        else if (event.type === Clutter.EventType.TOUCH_UPDATE)
-            return this._onMotion(event, event.sequence);
+        const eventType = event.type();
+        if (eventType === Clutter.EventType.TOUCH_BEGIN)
+            return this._onPress(event, 'touch', event.get_event_sequence());
+        else if (eventType === Clutter.EventType.TOUCH_END)
+            return this._onRelease(event, 'touch', event.get_event_sequence());
+        else if (eventType === Clutter.EventType.TOUCH_UPDATE)
+            return this._onMotion(event, event.get_event_sequence());
 
         return Clutter.EVENT_PROPAGATE;
     }
@@ -692,7 +705,7 @@ var UIAreaSelector = GObject.registerClass({
     }
 });
 
-var UIWindowSelectorLayout = GObject.registerClass(
+const UIWindowSelectorLayout = GObject.registerClass(
 class UIWindowSelectorLayout extends Workspace.WorkspaceLayout {
     _init(monitorIndex) {
         super._init(null, monitorIndex, null);
@@ -757,10 +770,13 @@ class UIWindowSelectorLayout extends Workspace.WorkspaceLayout {
     }
 });
 
-var UIWindowSelectorWindow = GObject.registerClass(
-class UIWindowSelectorWindow extends St.Button {
-    _init(actor, params) {
-        super._init(params);
+const UIWindowSelectorWindowContent = GObject.registerClass(
+class UIWindowSelectorWindowContent extends Clutter.Actor {
+    constructor(actor) {
+        super({
+            x_expand: true,
+            y_expand: true,
+        });
 
         const window = actor.metaWindow;
         this._boundingBox = window.get_frame_rect();
@@ -771,22 +787,23 @@ class UIWindowSelectorWindow extends St.Button {
         });
         this.add_child(this._actor);
 
-        this._border = new St.Bin({ style_class: 'screenshot-ui-window-selector-window-border' });
+        this._border = new St.Bin({
+            style_class: 'screenshot-ui-window-selector-window-border',
+            child: new St.Icon({
+                icon_name: 'object-select-symbolic',
+                style_class: 'screenshot-ui-window-selector-check',
+                x_align: Clutter.ActorAlign.CENTER,
+                y_align: Clutter.ActorAlign.CENTER,
+            }),
+        });
         this._border.connect('style-changed', () => {
             this._borderSize =
                 this._border.get_theme_node().get_border_width(St.Side.TOP);
         });
         this.add_child(this._border);
 
-        this._border.child = new St.Icon({
-            icon_name: 'object-select-symbolic',
-            style_class: 'screenshot-ui-window-selector-check',
-            x_align: Clutter.ActorAlign.CENTER,
-            y_align: Clutter.ActorAlign.CENTER,
-        });
-
         this._cursor = null;
-        this._cursorPoint = { x: 0, y: 0 };
+        this._cursorPoint = {x: 0, y: 0};
         this._shouldShowCursor = window.has_pointer && window.has_pointer();
 
         this.connect('destroy', this._onDestroy.bind(this));
@@ -794,26 +811,6 @@ class UIWindowSelectorWindow extends St.Button {
 
     get boundingBox() {
         return this._boundingBox;
-    }
-
-    get windowCenter() {
-        const boundingBox = this.boundingBox;
-        return {
-            x: boundingBox.x + boundingBox.width / 2,
-            y: boundingBox.y + boundingBox.height / 2,
-        };
-    }
-
-    chromeHeights() {
-        return [0, 0];
-    }
-
-    chromeWidths() {
-        return [0, 0];
-    }
-
-    overlapHeights() {
-        return [0, 0];
     }
 
     get cursorPoint() {
@@ -929,7 +926,65 @@ class UIWindowSelectorWindow extends St.Button {
     }
 });
 
-var UIWindowSelector = GObject.registerClass(
+const UIWindowSelectorWindow = GObject.registerClass(
+class UIWindowSelectorWindow extends St.Button {
+    _init(actor, params) {
+        super._init({
+            child: new UIWindowSelectorWindowContent(actor),
+            ...params,
+        });
+    }
+
+    get boundingBox() {
+        return this.child.boundingBox;
+    }
+
+    get windowCenter() {
+        const boundingBox = this.boundingBox;
+        return {
+            x: boundingBox.x + boundingBox.width / 2,
+            y: boundingBox.y + boundingBox.height / 2,
+        };
+    }
+
+    chromeHeights() {
+        return [0, 0];
+    }
+
+    chromeWidths() {
+        return [0, 0];
+    }
+
+    overlapHeights() {
+        return [0, 0];
+    }
+
+    get cursorPoint() {
+        return this.child.cursorPoint;
+    }
+
+    get bufferScale() {
+        return this.child.bufferScale;
+    }
+
+    get windowContent() {
+        return this.child.windowContent;
+    }
+
+    addCursorTexture(content, point, scale) {
+        this.child.addCursorTexture(content, point, scale);
+    }
+
+    getCursorTexture() {
+        return this.child.getCursorTexture();
+    }
+
+    setCursorVisible(visible) {
+        this.child.setCursorVisible(visible);
+    }
+});
+
+const UIWindowSelector = GObject.registerClass(
 class UIWindowSelector extends St.Widget {
     _init(monitorIndex, params) {
         super._init(params);
@@ -995,16 +1050,24 @@ class UIWindowSelector extends St.Widget {
 const UIMode = {
     SCREENSHOT: 0,
     SCREENCAST: 1,
+    SCREENSHOT_ONLY: 2,
 };
 
-var ScreenshotUI = GObject.registerClass({
+const ScreencastPhase = {
+    STARTUP: 'STARTUP',
+    RECORDING: 'RECORDING',
+};
+
+export const ScreenshotUI = GObject.registerClass({
     Properties: {
         'screencast-in-progress': GObject.ParamSpec.boolean(
-            'screencast-in-progress',
-            'screencast-in-progress',
-            'screencast-in-progress',
+            'screencast-in-progress', null, null,
             GObject.ParamFlags.READABLE,
             false),
+    },
+    Signals: {
+        'screenshot-taken': {param_types: [Gio.File.$gtype]},
+        'closed': {},
     },
 }, class ScreenshotUI extends St.Widget {
     _init() {
@@ -1022,6 +1085,7 @@ var ScreenshotUI = GObject.registerClass({
 
         this._screencastInProgress = false;
         this._screencastSupported = false;
+        this._currentMode = UIMode.SCREENSHOT;
 
         this._screencastProxy = new ScreencastProxy(
             Gio.DBus.session,
@@ -1034,14 +1098,35 @@ var ScreenshotUI = GObject.registerClass({
                 }
 
                 this._screencastSupported = this._screencastProxy.ScreencastSupported;
-                this._castButton.visible = this._screencastSupported;
+                this._syncCastButton();
             });
 
-        this._lockdownSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.lockdown' });
+        this._screencastProxy.connectSignal('Error', (proxy, sender, [errorName, message]) =>
+            this._screencastFailed(ScreencastPhase.RECORDING,
+                Gio.DBusError.new_for_dbus_error(errorName, message)));
+
+        this._screencastProxy.connect('notify::g-name-owner', () => {
+            if (this._screencastProxy.g_name_owner)
+                return;
+
+            if (!this._screencastInProgress)
+                return;
+
+            // If the recorder crashed while we're starting it in _startScreencast(),
+            // let the catch-block there handle the error.
+            if (this._screencastStarting)
+                return;
+
+            this._screencastFailed(ScreencastPhase.RECORDING,
+                new GLib.Error(ScreencastErrors, ScreencastError.SERVICE_CRASH,
+                    'Service crashed'));
+        });
+
+        this._lockdownSettings = new Gio.Settings({schema_id: 'org.gnome.desktop.lockdown'});
 
         // The full-screen screenshot has a separate container so that we can
         // show it without the screenshot UI fade-in for a nicer animation.
-        this._stageScreenshotContainer = new St.Widget({ visible: false });
+        this._stageScreenshotContainer = new St.Widget({visible: false});
         this._stageScreenshotContainer.add_constraint(new Clutter.BindConstraint({
             source: global.stage,
             coordinate: Clutter.BindCoordinate.ALL,
@@ -1068,7 +1153,7 @@ var ScreenshotUI = GObject.registerClass({
 
         Main.layoutManager.screenshotUIGroup.add_child(this);
 
-        this._stageScreenshot = new St.Widget({ style_class: 'screenshot-ui-screen-screenshot' });
+        this._stageScreenshot = new St.Widget({style_class: 'screenshot-ui-screen-screenshot'});
         this._stageScreenshot.add_constraint(new Clutter.BindConstraint({
             source: global.stage,
             coordinate: Clutter.BindCoordinate.ALL,
@@ -1091,9 +1176,9 @@ var ScreenshotUI = GObject.registerClass({
         });
         this.add_child(this._areaSelector);
 
-        this._primaryMonitorBin = new St.Widget({ layout_manager: new Clutter.BinLayout() });
+        this._primaryMonitorBin = new St.Widget({layout_manager: new Clutter.BinLayout()});
         this._primaryMonitorBin.add_constraint(
-            new Layout.MonitorConstraint({ 'primary': true }));
+            new Layout.MonitorConstraint({'primary': true}));
         this.add_child(this._primaryMonitorBin);
 
         this._panel = new St.BoxLayout({
@@ -1116,13 +1201,13 @@ var ScreenshotUI = GObject.registerClass({
         this._closeButton.add_constraint(new Clutter.AlignConstraint({
             source: this._panel,
             align_axis: Clutter.AlignAxis.Y_AXIS,
-            pivot_point: new Graphene.Point({ x: -1, y: 0.5 }),
+            pivot_point: new Graphene.Point({x: -1, y: 0.5}),
             factor: 0,
         }));
         this._closeButtonXAlignConstraint = new Clutter.AlignConstraint({
             source: this._panel,
             align_axis: Clutter.AlignAxis.X_AXIS,
-            pivot_point: new Graphene.Point({ x: 0.5, y: -1 }),
+            pivot_point: new Graphene.Point({x: 0.5, y: -1}),
         });
         this._closeButton.add_constraint(this._closeButtonXAlignConstraint);
         this._closeButton.connect('clicked', () => this.close());
@@ -1207,7 +1292,7 @@ var ScreenshotUI = GObject.registerClass({
             visible: false,
         }));
 
-        this._bottomRowContainer = new St.Widget({ layout_manager: new Clutter.BinLayout() });
+        this._bottomRowContainer = new St.Widget({layout_manager: new Clutter.BinLayout()});
         this._panel.add_child(this._bottomRowContainer);
 
         this._shotCastContainer = new St.BoxLayout({
@@ -1226,6 +1311,12 @@ var ScreenshotUI = GObject.registerClass({
             this._onShotButtonToggled.bind(this));
         this._shotCastContainer.add_child(this._shotButton);
 
+        this.add_child(new Tooltip(this._shotButton, {
+            text: _('Take Screenshot'),
+            style_class: 'screenshot-ui-tooltip',
+            visible: false,
+        }));
+
         this._castButton = new St.Button({
             style_class: 'screenshot-ui-shot-cast-button',
             icon_name: 'camera-web-symbolic',
@@ -1236,27 +1327,27 @@ var ScreenshotUI = GObject.registerClass({
             this._onCastButtonToggled.bind(this));
         this._shotCastContainer.add_child(this._castButton);
 
+        this.add_child(new Tooltip(this._castButton, {
+            text: _('Record Screen'),
+            style_class: 'screenshot-ui-tooltip',
+            visible: false,
+        }));
+
         this._shotButton.bind_property('checked', this._castButton, 'checked',
             GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.INVERT_BOOLEAN);
 
-        this._shotCastTooltip = new Tooltip(this._shotCastContainer, {
-            text: _('Screenshot / Screencast'),
-            style_class: 'screenshot-ui-tooltip',
-            visible: false,
-        });
-        const shotCastCallback = () => {
-            if (this._shotButton.hover || this._castButton.hover)
-                this._shotCastTooltip.open();
-            else
-                this._shotCastTooltip.close();
-        };
-        this._shotButton.connect('notify::hover', shotCastCallback);
-        this._castButton.connect('notify::hover', shotCastCallback);
-        this.add_child(this._shotCastTooltip);
-
-        this._captureButton = new St.Button({ style_class: 'screenshot-ui-capture-button' });
+        this._captureButton = new St.Button({style_class: 'screenshot-ui-capture-button'});
         this._captureButton.set_child(new St.Widget({
             style_class: 'screenshot-ui-capture-button-circle',
+            x_expand: true,
+            y_expand: true,
+        }));
+        this.add_child(new Tooltip(this._captureButton, {
+            /* Translators: since this string refers to an action,
+            it needs to be phrased as a verb. */
+            text: _('Capture'),
+            style_class: 'screenshot-ui-tooltip',
+            visible: false,
         }));
         this._captureButton.connect('clicked',
             this._onCaptureButtonClicked.bind(this));
@@ -1310,7 +1401,7 @@ var ScreenshotUI = GObject.registerClass({
 
         Main.wm.addKeybinding(
             'show-screenshot-ui',
-            new Gio.Settings({ schema_id: 'org.gnome.shell.keybindings' }),
+            new Gio.Settings({schema_id: 'org.gnome.shell.keybindings'}),
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             uiModes,
             showScreenshotUI
@@ -1318,7 +1409,7 @@ var ScreenshotUI = GObject.registerClass({
 
         Main.wm.addKeybinding(
             'show-screen-recording-ui',
-            new Gio.Settings({ schema_id: 'org.gnome.shell.keybindings' }),
+            new Gio.Settings({schema_id: 'org.gnome.shell.keybindings'}),
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             restrictedModes,
             showScreenRecordingUI
@@ -1326,7 +1417,7 @@ var ScreenshotUI = GObject.registerClass({
 
         Main.wm.addKeybinding(
             'screenshot-window',
-            new Gio.Settings({ schema_id: 'org.gnome.shell.keybindings' }),
+            new Gio.Settings({schema_id: 'org.gnome.shell.keybindings'}),
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT | Meta.KeyBindingFlags.PER_WINDOW,
             restrictedModes,
             async (_display, window, _binding) => {
@@ -1344,7 +1435,7 @@ var ScreenshotUI = GObject.registerClass({
 
         Main.wm.addKeybinding(
             'screenshot',
-            new Gio.Settings({ schema_id: 'org.gnome.shell.keybindings' }),
+            new Gio.Settings({schema_id: 'org.gnome.shell.keybindings'}),
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             uiModes,
             async () => {
@@ -1367,7 +1458,15 @@ var ScreenshotUI = GObject.registerClass({
 
     _sessionUpdated() {
         this.close(true);
-        this._castButton.reactive = Main.sessionMode.allowScreencast;
+    }
+
+    _syncCastButton() {
+        const visible = this._screencastSupported;
+        const reactive = visible &&
+            this._currentMode !== UIMode.SCREENSHOT_ONLY &&
+            Main.sessionMode.allowScreencast;
+
+        this._castButton.set({visible, reactive});
     }
 
     _syncWindowButtonSensitivity() {
@@ -1407,7 +1506,7 @@ var ScreenshotUI = GObject.registerClass({
             const bin = new St.Widget({
                 layout_manager: new Clutter.BinLayout(),
             });
-            bin.add_constraint(new Layout.MonitorConstraint({ 'index': i }));
+            bin.add_constraint(new Layout.MonitorConstraint({'index': i}));
             this.insert_child_below(bin, this._primaryMonitorBin);
             this._monitorBins.push(bin);
 
@@ -1469,7 +1568,9 @@ var ScreenshotUI = GObject.registerClass({
         if (mode === UIMode.SCREENCAST && !this._screencastSupported)
             return;
 
+        this._currentMode = mode;
         this._castButton.checked = mode === UIMode.SCREENCAST;
+        this._syncCastButton();
 
         if (!this.visible) {
             // Screenshot UI is opening from completely closed state
@@ -1540,7 +1641,7 @@ var ScreenshotUI = GObject.registerClass({
         // pop their grabs.
         Main.layoutManager.emit('system-modal-opened');
 
-        const { screenshotUIGroup } = Main.layoutManager;
+        const {screenshotUIGroup} = Main.layoutManager;
         screenshotUIGroup.get_parent().set_child_above_sibling(
             screenshotUIGroup, null);
 
@@ -1589,6 +1690,8 @@ var ScreenshotUI = GObject.registerClass({
         this._areaSelector.reset();
         for (const selector of this._windowSelectors)
             selector.reset();
+
+        this.emit('closed');
     }
 
     close(instantly = false) {
@@ -1771,7 +1874,7 @@ var ScreenshotUI = GObject.registerClass({
 
     _onCaptureButtonClicked() {
         if (this._shotButton.checked) {
-            this._saveScreenshot();
+            this._saveScreenshot().catch(logError);
             this.close();
         } else {
             // Screencast closes the UI on its own.
@@ -1779,7 +1882,9 @@ var ScreenshotUI = GObject.registerClass({
         }
     }
 
-    _saveScreenshot() {
+    async _saveScreenshot() {
+        let file = null;
+
         if (this._selectionButton.checked || this._screenButton.checked) {
             const content = this._stageScreenshot.get_content();
             if (!content)
@@ -1792,15 +1897,19 @@ var ScreenshotUI = GObject.registerClass({
             if (!this._cursor.visible)
                 cursorTexture = null;
 
-            captureScreenshot(
-                texture, geometry, this._scale,
-                {
-                    texture: cursorTexture ?? null,
-                    x: this._cursor.x * this._scale,
-                    y: this._cursor.y * this._scale,
-                    scale: this._cursorScale,
-                }
-            ).catch(e => logError(e, 'Error capturing screenshot'));
+            try {
+                file = await captureScreenshot(
+                    texture, geometry, this._scale,
+                    {
+                        texture: cursorTexture ?? null,
+                        x: this._cursor.x * this._scale,
+                        y: this._cursor.y * this._scale,
+                        scale: this._cursorScale,
+                    }
+                );
+            } catch (e) {
+                logError(e, 'Error capturing screenshot');
+            }
         } else if (this._windowButton.checked) {
             const window =
                 this._windowSelectors.flatMap(selector => selector.windows())
@@ -1818,21 +1927,28 @@ var ScreenshotUI = GObject.registerClass({
             if (!this._cursor.visible)
                 cursorTexture = null;
 
-            captureScreenshot(
-                texture,
-                null,
-                window.bufferScale,
-                {
-                    texture: cursorTexture ?? null,
-                    x: window.cursorPoint.x * window.bufferScale,
-                    y: window.cursorPoint.y * window.bufferScale,
-                    scale: this._cursorScale,
-                }
-            ).catch(e => logError(e, 'Error capturing screenshot'));
+            try {
+                file = await captureScreenshot(
+                    texture,
+                    null,
+                    window.bufferScale,
+                    {
+                        texture: cursorTexture ?? null,
+                        x: window.cursorPoint.x * window.bufferScale,
+                        y: window.cursorPoint.y * window.bufferScale,
+                        scale: this._cursorScale,
+                    }
+                );
+            } catch (e) {
+                logError(e, 'Error capturing screenshot');
+            }
         }
+
+        if (file)
+            this.emit('screenshot-taken', file);
     }
 
-    async _startScreencast() {
+    async _startScreencast(nRetries = 0) {
         if (this._windowButton.checked)
             return; // TODO
 
@@ -1866,30 +1982,41 @@ var ScreenshotUI = GObject.registerClass({
         // Set this before calling the method as the screen recording indicator
         // will check it before the success callback fires.
         this._setScreencastInProgress(true);
+        let retry = false;
 
         try {
-            const [success, path] = await method(
+            this._screencastStarting = true;
+
+            const [, path] = await method(
                 GLib.build_filenamev([
                     /* Translators: this is the folder where recorded
                        screencasts are stored. */
                     _('Screencasts'),
                     /* Translators: this is a filename used for screencast
                      * recording, where "%d" and "%t" date and time, e.g.
-                     * "Screencast from 07-17-2013 10:00:46 PM.webm" */
+                     * "Screencast From 07-17-2013 10:00:46 PM" */
                     /* xgettext:no-c-format */
-                    _('Screencast from %d %t.webm'),
+                    _('Screencast From %d %t'),
                 ]),
                 {'draw-cursor': new GLib.Variant('b', drawCursor)});
-            if (!success)
-                throw new Error();
+
             this._screencastPath = path;
         } catch (error) {
-            this._setScreencastInProgress(false);
-            const {message} = error;
-            if (message)
-                log(`Error starting screencast: ${message}`);
+            // Recorder service disconnected without reply -> service crash
+            // That should have blocklisted the pipeline that caused the crash,
+            // so try again.
+            if (error.matches(Gio.DBusError, Gio.DBusError.NO_REPLY) && nRetries < 2)
+                retry = true;
             else
-                log('Error starting screencast');
+                this._screencastFailed(ScreencastPhase.STARTUP, error);
+        }
+
+        delete this._screencastStarting;
+
+        if (retry) {
+            console.log('Screencast service crashed during startup, trying again');
+            this._setScreencastInProgress(false);
+            this._startScreencast(nRetries + 1);
         }
     }
 
@@ -1914,52 +2041,87 @@ var ScreenshotUI = GObject.registerClass({
             return;
         }
 
-        // Show a notification.
-        const file = Gio.file_new_for_path(this._screencastPath);
+        // Translators: notification title.
+        this._showNotification(_('Screencast recorded'));
+    }
 
-        const source = new MessageTray.Source(
-            // Translators: notification source name.
-            _('Screenshot'),
-            'screencast-recorded-symbolic'
-        );
-        const notification = new MessageTray.Notification(
-            source,
+    _screencastFailed(phase, error) {
+        console.error(`Screencast failed during phase ${phase}: ${error}`);
+
+        this._setScreencastInProgress(false);
+
+        switch (phase) {
+        case ScreencastPhase.STARTUP:
+            delete this._screencastPath;
+
             // Translators: notification title.
-            _('Screencast recorded'),
+            this._showNotification(_('Screencast failed to start'));
+            break;
+
+        case ScreencastPhase.RECORDING:
+            if (error.matches(ScreencastErrors, ScreencastError.OUT_OF_DISK_SPACE)) {
+                // Translators: notification title.
+                this._showNotification(_('Screencast ended: Out of disk space'));
+            } else if (error.matches(ScreencastErrors, ScreencastError.SERVICE_CRASH)) {
+                // We can encourage user to try again on service crashes since the
+                // recorder will auto-blocklist the pipeline that crashed.
+
+                // Translators: notification title.
+                this._showNotification(_('Screencast ended unexpectedly, please try again'));
+            } else {
+                // Translators: notification title.
+                this._showNotification(_('Screencast ended unexpectedly'));
+            }
+
+            break;
+        }
+    }
+
+    _showNotification(title) {
+        const source = new MessageTray.Source({
+            // Translators: notification source name.
+            title: _('Screenshot'),
+            iconName: 'screencast-recorded-symbolic',
+        });
+        const notification = new MessageTray.Notification({
+            source,
+            title,
             // Translators: notification body when a screencast was recorded.
-            _('Click here to view the video.')
-        );
-        // Translators: button on the screencast notification.
-        notification.addAction(_('Show in Files'), () => {
-            const app =
-                Gio.app_info_get_default_for_type('inode/directory', false);
-
-            if (app === null) {
-                // It may be null e.g. in a toolbox without nautilus.
-                log('Error showing in files: no default app set for inode/directory');
-                return;
-            }
-
-            app.launch([file], global.create_app_launch_context(0, -1));
+            body: this._screencastPath ? _('Click here to view the video.') : '',
+            isTransient: true,
         });
-        notification.connect('activated', () => {
-            try {
-                Gio.app_info_launch_default_for_uri(
-                    file.get_uri(), global.create_app_launch_context(0, -1));
-            } catch (err) {
-                logError(err, 'Error opening screencast');
-            }
-        });
-        notification.setTransient(true);
+
+        if (this._screencastPath) {
+            const file = Gio.file_new_for_path(this._screencastPath);
+
+            // Translators: button on the screencast notification.
+            notification.addAction(_('Show in Files'), () => {
+                const app =
+                    Gio.app_info_get_default_for_type('inode/directory', false);
+
+                if (app === null) {
+                    // It may be null e.g. in a toolbox without nautilus.
+                    log('Error showing in files: no default app set for inode/directory');
+                    return;
+                }
+
+                app.launch([file], global.create_app_launch_context(0, -1));
+            });
+            notification.connect('activated', () => {
+                try {
+                    Gio.app_info_launch_default_for_uri(
+                        file.get_uri(), global.create_app_launch_context(0, -1));
+                } catch (err) {
+                    logError(err, 'Error opening screencast');
+                }
+            });
+        }
 
         Main.messageTray.add(source);
-        source.showNotification(notification);
+        source.addNotification(notification);
     }
 
     get screencast_in_progress() {
-        if (!('_screencastInProgress' in this))
-            return false;
-
         return this._screencastInProgress;
     }
 
@@ -1972,9 +2134,10 @@ var ScreenshotUI = GObject.registerClass({
     }
 
     vfunc_key_press_event(event) {
-        const symbol = event.keyval;
+        const symbol = event.get_key_symbol();
         if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_space ||
-            ((event.modifier_state & Clutter.ModifierType.CONTROL_MASK) &&
+            symbol === Clutter.KEY_KP_Enter || symbol === Clutter.KEY_ISO_Enter ||
+            ((event.get_state() & Clutter.ModifierType.CONTROL_MASK) &&
              (symbol === Clutter.KEY_c || symbol === Clutter.KEY_C))) {
             this._onCaptureButtonClicked();
             return Clutter.EVENT_STOP;
@@ -2070,8 +2233,35 @@ function _storeScreenshot(bytes, pixbuf) {
             yield `-${i}`;
     }
 
+    /**
+     * Adds a record of a screenshot file in the recently used files list.
+     *
+     * @param {Gio.File} screenshotFile - The screenshot file.
+     */
+    function saveRecentFile(screenshotFile) {
+        const recentFile =
+            GLib.build_filenamev([GLib.get_user_data_dir(), 'recently-used.xbel']);
+        const uri = screenshotFile.get_uri();
+        const bookmarks = new GLib.BookmarkFile();
+        try {
+            bookmarks.load_from_file(recentFile);
+        } catch (e) {
+            if (!e.matches(GLib.BookmarkFileError, GLib.BookmarkFileError.FILE_NOT_FOUND)) {
+                log(`Could not open recent file ${uri}: ${e.message}`);
+                return;
+            }
+        }
+
+        try {
+            bookmarks.add_application(uri, GLib.get_prgname(), 'gio open %u');
+            bookmarks.to_file(recentFile);
+        } catch (e) {
+            log(`Could not save recent file ${uri}: ${e.message}`);
+        }
+    }
+
     const lockdownSettings =
-        new Gio.Settings({ schema_id: 'org.gnome.desktop.lockdown' });
+        new Gio.Settings({schema_id: 'org.gnome.desktop.lockdown'});
     const disableSaveToDisk =
         lockdownSettings.get_boolean('disable-save-to-disk');
 
@@ -2092,7 +2282,7 @@ function _storeScreenshot(bytes, pixbuf) {
         const timestamp = time.format('%Y-%m-%d %H-%M-%S');
         // Translators: this is the name of the file that the screenshot is
         // saved to. The placeholder is a timestamp, e.g. "2017-05-21 12-24-03".
-        const name = _('Screenshot from %s').format(timestamp);
+        const name = _('Screenshot From %s').format(timestamp);
 
         // If the target file already exists, try appending a suffix with an
         // increasing number to it.
@@ -2112,7 +2302,7 @@ function _storeScreenshot(bytes, pixbuf) {
         }
 
         // Add it to recent files.
-        Gtk.RecentManager.get_default().add_item(file.get_uri());
+        saveRecentFile(file);
     }
 
     // Create a St.ImageContent icon for the notification. We want
@@ -2130,19 +2320,21 @@ function _storeScreenshot(bytes, pixbuf) {
     );
 
     // Show a notification.
-    const source = new MessageTray.Source(
+    const source = new MessageTray.Source({
         // Translators: notification source name.
-        _('Screenshot'),
-        'screenshot-recorded-symbolic'
-    );
-    const notification = new MessageTray.Notification(
+        title: _('Screenshot'),
+        iconName: 'screenshot-recorded-symbolic',
+    });
+    const notification = new MessageTray.Notification({
         source,
         // Translators: notification title.
-        _('Screenshot captured'),
+        title: _('Screenshot captured'),
         // Translators: notification body when a screenshot was captured.
-        _('You can paste the image from the clipboard.'),
-        { datetime: time, gicon: content }
-    );
+        body: _('You can paste the image from the clipboard.'),
+        datetime: time,
+        gicon: content,
+        isTransient: true,
+    });
 
     if (!disableSaveToDisk) {
         // Translators: button on the screenshot notification.
@@ -2168,9 +2360,10 @@ function _storeScreenshot(bytes, pixbuf) {
         });
     }
 
-    notification.setTransient(true);
     Main.messageTray.add(source);
-    source.showNotification(notification);
+    source.addNotification(notification);
+
+    return file;
 }
 
 /**
@@ -2180,17 +2373,17 @@ function _storeScreenshot(bytes, pixbuf) {
  * @param {Cogl.Texture} texture - The texture to take the screenshot from.
  * @param {number[4]} [geometry] - The region to use: x, y, width and height.
  * @param {number} scale - The texture scale.
- * @param {Object} [cursor] - Cursor data to include in the screenshot.
+ * @param {object} [cursor] - Cursor data to include in the screenshot.
  * @param {Cogl.Texture} cursor.texture - The cursor texture.
  * @param {number} cursor.x - The cursor x coordinate.
  * @param {number} cursor.y - The cursor y coordinate.
  * @param {number} cursor.scale - The cursor texture scale.
  */
-async function captureScreenshot(texture, geometry, scale, cursor) {
+export async function captureScreenshot(texture, geometry, scale, cursor) {
     const stream = Gio.MemoryOutputStream.new_resizable();
     const [x, y, w, h] = geometry ?? [0, 0, -1, -1];
     if (cursor === null)
-        cursor = { texture: null, x: 0, y: 0, scale: 1 };
+        cursor = {texture: null, x: 0, y: 0, scale: 1};
 
     global.display.get_sound_player().play_from_theme(
         'screen-capture', _('Screenshot taken'), null);
@@ -2204,13 +2397,13 @@ async function captureScreenshot(texture, geometry, scale, cursor) {
     );
 
     stream.close(null);
-    _storeScreenshot(stream.steal_as_bytes(), pixbuf);
+    return _storeScreenshot(stream.steal_as_bytes(), pixbuf);
 }
 
 /**
  * Shows the screenshot UI.
  */
-function showScreenshotUI() {
+export function showScreenshotUI() {
     Main.screenshotUI.open().catch(err => {
         logError(err, 'Error opening the screenshot UI');
     });
@@ -2219,13 +2412,13 @@ function showScreenshotUI() {
 /**
  * Shows the screen recording UI.
  */
-function showScreenRecordingUI() {
+export function showScreenRecordingUI() {
     Main.screenshotUI.open(UIMode.SCREENCAST).catch(err => {
         logError(err, 'Error opening the screenshot UI');
     });
 }
 
-var ScreenshotService = class {
+export class ScreenshotService {
     constructor() {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(ScreenshotIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/gnome/Shell/Screenshot');
@@ -2238,7 +2431,7 @@ var ScreenshotService = class {
             'org.gnome.Screenshot',
         ]);
 
-        this._lockdownSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.lockdown' });
+        this._lockdownSettings = new Gio.Settings({schema_id: 'org.gnome.desktop.lockdown'});
 
         Gio.DBus.session.own_name('org.gnome.Shell.Screenshot', Gio.BusNameOwnerFlags.REPLACE, null, null);
     }
@@ -2269,9 +2462,8 @@ var ScreenshotService = class {
         }
 
         let shooter = new Shell.Screenshot();
-        shooter._watchNameId =
-                        Gio.bus_watch_name(Gio.BusType.SESSION, sender, 0, null,
-                                           this._onNameVanished.bind(this));
+        shooter._watchNameId = Gio.bus_watch_name(Gio.BusType.SESSION,
+            sender, 0, null, this._onNameVanished.bind(this));
 
         this._screenShooter.set(sender, shooter);
 
@@ -2319,7 +2511,7 @@ var ScreenshotService = class {
     }
 
     _createStream(filename, invocation) {
-        if (filename == '')
+        if (filename === '')
             return [Gio.MemoryOutputStream.new_resizable(), null];
 
         if (GLib.path_is_absolute(filename)) {
@@ -2401,9 +2593,10 @@ var ScreenshotService = class {
         let [x, y, width, height, flash, filename] = params;
         [x, y, width, height] = this._scaleArea(x, y, width, height);
         if (!this._checkArea(x, y, width, height)) {
-            invocation.return_error_literal(Gio.IOErrorEnum,
-                                            Gio.IOErrorEnum.CANCELLED,
-                                            "Invalid params");
+            invocation.return_error_literal(
+                Gio.IOErrorEnum,
+                Gio.IOErrorEnum.CANCELLED,
+                'Invalid params');
             return;
         }
         let screenshot = await this._createScreenshot(invocation);
@@ -2473,6 +2666,34 @@ var ScreenshotService = class {
         }
     }
 
+    async InteractiveScreenshotAsync(params, invocation) {
+        try {
+            await this._senderChecker.checkInvocation(invocation);
+        } catch (e) {
+            invocation.return_gerror(e);
+            return;
+        }
+
+        Main.screenshotUI.connectObject(
+            'screenshot-taken', (ui, file) => {
+                Main.screenshotUI.disconnectObject(invocation);
+                invocation.return_value(new GLib.Variant('(bs)', [true, file.get_uri()]));
+            },
+            'closed', () => {
+                Main.screenshotUI.disconnectObject(invocation);
+                invocation.return_value(new GLib.Variant('(bs)', [false, '']));
+            },
+            invocation);
+
+
+        try {
+            Main.screenshotUI.open(UIMode.SCREENSHOT_ONLY);
+        } catch (e) {
+            Main.screenshotUI.disconnectObject(invocation);
+            invocation.return_value(new GLib.Variant('(bs)', [false, '']));
+        }
+    }
+
     async SelectAreaAsync(params, invocation) {
         try {
             await this._senderChecker.checkInvocation(invocation);
@@ -2506,12 +2727,13 @@ var ScreenshotService = class {
         let [x, y, width, height] = params;
         [x, y, width, height] = this._scaleArea(x, y, width, height);
         if (!this._checkArea(x, y, width, height)) {
-            invocation.return_error_literal(Gio.IOErrorEnum,
-                                            Gio.IOErrorEnum.CANCELLED,
-                                            "Invalid params");
+            invocation.return_error_literal(
+                Gio.IOErrorEnum,
+                Gio.IOErrorEnum.CANCELLED,
+                'Invalid params');
             return;
         }
-        let flashspot = new Flashspot({ x, y, width, height });
+        let flashspot = new Flashspot({x, y, width, height});
         flashspot.fire();
         invocation.return_value(null);
     }
@@ -2524,7 +2746,7 @@ var ScreenshotService = class {
         const pickPixel = new PickPixel(screenshot);
         try {
             const color = await pickPixel.pickAsync();
-            const { red, green, blue } = color;
+            const {red, green, blue} = color;
             const retval = GLib.Variant.new('(a{sv})', [{
                 color: GLib.Variant.new('(ddd)', [
                     red / 255.0,
@@ -2541,9 +2763,9 @@ var ScreenshotService = class {
             this._removeShooterForSender(invocation.get_sender());
         }
     }
-};
+}
 
-var SelectArea = GObject.registerClass(
+export const SelectArea = GObject.registerClass(
 class SelectArea extends St.Widget {
     _init() {
         this._startX = -1;
@@ -2558,7 +2780,7 @@ class SelectArea extends St.Widget {
             x: 0,
             y: 0,
         });
-        Main.uiGroup.add_actor(this);
+        Main.uiGroup.add_child(this);
 
         this._grabHelper = new GrabHelper.GrabHelper(this);
 
@@ -2572,7 +2794,7 @@ class SelectArea extends St.Widget {
             style_class: 'select-area-rubberband',
             visible: false,
         });
-        this.add_actor(this._rubberband);
+        this.add_child(this._rubberband);
     }
 
     async selectAsync() {
@@ -2581,7 +2803,7 @@ class SelectArea extends St.Widget {
         this.show();
 
         try {
-            await this._grabHelper.grabAsync({ actor: this });
+            await this._grabHelper.grabAsync({actor: this});
         } finally {
             global.display.set_cursor(Meta.Cursor.DEFAULT);
 
@@ -2595,7 +2817,7 @@ class SelectArea extends St.Widget {
     }
 
     _getGeometry() {
-        return new Meta.Rectangle({
+        return new Mtk.Rectangle({
             x: Math.min(this._startX, this._lastX),
             y: Math.min(this._startY, this._lastY),
             width: Math.abs(this._startX - this._lastX) + 1,
@@ -2603,11 +2825,11 @@ class SelectArea extends St.Widget {
         });
     }
 
-    vfunc_motion_event(motionEvent) {
-        if (this._startX == -1 || this._startY == -1 || this._result)
+    vfunc_motion_event(event) {
+        if (this._startX === -1 || this._startY === -1 || this._result)
             return Clutter.EVENT_PROPAGATE;
 
-        [this._lastX, this._lastY] = [motionEvent.x, motionEvent.y];
+        [this._lastX, this._lastY] = event.get_coords();
         this._lastX = Math.floor(this._lastX);
         this._lastY = Math.floor(this._lastY);
         let geometry = this._getGeometry();
@@ -2619,11 +2841,11 @@ class SelectArea extends St.Widget {
         return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_button_press_event(buttonEvent) {
+    vfunc_button_press_event(event) {
         if (this._result)
             return Clutter.EVENT_PROPAGATE;
 
-        [this._startX, this._startY] = [buttonEvent.x, buttonEvent.y];
+        [this._startX, this._startY] = event.get_coords();
         this._startX = Math.floor(this._startX);
         this._startY = Math.floor(this._startY);
         this._rubberband.set_position(this._startX, this._startY);
@@ -2646,29 +2868,29 @@ class SelectArea extends St.Widget {
     }
 });
 
-var RecolorEffect = GObject.registerClass({
+const RecolorEffect = GObject.registerClass({
     Properties: {
         color: GObject.ParamSpec.boxed(
-            'color', 'color', 'replacement color',
+            'color', null, null,
             GObject.ParamFlags.WRITABLE,
-            Clutter.Color.$gtype),
+            Cogl.Color.$gtype),
         chroma: GObject.ParamSpec.boxed(
-            'chroma', 'chroma', 'color to replace',
+            'chroma', null, null,
             GObject.ParamFlags.WRITABLE,
-            Clutter.Color.$gtype),
+            Cogl.Color.$gtype),
         threshold: GObject.ParamSpec.float(
-            'threshold', 'threshold', 'threshold',
+            'threshold', null, null,
             GObject.ParamFlags.WRITABLE,
             0.0, 1.0, 0.0),
         smoothing: GObject.ParamSpec.float(
-            'smoothing', 'smoothing', 'smoothing',
+            'smoothing', null, null,
             GObject.ParamFlags.WRITABLE,
             0.0, 1.0, 0.0),
     },
 }, class RecolorEffect extends Shell.GLSLEffect {
     _init(params) {
-        this._color = new Clutter.Color();
-        this._chroma = new Clutter.Color();
+        this._color = new Cogl.Color();
+        this._chroma = new Cogl.Color();
         this._threshold = 0;
         this._smoothing = 0;
 
@@ -2775,10 +2997,10 @@ var RecolorEffect = GObject.registerClass({
     }
 });
 
-var PickPixel = GObject.registerClass(
+export const PickPixel = GObject.registerClass(
 class PickPixel extends St.Widget {
     _init(screenshot) {
-        super._init({ visible: false, reactive: true });
+        super._init({visible: false, reactive: true});
 
         this._screenshot = screenshot;
 
@@ -2786,7 +3008,7 @@ class PickPixel extends St.Widget {
         this._color = null;
         this._inPick = false;
 
-        Main.uiGroup.add_actor(this);
+        Main.uiGroup.add_child(this);
 
         this._grabHelper = new GrabHelper.GrabHelper(this);
 
@@ -2805,7 +3027,7 @@ class PickPixel extends St.Widget {
         this.add_action(action);
 
         this._recolorEffect = new RecolorEffect({
-            chroma: new Clutter.Color({
+            chroma: new Cogl.Color({
                 red: 80,
                 green: 219,
                 blue: 181,
@@ -2819,7 +3041,7 @@ class PickPixel extends St.Widget {
             effect: this._recolorEffect,
             visible: false,
         });
-        Main.uiGroup.add_actor(this._previewCursor);
+        Main.uiGroup.add_child(this._previewCursor);
     }
 
     async pickAsync() {
@@ -2830,7 +3052,7 @@ class PickPixel extends St.Widget {
         this._pickColor(...global.get_pointer());
 
         try {
-            await this._grabHelper.grabAsync({ actor: this });
+            await this._grabHelper.grabAsync({actor: this});
         } finally {
             global.display.set_cursor(Meta.Cursor.DEFAULT);
             this._previewCursor.destroy();
@@ -2860,16 +3082,16 @@ class PickPixel extends St.Widget {
         this._previewCursor.show();
     }
 
-    vfunc_motion_event(motionEvent) {
-        const { x, y } = motionEvent;
+    vfunc_motion_event(event) {
+        const [x, y] = event.get_coords();
         this._pickColor(x, y);
         return Clutter.EVENT_PROPAGATE;
     }
 });
 
-var FLASHSPOT_ANIMATION_OUT_TIME = 500; // milliseconds
+const FLASHSPOT_ANIMATION_OUT_TIME = 500; // milliseconds
 
-var Flashspot = GObject.registerClass(
+export const Flashspot = GObject.registerClass(
 class Flashspot extends Lightbox.Lightbox {
     _init(area) {
         super._init(Main.uiGroup, {
@@ -2882,7 +3104,7 @@ class Flashspot extends Lightbox.Lightbox {
     }
 
     fire(doneCallback) {
-        this.set({ visible: true, opacity: 255 });
+        this.set({visible: true, opacity: 255});
         this.ease({
             opacity: 0,
             duration: FLASHSPOT_ANIMATION_OUT_TIME,

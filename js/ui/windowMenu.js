@@ -1,20 +1,19 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*
-/* exported WindowMenuManager */
+import Clutter from 'gi://Clutter';
+import Meta from 'gi://Meta';
+import St from 'gi://St';
 
-const { GLib, Meta, St } = imports.gi;
+import * as BoxPointer from './boxpointer.js';
+import * as Main from './main.js';
+import * as PopupMenu from './popupMenu.js';
+import * as Screenshot from './screenshot.js';
 
-const BoxPointer = imports.ui.boxpointer;
-const Main = imports.ui.main;
-const PopupMenu = imports.ui.popupMenu;
-const Screenshot = imports.ui.screenshot;
-
-var WindowMenu = class extends PopupMenu.PopupMenu {
+export class WindowMenu extends PopupMenu.PopupMenu {
     constructor(window, sourceActor) {
         super(sourceActor, 0, St.Side.TOP);
 
         this.actor.add_style_class_name('window-menu');
 
-        Main.layoutManager.uiGroup.add_actor(this.actor);
+        Main.layoutManager.uiGroup.add_child(this.actor);
         this.actor.hide();
 
         this._buildMenu(window);
@@ -49,32 +48,54 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
             });
         } else {
-            item = this.addAction(_("Maximize"), () => {
+            item = this.addAction(_('Maximize'), () => {
                 window.maximize(Meta.MaximizeFlags.BOTH);
             });
         }
         if (!window.can_maximize())
             item.setSensitive(false);
 
-        item = this.addAction(_("Move"), event => {
-            this._grabAction(window, Meta.GrabOp.KEYBOARD_MOVING, event.get_time());
+        item = this.addAction(_('Move'), event => {
+            const device = event.get_device();
+            const seat = device.get_seat();
+            const deviceType = device.get_device_type();
+            const pointer =
+                deviceType === Clutter.InputDeviceType.POINTER_DEVICE ||
+                deviceType === Clutter.InputDeviceType.TABLET_DEVICE ||
+                deviceType === Clutter.InputDeviceType.PEN_DEVICE ||
+                deviceType === Clutter.InputDeviceType.ERASER_DEVICE
+                    ? device : seat.get_pointer();
+
+            window.begin_grab_op(
+                Meta.GrabOp.KEYBOARD_MOVING,
+                pointer, null,
+                event.get_time(),
+                null);
         });
         if (!window.allows_move())
             item.setSensitive(false);
 
-        item = this.addAction(_("Resize"), event => {
-            this._grabAction(window, Meta.GrabOp.KEYBOARD_RESIZING_UNKNOWN, event.get_time());
+        item = this.addAction(_('Resize'), event => {
+            const device = event.get_device();
+            const seat = device.get_seat();
+            const deviceType = device.get_device_type();
+            const pointer =
+                deviceType === Clutter.InputDeviceType.POINTER_DEVICE ||
+                deviceType === Clutter.InputDeviceType.TABLET_DEVICE ||
+                deviceType === Clutter.InputDeviceType.PEN_DEVICE ||
+                deviceType === Clutter.InputDeviceType.ERASER_DEVICE
+                    ? device : seat.get_pointer();
+
+            window.begin_grab_op(
+                Meta.GrabOp.KEYBOARD_RESIZING_UNKNOWN,
+                pointer, null,
+                event.get_time(),
+                null);
         });
         if (!window.allows_resize())
             item.setSensitive(false);
 
-        if (!window.titlebar_is_onscreen() && type != Meta.WindowType.DOCK && type != Meta.WindowType.DESKTOP) {
-            this.addAction(_("Move Titlebar Onscreen"), () => {
-                window.shove_titlebar_onscreen();
-            });
-        }
-
-        item = this.addAction(_("Always on Top"), () => {
+        item = this.addAction(_('Always on Top'), () => {
             if (window.is_above())
                 window.unmake_above();
             else
@@ -82,10 +103,10 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
         });
         if (window.is_above())
             item.setOrnament(PopupMenu.Ornament.CHECK);
-        if (window.get_maximized() == Meta.MaximizeFlags.BOTH ||
-            type == Meta.WindowType.DOCK ||
-            type == Meta.WindowType.DESKTOP ||
-            type == Meta.WindowType.SPLASHSCREEN)
+        if (window.get_maximized() === Meta.MaximizeFlags.BOTH ||
+            type === Meta.WindowType.DOCK ||
+            type === Meta.WindowType.DESKTOP ||
+            type === Meta.WindowType.SPLASHSCREEN)
             item.setSensitive(false);
 
         if (Main.sessionMode.hasWorkspaces &&
@@ -93,7 +114,7 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
              window.is_on_primary_monitor())) {
             let isSticky = window.is_on_all_workspaces();
 
-            item = this.addAction(_("Always on Visible Workspace"), () => {
+            item = this.addAction(_('Always on Visible Workspace'), () => {
                 if (isSticky)
                     window.unstick();
                 else
@@ -106,26 +127,26 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
 
             if (!isSticky) {
                 let workspace = window.get_workspace();
-                if (workspace != workspace.get_neighbor(Meta.MotionDirection.LEFT)) {
-                    this.addAction(_("Move to Workspace Left"), () => {
+                if (workspace !== workspace.get_neighbor(Meta.MotionDirection.LEFT)) {
+                    this.addAction(_('Move to Workspace Left'), () => {
                         let dir = Meta.MotionDirection.LEFT;
                         window.change_workspace(workspace.get_neighbor(dir));
                     });
                 }
-                if (workspace != workspace.get_neighbor(Meta.MotionDirection.RIGHT)) {
-                    this.addAction(_("Move to Workspace Right"), () => {
+                if (workspace !== workspace.get_neighbor(Meta.MotionDirection.RIGHT)) {
+                    this.addAction(_('Move to Workspace Right'), () => {
                         let dir = Meta.MotionDirection.RIGHT;
                         window.change_workspace(workspace.get_neighbor(dir));
                     });
                 }
-                if (workspace != workspace.get_neighbor(Meta.MotionDirection.UP)) {
-                    this.addAction(_("Move to Workspace Up"), () => {
+                if (workspace !== workspace.get_neighbor(Meta.MotionDirection.UP)) {
+                    this.addAction(_('Move to Workspace Up'), () => {
                         let dir = Meta.MotionDirection.UP;
                         window.change_workspace(workspace.get_neighbor(dir));
                     });
                 }
-                if (workspace != workspace.get_neighbor(Meta.MotionDirection.DOWN)) {
-                    this.addAction(_("Move to Workspace Down"), () => {
+                if (workspace !== workspace.get_neighbor(Meta.MotionDirection.DOWN)) {
+                    this.addAction(_('Move to Workspace Down'), () => {
                         let dir = Meta.MotionDirection.DOWN;
                         window.change_workspace(workspace.get_neighbor(dir));
                     });
@@ -142,8 +163,8 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
             let dir = Meta.DisplayDirection.UP;
             let upMonitorIndex =
                 display.get_monitor_neighbor_index(monitorIndex, dir);
-            if (upMonitorIndex != -1) {
-                this.addAction(_("Move to Monitor Up"), () => {
+            if (upMonitorIndex !== -1) {
+                this.addAction(_('Move to Monitor Up'), () => {
                     window.move_to_monitor(upMonitorIndex);
                 });
             }
@@ -151,8 +172,8 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
             dir = Meta.DisplayDirection.DOWN;
             let downMonitorIndex =
                 display.get_monitor_neighbor_index(monitorIndex, dir);
-            if (downMonitorIndex != -1) {
-                this.addAction(_("Move to Monitor Down"), () => {
+            if (downMonitorIndex !== -1) {
+                this.addAction(_('Move to Monitor Down'), () => {
                     window.move_to_monitor(downMonitorIndex);
                 });
             }
@@ -160,8 +181,8 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
             dir = Meta.DisplayDirection.LEFT;
             let leftMonitorIndex =
                 display.get_monitor_neighbor_index(monitorIndex, dir);
-            if (leftMonitorIndex != -1) {
-                this.addAction(_("Move to Monitor Left"), () => {
+            if (leftMonitorIndex !== -1) {
+                this.addAction(_('Move to Monitor Left'), () => {
                     window.move_to_monitor(leftMonitorIndex);
                 });
             }
@@ -169,8 +190,8 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
             dir = Meta.DisplayDirection.RIGHT;
             let rightMonitorIndex =
                 display.get_monitor_neighbor_index(monitorIndex, dir);
-            if (rightMonitorIndex != -1) {
-                this.addAction(_("Move to Monitor Right"), () => {
+            if (rightMonitorIndex !== -1) {
+                this.addAction(_('Move to Monitor Right'), () => {
                     window.move_to_monitor(rightMonitorIndex);
                 });
             }
@@ -178,50 +199,36 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        item = this.addAction(_("Close"), event => {
+        item = this.addAction(_('Close'), event => {
             window.delete(event.get_time());
         });
         if (!window.can_close())
             item.setSensitive(false);
     }
 
-    _grabAction(window, grabOp, time) {
-        if (global.display.get_grab_op() == Meta.GrabOp.NONE) {
-            window.begin_grab_op(grabOp, true, time);
-            return;
-        }
-
-        let waitId = 0;
-        let id = global.display.connect('grab-op-end', display => {
-            display.disconnect(id);
-            GLib.source_remove(waitId);
-
-            window.begin_grab_op(grabOp, true, time);
-        });
-
-        waitId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
-            global.display.disconnect(id);
-            return GLib.SOURCE_REMOVE;
-        });
+    addAction(label, callback) {
+        const item = super.addAction(label, callback);
+        item.setOrnament(PopupMenu.Ornament.NONE);
+        return item;
     }
-};
+}
 
-var WindowMenuManager = class {
+export class WindowMenuManager {
     constructor() {
         this._manager = new PopupMenu.PopupMenuManager(Main.layoutManager.dummyCursor);
 
-        this._sourceActor = new St.Widget({ reactive: true, visible: false });
+        this._sourceActor = new St.Widget({reactive: true, visible: false});
         this._sourceActor.connect('button-press-event', () => {
             this._manager.activeMenu.toggle();
         });
-        Main.uiGroup.add_actor(this._sourceActor);
+        Main.uiGroup.add_child(this._sourceActor);
     }
 
     showWindowMenuForWindow(window, type, rect) {
         if (!Main.sessionMode.hasWmMenus)
             return;
 
-        if (type != Meta.WindowMenuType.WM)
+        if (type !== Meta.WindowMenuType.WM)
             throw new Error('Unsupported window menu type');
         let menu = new WindowMenu(window, this._sourceActor);
 
@@ -249,4 +256,4 @@ var WindowMenuManager = class {
             window.disconnect(destroyId);
         });
     }
-};
+}

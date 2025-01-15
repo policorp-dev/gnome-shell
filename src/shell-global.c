@@ -15,8 +15,6 @@
 #endif
 #include <locale.h>
 
-#include <X11/extensions/Xfixes.h>
-#include <gdk/gdkx.h>
 #include <gio/gio.h>
 #include <girepository.h>
 #include <meta/meta-backend.h>
@@ -27,7 +25,11 @@
 #include <meta/meta-cursor-tracker.h>
 #include <meta/meta-settings.h>
 #include <meta/meta-workspace-manager.h>
+#include <mtk/mtk.h>
+
+#ifdef HAVE_X11
 #include <meta/meta-x11-display.h>
+#endif
 
 #define GNOME_DESKTOP_USE_UNSTABLE_API
 #include <libgnome-desktop/gnome-systemd.h>
@@ -40,6 +42,8 @@
 #include "shell-global-private.h"
 #include "shell-perf-log.h"
 #include "shell-window-tracker.h"
+#include "shell-app-usage.h"
+#include "shell-app-cache-private.h"
 #include "shell-wm.h"
 #include "shell-util.h"
 #include "st.h"
@@ -55,12 +59,10 @@ struct _ShellGlobal {
   MetaBackend *backend;
   MetaContext *meta_context;
   MetaDisplay *meta_display;
+  MetaCompositor *compositor;
   MetaWorkspaceManager *workspace_manager;
-  Display *xdisplay;
 
   char *session_mode;
-
-  XserverRegion input_region;
 
   GjsContext *js_context;
   MetaPlugin *plugin;
@@ -71,6 +73,12 @@ struct _ShellGlobal {
   char *userdatadir;
   GFile *userdatadir_path;
   GFile *runtime_state_path;
+  GFile *automation_script;
+
+  ShellWindowTracker *window_tracker;
+  ShellAppSystem *app_system;
+  ShellAppCache *app_cache;
+  ShellAppUsage *app_usage;
 
   StFocusManager *focus_manager;
 
@@ -85,6 +93,8 @@ struct _ShellGlobal {
 
   GDBusProxy *switcheroo_control;
   GCancellable *switcheroo_cancellable;
+
+  gboolean force_animations;
 };
 
 enum {
@@ -94,6 +104,7 @@ enum {
   PROP_BACKEND,
   PROP_CONTEXT,
   PROP_DISPLAY,
+  PROP_COMPOSITOR,
   PROP_WORKSPACE_MANAGER,
   PROP_SCREEN_WIDTH,
   PROP_SCREEN_HEIGHT,
@@ -109,6 +120,8 @@ enum {
   PROP_FRAME_TIMESTAMPS,
   PROP_FRAME_FINISH_TIMESTAMP,
   PROP_SWITCHEROO_CONTROL,
+  PROP_FORCE_ANIMATIONS,
+  PROP_AUTOMATION_SCRIPT,
 
   N_PROPS
 };
@@ -120,6 +133,7 @@ enum
 {
  NOTIFY_ERROR,
  LOCATE_POINTER,
+ SHUTDOWN,
  LAST_SIGNAL
 };
 
@@ -234,6 +248,12 @@ shell_global_set_property(GObject         *object,
           }
       }
       break;
+    case PROP_FORCE_ANIMATIONS:
+      global->force_animations = g_value_get_boolean (value);
+      break;
+    case PROP_AUTOMATION_SCRIPT:
+      g_set_object (&global->automation_script, g_value_get_object (value));
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -261,6 +281,9 @@ shell_global_get_property(GObject         *object,
       break;
     case PROP_DISPLAY:
       g_value_set_object (value, global->meta_display);
+      break;
+    case PROP_COMPOSITOR:
+      g_value_set_object (value, global->compositor);
       break;
     case PROP_WORKSPACE_MANAGER:
       g_value_set_object (value, global->workspace_manager);
@@ -316,6 +339,12 @@ shell_global_get_property(GObject         *object,
       break;
     case PROP_SWITCHEROO_CONTROL:
       g_value_set_object (value, global->switcheroo_control);
+      break;
+    case PROP_FORCE_ANIMATIONS:
+      g_value_set_boolean (value, global->force_animations);
+      break;
+    case PROP_AUTOMATION_SCRIPT:
+      g_value_set_object (value, global->automation_script);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -394,7 +423,7 @@ shell_global_init (ShellGlobal *global)
   path = g_strdup_printf ("%s/gnome-shell/runtime-state-%s.%s",
                           g_get_user_runtime_dir (),
                           byteorder_string,
-                          XDisplayName (NULL));
+                          g_getenv ("DISPLAY"));
   (void) g_mkdir_with_parents (path, 0700);
   global->runtime_state_path = g_file_new_for_path (path);
   g_free (path);
@@ -465,6 +494,11 @@ shell_global_finalize (GObject *object)
   g_clear_object (&global->js_context);
   g_object_unref (global->settings);
 
+  g_clear_object (&global->window_tracker);
+  g_clear_object (&global->app_system);
+  g_clear_object (&global->app_cache);
+  g_clear_object (&global->app_usage);
+
   the_object = NULL;
 
   g_cancellable_cancel (global->switcheroo_cancellable);
@@ -507,139 +541,123 @@ shell_global_class_init (ShellGlobalClass *klass)
                     0,
                     NULL, NULL, NULL,
                     G_TYPE_NONE, 0);
+  shell_global_signals[SHUTDOWN] =
+      g_signal_new ("shutdown",
+                    G_TYPE_FROM_CLASS (klass),
+                    G_SIGNAL_RUN_LAST,
+                    0,
+                    NULL, NULL, NULL,
+                    G_TYPE_NONE, 0);
 
   props[PROP_SESSION_MODE] =
-    g_param_spec_string ("session-mode",
-                         "Session Mode",
-                         "The session mode to use",
+    g_param_spec_string ("session-mode", NULL, NULL,
                          "user",
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
   props[PROP_SCREEN_WIDTH] =
-    g_param_spec_int ("screen-width",
-                      "Screen Width",
-                      "Screen width, in pixels",
+    g_param_spec_int ("screen-width", NULL, NULL,
                       0, G_MAXINT, 1,
                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_SCREEN_HEIGHT] =
-    g_param_spec_int ("screen-height",
-                      "Screen Height",
-                      "Screen height, in pixels",
+    g_param_spec_int ("screen-height", NULL, NULL,
                       0, G_MAXINT, 1,
                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_BACKEND] =
-    g_param_spec_object ("backend",
-                         "Backend",
-                         "MetaBackend object",
+    g_param_spec_object ("backend", NULL, NULL,
                          META_TYPE_BACKEND,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_CONTEXT] =
-    g_param_spec_object ("context",
-                         "Context",
-                         "MetaContext object",
+    g_param_spec_object ("context", NULL, NULL,
                          META_TYPE_CONTEXT,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_DISPLAY] =
-    g_param_spec_object ("display",
-                         "Display",
-                         "Metacity display object for the shell",
+    g_param_spec_object ("display", NULL, NULL,
                          META_TYPE_DISPLAY,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
+  props[PROP_COMPOSITOR] =
+    g_param_spec_object ("compositor", NULL, NULL,
+                         META_TYPE_COMPOSITOR,
+                         G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
   props[PROP_WORKSPACE_MANAGER] =
-    g_param_spec_object ("workspace-manager",
-                         "Workspace manager",
-                         "Workspace manager",
+    g_param_spec_object ("workspace-manager", NULL, NULL,
                          META_TYPE_WORKSPACE_MANAGER,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_STAGE] =
-    g_param_spec_object ("stage",
-                         "Stage",
-                         "Stage holding the desktop scene graph",
+    g_param_spec_object ("stage", NULL, NULL,
                          CLUTTER_TYPE_ACTOR,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_WINDOW_GROUP] =
-    g_param_spec_object ("window-group",
-                         "Window Group",
-                         "Actor holding window actors",
+    g_param_spec_object ("window-group", NULL, NULL,
                          CLUTTER_TYPE_ACTOR,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_TOP_WINDOW_GROUP] =
-    g_param_spec_object ("top-window-group",
-                         "Top Window Group",
-                         "Actor holding override-redirect windows",
+    g_param_spec_object ("top-window-group", NULL, NULL,
                          CLUTTER_TYPE_ACTOR,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_WINDOW_MANAGER] =
-    g_param_spec_object ("window-manager",
-                         "Window Manager",
-                         "Window management interface",
+    g_param_spec_object ("window-manager", NULL, NULL,
                          SHELL_TYPE_WM,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_SETTINGS] =
-    g_param_spec_object ("settings",
-                         "Settings",
-                         "GSettings instance for gnome-shell configuration",
+    g_param_spec_object ("settings", NULL, NULL,
                          G_TYPE_SETTINGS,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_DATADIR] =
-    g_param_spec_string ("datadir",
-                         "Data directory",
-                         "Directory containing gnome-shell data files",
+    g_param_spec_string ("datadir", NULL, NULL,
                          NULL,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_IMAGEDIR] =
-    g_param_spec_string ("imagedir",
-                         "Image directory",
-                         "Directory containing gnome-shell image files",
+    g_param_spec_string ("imagedir", NULL, NULL,
                          NULL,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_USERDATADIR] =
-    g_param_spec_string ("userdatadir",
-                         "User data directory",
-                         "Directory containing gnome-shell user data",
+    g_param_spec_string ("userdatadir", NULL, NULL,
                          NULL,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_FOCUS_MANAGER] =
-    g_param_spec_object ("focus-manager",
-                         "Focus manager",
-                         "The shell's StFocusManager",
+    g_param_spec_object ("focus-manager", NULL, NULL,
                          ST_TYPE_FOCUS_MANAGER,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   props[PROP_FRAME_TIMESTAMPS] =
-    g_param_spec_boolean ("frame-timestamps",
-                          "Frame Timestamps",
-                          "Whether to log frame timestamps in the performance log",
+    g_param_spec_boolean ("frame-timestamps", NULL, NULL,
                           FALSE,
                           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
   props[PROP_FRAME_FINISH_TIMESTAMP] =
-    g_param_spec_boolean ("frame-finish-timestamp",
-                          "Frame Finish Timestamps",
-                          "Whether at the end of a frame to call glFinish and log paintCompletedTimestamp",
+    g_param_spec_boolean ("frame-finish-timestamp", NULL, NULL,
                           FALSE,
                           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
   props[PROP_SWITCHEROO_CONTROL] =
-    g_param_spec_object ("switcheroo-control",
-                         "switcheroo-control",
-                         "D-Bus Proxy for switcheroo-control daemon",
+    g_param_spec_object ("switcheroo-control", NULL, NULL,
                          G_TYPE_DBUS_PROXY,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  props[PROP_FORCE_ANIMATIONS] =
+    g_param_spec_boolean ("force-animations", NULL, NULL,
+                          FALSE,
+                          G_PARAM_READWRITE  | G_PARAM_CONSTRUCT| G_PARAM_STATIC_STRINGS);
+
+  props[PROP_AUTOMATION_SCRIPT] =
+    g_param_spec_object ("automation-script", NULL, NULL,
+                         G_TYPE_FILE,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (gobject_class, N_PROPS, props);
 }
@@ -685,6 +703,7 @@ _shell_global_init (const char *first_property_name,
 ShellGlobal *
 shell_global_get (void)
 {
+  g_return_val_if_fail (the_object, NULL);
   return the_object;
 }
 
@@ -702,86 +721,10 @@ _shell_global_destroy_gjs_context (ShellGlobal *self)
   g_clear_object (&self->js_context);
 }
 
-static guint32
-get_current_time_maybe_roundtrip (ShellGlobal *global)
-{
-  guint32 time;
-
-  time = shell_global_get_current_time (global);
-  if (time != CurrentTime)
-    return time;
-
-  return meta_display_get_current_time_roundtrip (global->meta_display);
-}
-
-static void
-focus_window_changed (MetaDisplay *display,
-                      GParamSpec  *param,
-                      gpointer     user_data)
-{
-  ShellGlobal *global = user_data;
-
-  /* If the stage window became unfocused, drop the key focus
-   * on Clutter's side. */
-  if (!meta_stage_is_focused (global->meta_display))
-    clutter_stage_set_key_focus (global->stage, NULL);
-}
-
-static ClutterActor *
-get_key_focused_actor (ShellGlobal *global)
-{
-  ClutterActor *actor;
-
-  actor = clutter_stage_get_key_focus (global->stage);
-
-  /* If there's no explicit key focus, clutter_stage_get_key_focus()
-   * returns the stage. This is a terrible API. */
-  if (actor == CLUTTER_ACTOR (global->stage))
-    actor = NULL;
-
-  return actor;
-}
-
-static void
-sync_stage_window_focus (ShellGlobal *global)
-{
-  ClutterActor *actor;
-
-  actor = get_key_focused_actor (global);
-
-  /* An actor got key focus and the stage needs to be focused. */
-  if (actor != NULL && !meta_stage_is_focused (global->meta_display))
-    meta_focus_stage_window (global->meta_display,
-                             get_current_time_maybe_roundtrip (global));
-
-  /* An actor dropped key focus. Focus the default window. */
-  else if (actor == NULL && meta_stage_is_focused (global->meta_display))
-    meta_display_focus_default_window (global->meta_display,
-                                       get_current_time_maybe_roundtrip (global));
-}
-
-static void
-focus_actor_changed (ClutterStage *stage,
-                     GParamSpec   *param,
-                     gpointer      user_data)
-{
-  ShellGlobal *global = user_data;
-  sync_stage_window_focus (global);
-}
-
-static void
-sync_input_region (ShellGlobal *global)
-{
-  MetaDisplay *display = global->meta_display;
-  MetaX11Display *x11_display = meta_display_get_x11_display (display);
-
-  meta_x11_display_set_stage_input_region (x11_display, global->input_region);
-}
-
 /**
  * shell_global_set_stage_input_region:
  * @global: the #ShellGlobal
- * @rectangles: (element-type Meta.Rectangle): a list of #MetaRectangle
+ * @rectangles: (element-type Mtk.Rectangle): a list of #MtkRectangle
  * describing the input region.
  *
  * Sets the area of the stage that is responsive to mouse clicks when
@@ -791,34 +734,46 @@ void
 shell_global_set_stage_input_region (ShellGlobal *global,
                                      GSList      *rectangles)
 {
-  MetaRectangle *rect;
+#ifdef HAVE_X11
+  MtkRectangle *rect;
   XRectangle *rects;
   int nrects, i;
   GSList *r;
+  MetaDisplay *display;
+  MetaX11Display *x11_display;
 
   g_return_if_fail (SHELL_IS_GLOBAL (global));
 
   if (meta_is_wayland_compositor ())
     return;
 
+  display = global->meta_display;
+  x11_display = meta_display_get_x11_display (display);
   nrects = g_slist_length (rectangles);
   rects = g_new (XRectangle, nrects);
   for (r = rectangles, i = 0; r; r = r->next, i++)
     {
-      rect = (MetaRectangle *)r->data;
+      rect = (MtkRectangle *)r->data;
       rects[i].x = rect->x;
       rects[i].y = rect->y;
       rects[i].width = rect->width;
       rects[i].height = rect->height;
     }
 
-  if (global->input_region)
-    XFixesDestroyRegion (global->xdisplay, global->input_region);
-
-  global->input_region = XFixesCreateRegion (global->xdisplay, rects, nrects);
+  meta_x11_display_set_stage_input_region (x11_display, rects, nrects);
   g_free (rects);
+#endif
+}
 
-  sync_input_region (global);
+/**
+ * shell_global_get_context:
+ *
+ * Return value: (transfer none): The #MetaContext
+ */
+MetaContext *
+shell_global_get_context (ShellGlobal *global)
+{
+  return global->meta_context;
 }
 
 /**
@@ -909,10 +864,11 @@ global_stage_before_paint (gpointer data)
 }
 
 static gboolean
-load_gl_symbol (const char  *name,
-                void       **func)
+load_gl_symbol (CoglRenderer *renderer,
+                const char   *name,
+                void        **func)
 {
-  *func = cogl_get_proc_address (name);
+  *func = cogl_renderer_get_proc_address (renderer, name);
   if (!*func)
     {
       g_warning ("failed to resolve required GL symbol \"%s\"\n", name);
@@ -924,10 +880,16 @@ load_gl_symbol (const char  *name,
 static void
 global_stage_after_paint (ClutterStage     *stage,
                           ClutterStageView *stage_view,
+                          ClutterFrame     *frame,
                           ShellGlobal      *global)
 {
   /* At this point, we've finished all layout and painting, but haven't
    * actually flushed or swapped */
+
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *cogl_context = clutter_backend_get_cogl_context (backend);
+  CoglDisplay *cogl_display = cogl_context_get_display (cogl_context);
+  CoglRenderer *cogl_renderer = cogl_display_get_renderer (cogl_display);
 
   if (global->frame_timestamps && global->frame_finish_timestamp)
     {
@@ -946,9 +908,9 @@ global_stage_after_paint (ClutterStage     *stage,
       static void (*finish) (void);
 
       if (!finish)
-        load_gl_symbol ("glFinish", (void **)&finish);
+        load_gl_symbol (cogl_renderer, "glFinish", (void **)&finish);
 
-      cogl_flush ();
+      cogl_context_flush (cogl_context);
       finish ();
 
       shell_perf_log_event (shell_perf_log_get_default (),
@@ -1000,40 +962,43 @@ entry_cursor_func (StEntry  *entry,
                            use_ibeam ? META_CURSOR_IBEAM : META_CURSOR_DEFAULT);
 }
 
+#ifdef HAVE_X11
 static void
 on_x11_display_closed (MetaDisplay *display,
                        ShellGlobal *global)
 {
   g_signal_handlers_disconnect_by_data (global->stage, global);
 }
+#endif
 
 void
 _shell_global_set_plugin (ShellGlobal *global,
                           MetaPlugin  *plugin)
 {
+  MetaContext *context;
   MetaDisplay *display;
   MetaBackend *backend;
   MetaSettings *settings;
+#ifdef HAVE_X11
+  MetaX11Display *x11_display;
+#endif
 
   g_return_if_fail (SHELL_IS_GLOBAL (global));
   g_return_if_fail (global->plugin == NULL);
 
-  global->backend = meta_get_backend ();
+  display = meta_plugin_get_display (plugin);
+  context = meta_display_get_context (display);
+  backend = meta_context_get_backend (context);
   global->plugin = plugin;
   global->wm = shell_wm_new (plugin);
 
-  display = meta_plugin_get_display (plugin);
   global->meta_display = display;
+  global->compositor = meta_display_get_compositor (display);
   global->meta_context = meta_display_get_context (display);
+  global->backend = meta_context_get_backend (context);
   global->workspace_manager = meta_display_get_workspace_manager (display);
 
   global->stage = CLUTTER_STAGE (meta_get_stage_for_display (display));
-
-  if (!meta_is_wayland_compositor ())
-    {
-      MetaX11Display *x11_display = meta_display_get_x11_display (display);
-      global->xdisplay = meta_x11_display_get_xdisplay (x11_display);
-    }
 
   st_entry_set_cursor_func (entry_cursor_func, global);
   st_clipboard_set_selection (meta_display_get_selection (display));
@@ -1067,16 +1032,14 @@ _shell_global_set_plugin (ShellGlobal *global,
                                "End of frame, possibly including swap time",
                                "");
 
-  g_signal_connect (global->stage, "notify::key-focus",
-                    G_CALLBACK (focus_actor_changed), global);
-  g_signal_connect (global->meta_display, "notify::focus-window",
-                    G_CALLBACK (focus_window_changed), global);
-
-  if (global->xdisplay)
+#ifdef HAVE_X11
+  x11_display = meta_display_get_x11_display (display);
+  if (x11_display && meta_x11_display_get_xdisplay (x11_display))
     g_signal_connect_object (global->meta_display, "x11-display-closing",
                              G_CALLBACK (on_x11_display_closed), global, 0);
+#endif
 
-  backend = meta_get_backend ();
+  backend = meta_context_get_backend (shell_global_get_context (global));
   settings = meta_backend_get_settings (backend);
   g_signal_connect (settings, "ui-scaling-factor-changed",
                     G_CALLBACK (ui_scaling_factor_changed), global);
@@ -1184,10 +1147,10 @@ pre_exec_close_fds(void)
 /**
  * shell_global_reexec_self:
  * @global: A #ShellGlobal
- * 
- * Restart the current process.  Only intended for development purposes. 
+ *
+ * Restart the current process.  Only intended for development purposes.
  */
-void 
+void
 shell_global_reexec_self (ShellGlobal *global)
 {
   GPtrArray *arr;
@@ -1269,7 +1232,7 @@ shell_global_reexec_self (ShellGlobal *global)
    */
   pre_exec_close_fds ();
 
-  g_object_get (global, "context", &meta_context, NULL);
+  meta_context = shell_global_get_context (global);
   meta_context_restore_rlimit_nofile (meta_context, NULL);
 
   meta_display_close (shell_global_get_display (global),
@@ -1431,10 +1394,10 @@ shell_global_app_launched_cb (GAppLaunchContext *context,
  * shell_global_create_app_launch_context:
  * @global: A #ShellGlobal
  * @timestamp: the timestamp for the launch (or 0 for current time)
- * @workspace: a workspace index, or -1 to indicate the current one
+ * @workspace: a workspace index, or -1 to indicate no specific one
  *
  * Create a #GAppLaunchContext set up with the correct timestamp, and
- * targeted to activate on the current workspace.
+ * targeted to activate on @workspace.
  *
  * Return value: (transfer full): A new #GAppLaunchContext
  */
@@ -1455,12 +1418,11 @@ shell_global_create_app_launch_context (ShellGlobal *global,
     timestamp = shell_global_get_current_time (global);
   meta_launch_context_set_timestamp (context, timestamp);
 
-  if (workspace < 0)
-    ws = meta_workspace_manager_get_active_workspace (workspace_manager);
-  else
-    ws = meta_workspace_manager_get_workspace_by_index (workspace_manager, workspace);
-
-  meta_launch_context_set_workspace (context, ws);
+  if (workspace > -1)
+    {
+      ws = meta_workspace_manager_get_workspace_by_index (workspace_manager, workspace);
+      meta_launch_context_set_workspace (context, ws);
+    }
 
   g_signal_connect (context,
                     "launched",
@@ -1857,4 +1819,70 @@ void
 _shell_global_locate_pointer (ShellGlobal *global)
 {
   g_signal_emit (global, shell_global_signals[LOCATE_POINTER], 0);
+}
+
+void
+_shell_global_notify_shutdown (ShellGlobal *global)
+{
+  g_signal_emit (global, shell_global_signals[SHUTDOWN], 0);
+}
+
+/**
+ * shell_global_get_window_tracker:
+ *
+ * Gets window tracker.
+ *
+ * Return value: (transfer none): the window tracker
+ */
+ShellWindowTracker *
+shell_global_get_window_tracker (ShellGlobal *global)
+{
+  if (!global->window_tracker)
+    global->window_tracker = g_object_new (SHELL_TYPE_WINDOW_TRACKER, NULL);
+  return global->window_tracker;
+}
+
+/**
+ * shell_global_get_app_system:
+ *
+ * Gets app system.
+ *
+ * Return value: (transfer none): the app system
+ */
+ShellAppSystem *
+shell_global_get_app_system (ShellGlobal *global)
+{
+  if (!global->app_system)
+    global->app_system = g_object_new (SHELL_TYPE_APP_SYSTEM, NULL);
+  return global->app_system;
+}
+
+/**
+ * shell_global_get_app_cache:
+ *
+ * Gets app cache.
+ *
+ * Return value: (transfer none): the app cache
+ */
+ShellAppCache *
+shell_global_get_app_cache (ShellGlobal *global)
+{
+  if (!global->app_cache)
+    global->app_cache = g_object_new (SHELL_TYPE_APP_CACHE, NULL);
+  return global->app_cache;
+}
+
+/**
+ * shell_global_get_app_usage:
+ *
+ * Gets app usage.
+ *
+ * Return value: (transfer none): the app usage
+ */
+ShellAppUsage *
+shell_global_get_app_usage (ShellGlobal *global)
+{
+  if (!global->app_usage)
+    global->app_usage = g_object_new (SHELL_TYPE_APP_USAGE, NULL);
+  return global->app_usage;
 }

@@ -126,7 +126,8 @@ shew_window_exporter_export_finish (ShewWindowExporter  *exporter,
 }
 
 void
-shew_window_exporter_unexport (ShewWindowExporter *exporter)
+shew_window_exporter_unexport (ShewWindowExporter *exporter,
+                               const char         *handle)
 {
   GtkWidget *widget;
 
@@ -138,7 +139,11 @@ shew_window_exporter_unexport (ShewWindowExporter *exporter)
   if (GDK_IS_WAYLAND_DISPLAY (gtk_widget_get_display (widget)))
     {
       GdkSurface *s = gtk_native_get_surface (GTK_NATIVE (widget));
+#if GTK_CHECK_VERSION (4, 11, 3)
+      gdk_wayland_toplevel_drop_exported_handle (GDK_WAYLAND_TOPLEVEL (s), handle);
+#else
       gdk_wayland_toplevel_unexport_handle (GDK_WAYLAND_TOPLEVEL (s));
+#endif
     }
 #endif
 }
@@ -207,9 +212,7 @@ shew_window_exporter_class_init (ShewWindowExporterClass *klass)
 
   g_object_class_install_property (object_class,
                                    PROP_WINDOW,
-                                   g_param_spec_object ("window",
-                                                        "GtkWindow",
-                                                        "The GtkWindow to export",
+                                   g_param_spec_object ("window", NULL, NULL,
                                                         GTK_TYPE_WINDOW,
                                                         G_PARAM_READWRITE |
                                                         G_PARAM_CONSTRUCT_ONLY |

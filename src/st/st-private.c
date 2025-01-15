@@ -111,7 +111,7 @@ _st_set_text_from_style (ClutterText *text,
                          StThemeNode *theme_node)
 {
 
-  ClutterColor color;
+  CoglColor color;
   StTextDecoration decoration;
   PangoAttrList *attribs = NULL;
   const PangoFontDescription *font;
@@ -376,9 +376,10 @@ blur_pixels (guchar  *pixels_in,
 }
 
 CoglPipeline *
-_st_create_shadow_pipeline (StShadow    *shadow_spec,
-                            CoglTexture *src_texture,
-                            float        resource_scale)
+_st_create_shadow_pipeline (StShadow            *shadow_spec,
+                            ClutterPaintContext *paint_context,
+                            CoglTexture         *src_texture,
+                            float                resource_scale)
 {
   ClutterBackend *backend = clutter_get_default_backend ();
   CoglContext *ctx = clutter_backend_get_cogl_context (backend);
@@ -386,12 +387,13 @@ _st_create_shadow_pipeline (StShadow    *shadow_spec,
   g_autoptr (ClutterPaintNode) blur_node = NULL;
   g_autoptr (CoglOffscreen) offscreen = NULL;
   g_autoptr (GError) error = NULL;
-  ClutterPaintContext *paint_context;
+  ClutterPaintContext *nested_paint_context;
+  ClutterColorState *color_state;
   CoglFramebuffer *fb;
   CoglPipeline *pipeline;
   CoglTexture *texture;
   float sampling_radius;
-  float sigma;
+  float radius;
   int src_height, dst_height;
   int src_width, dst_width;
   CoglPipeline *texture_pipeline;
@@ -403,9 +405,8 @@ _st_create_shadow_pipeline (StShadow    *shadow_spec,
   g_return_val_if_fail (shadow_spec != NULL, NULL);
   g_return_val_if_fail (src_texture != NULL, NULL);
 
-  sampling_radius = resource_scale * shadow_spec->blur;
-  sigma = sampling_radius / 2.f;
-  sampling_radius = ceilf (sampling_radius);
+  radius = resource_scale * shadow_spec->blur;
+  sampling_radius = ceilf (radius);
 
   src_width = cogl_texture_get_width (src_texture);
   src_height = cogl_texture_get_height (src_texture);
@@ -420,7 +421,7 @@ _st_create_shadow_pipeline (StShadow    *shadow_spec,
   fb = COGL_FRAMEBUFFER (offscreen);
   if (!cogl_framebuffer_allocate (fb, &error))
     {
-      cogl_clear_object (&texture);
+      g_clear_object (&texture);
       return NULL;
     }
 
@@ -428,7 +429,7 @@ _st_create_shadow_pipeline (StShadow    *shadow_spec,
   cogl_framebuffer_orthographic (fb, 0, 0, dst_width, dst_height, 0, 1.0);
 
   /* Blur */
-  blur_node = clutter_blur_node_new (dst_width, dst_height, sigma);
+  blur_node = clutter_blur_node_new (dst_width, dst_height, radius);
   clutter_paint_node_add_rectangle (blur_node,
                                     &(ClutterActorBox) {
                                       0.f, 0.f,
@@ -450,7 +451,7 @@ _st_create_shadow_pipeline (StShadow    *shadow_spec,
 
       texture_pipeline = cogl_pipeline_new (ctx);
       cogl_pipeline_add_snippet (texture_pipeline, snippet);
-      cogl_object_unref (snippet);
+      g_object_unref (snippet);
 
       cogl_context_set_named_pipeline (ctx,
                                        &texture_pipeline_key,
@@ -473,10 +474,14 @@ _st_create_shadow_pipeline (StShadow    *shadow_spec,
                                       .y2 = src_height + sampling_radius,
                                     });
 
-  paint_context =
-    clutter_paint_context_new_for_framebuffer (fb, NULL, CLUTTER_PAINT_FLAG_NONE);
-  clutter_paint_node_paint (blur_node, paint_context);
-  clutter_paint_context_destroy (paint_context);
+  color_state = clutter_paint_context_get_color_state (paint_context);
+  nested_paint_context =
+    clutter_paint_context_new_for_framebuffer (fb, NULL, CLUTTER_PAINT_FLAG_NONE,
+                                               color_state);
+  clutter_paint_context_push_color_state (nested_paint_context, color_state);
+  clutter_paint_node_paint (blur_node, nested_paint_context);
+  clutter_paint_context_pop_color_state (nested_paint_context);
+  clutter_paint_context_destroy (nested_paint_context);
 
   if (G_UNLIKELY (shadow_pipeline_template == NULL))
     {
@@ -493,20 +498,22 @@ _st_create_shadow_pipeline (StShadow    *shadow_spec,
   pipeline = cogl_pipeline_copy (shadow_pipeline_template);
   cogl_pipeline_set_layer_texture (pipeline, 0, texture);
 
-  cogl_clear_object (&texture);
+  g_clear_object (&texture);
 
   return pipeline;
 }
 
 CoglPipeline *
-_st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
-                                       ClutterActor *actor)
+_st_create_shadow_pipeline_from_actor (StShadow            *shadow_spec,
+                                       ClutterActor        *actor,
+                                       ClutterPaintContext *paint_context)
 {
   ClutterContent *image = NULL;
   CoglPipeline *shadow_pipeline = NULL;
   float resource_scale;
   float width, height;
-  ClutterPaintContext *paint_context;
+  ClutterColorState *color_state;
+  ClutterPaintContext *nested_paint_context;
 
   g_return_val_if_fail (clutter_actor_has_allocation (actor), NULL);
 
@@ -529,13 +536,17 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
       if (texture &&
           cogl_texture_get_width (texture) == width &&
           cogl_texture_get_height (texture) == height)
-        shadow_pipeline = _st_create_shadow_pipeline (shadow_spec, texture,
-                                                      resource_scale);
+        {
+          shadow_pipeline = _st_create_shadow_pipeline (shadow_spec,
+                                                        paint_context,
+                                                        texture,
+                                                        resource_scale);
+        }
     }
 
   if (shadow_pipeline == NULL)
     {
-      CoglTexture *buffer;
+      g_autoptr(CoglTexture) buffer = NULL;
       CoglOffscreen *offscreen;
       CoglFramebuffer *fb;
       CoglContext *ctx;
@@ -556,11 +567,10 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
         {
           g_error_free (catch_error);
           g_object_unref (offscreen);
-          cogl_object_unref (buffer);
           return NULL;
         }
 
-      cogl_color_init_from_4ub (&clear_color, 0, 0, 0, 0);
+      cogl_color_init_from_4f (&clear_color, 0.0, 0.0, 0.0, 0.0);
       clutter_actor_get_position (actor, &x, &y);
       x *= resource_scale;
       y *= resource_scale;
@@ -572,20 +582,24 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
 
       clutter_actor_set_opacity_override (actor, 255);
 
-      paint_context =
+      color_state = clutter_actor_get_color_state (actor);
+      nested_paint_context =
         clutter_paint_context_new_for_framebuffer (fb, NULL,
-                                                   CLUTTER_PAINT_FLAG_NONE);
-      clutter_actor_paint (actor, paint_context);
-      clutter_paint_context_destroy (paint_context);
+                                                   CLUTTER_PAINT_FLAG_NONE,
+                                                   color_state);
+      clutter_paint_context_push_color_state (nested_paint_context, color_state);
+      clutter_actor_paint (actor, nested_paint_context);
+      clutter_paint_context_pop_color_state (nested_paint_context);
+      clutter_paint_context_destroy (nested_paint_context);
 
       clutter_actor_set_opacity_override (actor, -1);
 
       g_object_unref (fb);
 
-      shadow_pipeline = _st_create_shadow_pipeline (shadow_spec, buffer,
+      shadow_pipeline = _st_create_shadow_pipeline (shadow_spec,
+                                                    paint_context,
+                                                    g_steal_pointer (&buffer),
                                                     resource_scale);
-
-      cogl_object_unref (buffer);
     }
 
   return shadow_pipeline;
@@ -776,12 +790,13 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec_in,
 }
 
 void
-_st_paint_shadow_with_opacity (StShadow        *shadow_spec,
-                               CoglFramebuffer *framebuffer,
-                               CoglPipeline    *shadow_pipeline,
-                               ClutterActorBox *box,
-                               guint8           paint_opacity)
+_st_paint_shadow_with_opacity (StShadow         *shadow_spec,
+                               ClutterPaintNode *node,
+                               CoglPipeline     *shadow_pipeline,
+                               ClutterActorBox  *box,
+                               guint8            paint_opacity)
 {
+  g_autoptr (ClutterPaintNode) pipeline_node = NULL;
   ClutterActorBox shadow_box;
   CoglColor color;
 
@@ -790,15 +805,15 @@ _st_paint_shadow_with_opacity (StShadow        *shadow_spec,
 
   st_shadow_get_box (shadow_spec, box, &shadow_box);
 
-  cogl_color_init_from_4ub (&color,
-                            shadow_spec->color.red   * paint_opacity / 255,
-                            shadow_spec->color.green * paint_opacity / 255,
-                            shadow_spec->color.blue  * paint_opacity / 255,
-                            shadow_spec->color.alpha * paint_opacity / 255);
+  cogl_color_init_from_4f (&color,
+                           shadow_spec->color.red / 255.0   * paint_opacity / 255.0,
+                           shadow_spec->color.green / 255.0 * paint_opacity / 255.0,
+                           shadow_spec->color.blue / 255.0  * paint_opacity / 255.0,
+                           shadow_spec->color.alpha / 255.0 * paint_opacity / 255.0);
   cogl_color_premultiply (&color);
   cogl_pipeline_set_layer_combine_constant (shadow_pipeline, 0, &color);
-  cogl_framebuffer_draw_rectangle (framebuffer,
-                                   shadow_pipeline,
-                                   shadow_box.x1, shadow_box.y1,
-                                   shadow_box.x2, shadow_box.y2);
+
+  pipeline_node = clutter_pipeline_node_new (shadow_pipeline);
+  clutter_paint_node_add_child (node, pipeline_node);
+  clutter_paint_node_add_rectangle (pipeline_node, &shadow_box);
 }

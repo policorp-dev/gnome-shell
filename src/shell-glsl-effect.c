@@ -1,8 +1,9 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
 /**
- * SECTION:shell-glsl-effect
- * @short_description: An offscreen effect using GLSL
+ * ShellGLSLEffect:
+ *
+ * An offscreen effect using GLSL
  *
  * A #ShellGLSLEffect is a #ClutterOffscreenEffect that allows
  * running custom GLSL to the vertex and fragment stages of the
@@ -31,7 +32,7 @@ shell_glsl_effect_create_pipeline (ClutterOffscreenEffect *effect,
 
   cogl_pipeline_set_layer_texture (priv->pipeline, 0, texture);
 
-  return cogl_object_ref (priv->pipeline);
+  return g_object_ref (priv->pipeline);
 }
 
 /**
@@ -76,7 +77,7 @@ shell_glsl_effect_add_glsl_snippet (ShellGLSLEffect  *effect,
   else
     cogl_pipeline_add_layer_snippet (klass->base_pipeline, 0, snippet);
 
-  cogl_object_unref (snippet);
+  g_object_unref (snippet);
 }
 
 static void
@@ -87,7 +88,7 @@ shell_glsl_effect_dispose (GObject *gobject)
 
   priv = shell_glsl_effect_get_instance_private (self);
 
-  g_clear_pointer (&priv->pipeline, cogl_object_unref);
+  g_clear_object (&priv->pipeline);
 
   G_OBJECT_CLASS (shell_glsl_effect_parent_class)->dispose (gobject);
 }
@@ -119,7 +120,7 @@ shell_glsl_effect_constructed (GObject *object)
   if (G_UNLIKELY (klass->base_pipeline == NULL))
     {
       klass->base_pipeline = cogl_pipeline_new (ctx);
-      cogl_pipeline_set_blend (klass->base_pipeline, "RGBA = ADD (SRC_COLOR * (SRC_COLOR[A]), DST_COLOR * (1-SRC_COLOR[A]))", NULL);
+      cogl_pipeline_set_blend (klass->base_pipeline, "RGB = ADD (SRC_COLOR * (SRC_COLOR[A]), DST_COLOR * (1-SRC_COLOR[A]))", NULL);
 
       if (klass->build_pipeline != NULL)
         klass->build_pipeline (self);

@@ -1,14 +1,14 @@
-# Georgian translation for gnome-shell
-# Copyright (C) 2022, gnome-shell authors
+# Georgian translation for gnome-shell.
+# Copyright (C) 2023 gnome-shell authors.
 # This file is distributed under the same license as the gnome-shell package.
-# Ekaterine Papava <papava.e@gtu.ge>, 2023
+# Ekaterine Papava <papava.e@gtu.ge>, 20232-2024.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-shell\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-shell/issues\n"
-"POT-Creation-Date: 2023-02-14 07:18+0000\n"
-"PO-Revision-Date: 2023-02-14 08:28+0100\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-shell/issues/\n"
+"POT-Creation-Date: 2024-08-14 16:36+0000\n"
+"PO-Revision-Date: 2024-08-17 07:16+0200\n"
 "Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
 "Language-Team: Georgian <(nothing)>\n"
 "Language: ka\n"
@@ -16,74 +16,110 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.3.2\n"
 
 #: data/50-gnome-shell-launchers.xml:6
 msgid "Launchers"
 msgstr "გამშვებები"
 
 #: data/50-gnome-shell-launchers.xml:10
-msgid "Activate favorite application 1"
-msgstr "#1 რჩეული აპლიკაციის აქტივაცია"
+msgid "Activate pinned app 1"
+msgstr "მიმაგრებული აპი 1-ის აქტივაცია"
 
 #: data/50-gnome-shell-launchers.xml:14
-msgid "Activate favorite application 2"
-msgstr "#2 რჩეული აპლიკაციის აქტივაცია"
+msgid "Activate pinned app 2"
+msgstr "მიმაგრებული აპი 2-ის აქტივაცია"
 
 #: data/50-gnome-shell-launchers.xml:18
-msgid "Activate favorite application 3"
-msgstr "#3 რჩეული აპლიკაციის აქტივაცია"
+msgid "Activate pinned app 3"
+msgstr "მიმაგრებული აპი 3-ის აქტივაცია"
 
 #: data/50-gnome-shell-launchers.xml:22
-msgid "Activate favorite application 4"
-msgstr "#4 რჩეული აპლიკაციის აქტივაცია"
+msgid "Activate pinned app 4"
+msgstr "მიმაგრებული აპი 4-ის აქტივაცია"
 
 #: data/50-gnome-shell-launchers.xml:26
-msgid "Activate favorite application 5"
-msgstr "#5 რჩეული აპლიკაციის აქტივაცია"
+msgid "Activate pinned app 5"
+msgstr "მიმაგრებული აპი 5-ის აქტივაცია"
 
 #: data/50-gnome-shell-launchers.xml:30
-msgid "Activate favorite application 6"
-msgstr "#6 რჩეული აპლიკაციის აქტივაცია"
+msgid "Activate pinned app 6"
+msgstr "მიმაგრებული აპი 6-ის აქტივაცია"
 
 #: data/50-gnome-shell-launchers.xml:34
-msgid "Activate favorite application 7"
-msgstr "#7 რჩეული აპლიკაციის აქტივაცია"
+msgid "Activate pinned app 7"
+msgstr "მიმაგრებული აპი 7-ის აქტივაცია"
 
 #: data/50-gnome-shell-launchers.xml:38
-msgid "Activate favorite application 8"
-msgstr "#8 რჩეული აპლიკაციის აქტივაცია"
+msgid "Activate pinned app 8"
+msgstr "მიმაგრებული აპი 8-ის აქტივაცია"
 
 #: data/50-gnome-shell-launchers.xml:42
-msgid "Activate favorite application 9"
-msgstr "#9 რჩეული აპლიკაციის აქტივაცია"
+msgid "Activate pinned app 9"
+msgstr "მიმაგრებული აპი 9-ის აქტივაცია"
+
+#: data/50-gnome-shell-launchers.xml:46
+msgid "Open new window of pinned app 1"
+msgstr "მიმაგრებული აპი 1-ის გახსნა ახალ ფანჯარაში"
+
+#: data/50-gnome-shell-launchers.xml:50
+msgid "Open new window of pinned app 2"
+msgstr "მიმაგრებული აპი 2-ის გახსნა ახალ ფანჯარაში"
+
+#: data/50-gnome-shell-launchers.xml:54
+msgid "Open new window of pinned app 3"
+msgstr "მიმაგრებული აპი 3-ის გახსნა ახალ ფანჯარაში"
+
+#: data/50-gnome-shell-launchers.xml:58
+msgid "Open new window of pinned app 4"
+msgstr "მიმაგრებული აპი 4-ის გახსნა ახალ ფანჯარაში"
+
+#: data/50-gnome-shell-launchers.xml:62
+msgid "Open new window of pinned app 5"
+msgstr "მიმაგრებული აპი 5-ის გახსნა ახალ ფანჯარაში"
+
+#: data/50-gnome-shell-launchers.xml:66
+msgid "Open new window of pinned app 6"
+msgstr "მიმაგრებული აპი 6-ის გახსნა ახალ ფანჯარაში"
+
+#: data/50-gnome-shell-launchers.xml:70
+msgid "Open new window of pinned app 7"
+msgstr "მიმაგრებული აპი 7-ის გახსნა ახალ ფანჯარაში"
+
+#: data/50-gnome-shell-launchers.xml:74
+msgid "Open new window of pinned app 8"
+msgstr "მიმაგრებული აპი 8-ის გახსნა ახალ ფანჯარაში"
+
+#: data/50-gnome-shell-launchers.xml:78
+msgid "Open new window of pinned app 9"
+msgstr "მიმაგრებული აპი 9-ის გახსნა ახალ ფანჯარაში"
 
 #. Translators: name of the folder under ~/Pictures for screenshots.
-#: data/50-gnome-shell-screenshots.xml:6 js/ui/screenshot.js:2072
+#: data/50-gnome-shell-screenshots.xml:6 js/ui/screenshot.js:2274
 msgid "Screenshots"
 msgstr "ეკრანის ანაბეჭდები"
 
 #: data/50-gnome-shell-screenshots.xml:9
-#: data/org.gnome.shell.gschema.xml.in:234
+#: data/org.gnome.shell.gschema.xml.in:287
 msgid "Take a screenshot interactively"
 msgstr "ეკრანის ანაბეჭდის ინტერაქტიული გადაღება"
 
 #: data/50-gnome-shell-screenshots.xml:12
-#: data/org.gnome.shell.gschema.xml.in:246
+#: data/org.gnome.shell.gschema.xml.in:299
 msgid "Take a screenshot"
 msgstr "ეკრანის ანაბეჭდის გადაღება"
 
 #: data/50-gnome-shell-screenshots.xml:15
-#: data/org.gnome.shell.gschema.xml.in:242
+#: data/org.gnome.shell.gschema.xml.in:295
 msgid "Take a screenshot of a window"
 msgstr "ფანჯრის ანაბეჭდის გადაღება"
 
 #: data/50-gnome-shell-screenshots.xml:18
-#: data/org.gnome.shell.gschema.xml.in:238
+#: data/org.gnome.shell.gschema.xml.in:291
 msgid "Record a screencast interactively"
 msgstr "ეკრანიდან ვიდეოს ჩაწერა"
 
-#: data/50-gnome-shell-system.xml:6
+#: data/50-gnome-shell-system.xml:6 js/ui/messageTray.js:1298
 msgid "System"
 msgstr "სისტემა"
 
@@ -92,20 +128,20 @@ msgid "Show the notification list"
 msgstr "გაფრთხილებების სიის ჩვენება"
 
 #: data/50-gnome-shell-system.xml:12
+msgid "Open the quick settings menu"
+msgstr "სწრაფი მორგების მენიუს ჩვენება"
+
+#: data/50-gnome-shell-system.xml:15
 msgid "Focus the active notification"
 msgstr "აქტიური გაფრთხილების ჩვენება"
 
-#: data/50-gnome-shell-system.xml:15
+#: data/50-gnome-shell-system.xml:18
 msgid "Show the overview"
 msgstr "გადახედვის ჩვენება"
 
-#: data/50-gnome-shell-system.xml:18
-msgid "Show all applications"
-msgstr "ყველა აპლიკაციის ჩვენება"
-
 #: data/50-gnome-shell-system.xml:21
-msgid "Open the application menu"
-msgstr "აპლიკაციების მენიუს გახსნა"
+msgid "Show all apps"
+msgstr "ყველა აპის ჩვენება"
 
 #: data/org.gnome.Shell.desktop.in.in:4
 msgid "GNOME Shell"
@@ -153,6 +189,11 @@ msgid ""
 "methods on org.gnome.Shell. This key takes precedence over the “enabled-"
 "extensions” setting."
 msgstr ""
+"GNOME-ის გარსის გაფართოებებს UUID ფუნქცია აქვთ. ეს გასაღები შეიცავს "
+"გაფართოებების სიას, რომელიც გაითიშოს მაშინაც კი, თუ ის მიმდინარე რეჟიმის "
+"ნაწილის სახითაა ჩატვირთულია.ამ სიის შეცვლა D-Bus-ის EnableExtension და "
+"DisableExtension მეთოდებით შეგიძლიათ, org.gnome.Shell-ზე. ამ პარამეტრს უფრო "
+"მეტი პრიორიტეტი აქვს, ვიდრე \"enabled-extensions\" პარამეტრს."
 
 #: data/org.gnome.shell.gschema.xml.in:37
 msgid "Disable user extensions"
@@ -167,205 +208,286 @@ msgstr ""
 "პარამეტრის შეხების გარეშე."
 
 #: data/org.gnome.shell.gschema.xml.in:45
+msgid "Allow extension installation"
+msgstr "გაფართოებების დაყენების დაშვება"
+
+#: data/org.gnome.shell.gschema.xml.in:46
+msgid ""
+"Allow users to install extensions in their home folder. If disabled, the "
+"InstallRemoteExtension D-Bus method will fail, and extensions are only "
+"loaded from system directories on startup. It does not affect extensions "
+"that are already loaded, so a change only takes full effect on the next "
+"login."
+msgstr ""
+"უფლებას აძლევს მომხმარებლებს, გაფართოებები თავიანთ საწყის საქაღალდეში "
+"დააყენონ. თუ გათიშულია, D-Bus-ის მეთოდი InstallRemoteExtension ჩავარდება და "
+"გაფართოებები გაშვებისას, მხოლოდ, სისტემური საქაღალდეებიდან ჩაიტვირთება. ეს "
+"არ ეხება გაფართოებებს, რომლებიც უკვე ჩატვირთულია, ასე რომ, ცვლილებები, "
+"მხოლოდ, შემდეგი შესვლისას შევა ძალაში."
+
+#: data/org.gnome.shell.gschema.xml.in:56
 msgid "Disables the validation of extension version compatibility"
 msgstr "გაფართოების ვერსიის თავსებადობის გადამოწმების გამორთვა"
 
-#: data/org.gnome.shell.gschema.xml.in:46
+#: data/org.gnome.shell.gschema.xml.in:57
 msgid ""
 "GNOME Shell will only load extensions that claim to support the current "
 "running version. Enabling this option will disable this check and try to "
 "load all extensions regardless of the versions they claim to support."
 msgstr ""
+"GNOME Shell მხოლოდ იმ გაფართოებებს ჩატვირთავს, რომლებსაც ამჟამად გაშვებული "
+"ვერსიის მხარდაჭერა გააჩნია. ამ პარამეტრის ჩართვა გამორთავს ამ შემოწმებას და "
+"ჩატვირთავს ყველა გაფართოებას იმის მიუხედავად, რომელი ვერსიის მხარდაჭერა "
+"გააჩნია."
 
-#: data/org.gnome.shell.gschema.xml.in:54
+#: data/org.gnome.shell.gschema.xml.in:65
 msgid "List of desktop file IDs for favorite applications"
 msgstr "რჩეული აპლიკაციების სამუშაო მაგიდის ფაილის ID-ების სია"
 
-#: data/org.gnome.shell.gschema.xml.in:55
+#: data/org.gnome.shell.gschema.xml.in:66
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr "ამ იდენტიფიკატორების შესაბამისი აპლიკაციები რჩეულ სიაში გამოჩნდება."
 
-#: data/org.gnome.shell.gschema.xml.in:62
+#: data/org.gnome.shell.gschema.xml.in:73
 msgid "History for command (Alt-F2) dialog"
 msgstr "ისტორია ბრძანების (Alt-F2) ფანჯრისთვის"
 
-#. Translators: looking glass is a debugger and inspector tool, see https://wiki.gnome.org/Projects/GnomeShell/LookingGlass
-#: data/org.gnome.shell.gschema.xml.in:67
+#. Translators: looking glass is a debugger and inspector tool, see https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/docs/looking-glass.md
+#: data/org.gnome.shell.gschema.xml.in:78
 msgid "History for the looking glass dialog"
 msgstr "გამადიდებელი ლინზის ფანჯრის ისტორია"
 
-#: data/org.gnome.shell.gschema.xml.in:71
-msgid "Always show the “Log out” menu item in the user menu."
-msgstr "მომხმარებლის მენიუში \"გასვლის\" ყოველთვის ჩვენება."
+#: data/org.gnome.shell.gschema.xml.in:82
+msgid "Always show the “Log Out” action in the system menu"
+msgstr "მომხმარებლის მენიუში \"გასვლის\" ყოველთვის ჩვენება"
 
-#: data/org.gnome.shell.gschema.xml.in:72
+#: data/org.gnome.shell.gschema.xml.in:83
 msgid ""
-"This key overrides the automatic hiding of the “Log out” menu item in single-"
-"user, single-session situations."
+"This key overrides the automatic hiding of the “Log out” action in the "
+"system menu for logged-in situations where there is a single, local, non-"
+"system user and only a single available session type (e.g. GNOME on Wayland)."
 msgstr ""
+"ეს პარამეტრი გადაფარავს 'გასვლის' მენიუს პუნქტის ავტომატურ დამალვას უკვე "
+"შესულ სიტუაციაში, ერთმომხმარებლიან, ერთ-სესიიანი, არასისტემური მომხმარებლის "
+"სიტუაციებისას და, მხოლოდ, ერთი ხელმისაწვდომი სესიის ტიპისას (მაგ: GNOME "
+"Wayland-ზე)."
 
-#: data/org.gnome.shell.gschema.xml.in:79
+#: data/org.gnome.shell.gschema.xml.in:92
 msgid ""
 "Whether to remember password for mounting encrypted or remote filesystems"
 msgstr "დავიმახსოვრო თუ არა დაშიფრული ან დაშორებული ფაილურ სისტემის პაროლები"
 
-#: data/org.gnome.shell.gschema.xml.in:80
+#: data/org.gnome.shell.gschema.xml.in:93
 msgid ""
 "The shell will request a password when an encrypted device or a remote "
 "filesystem is mounted. If the password can be saved for future use a "
 "“Remember Password” checkbox will be present. This key sets the default "
 "state of the checkbox."
 msgstr ""
+"გარსი მოგთხოვთ პაროლს, როცა დაშიფრული მოწყობილობის ან დაშორებული ფაილური "
+"სისტემს მიმაგრებას დააპირებთ. თუ პაროლი, შესაძლებელია, მომავლისთვის "
+"შეინახოთ, ასევე დაინახავთ თოლიას \"პაროლის დამახსოვრება. ეს პარამეტრი ამ "
+"თოლიის ნაგულისხმევ მნიშვნელობას აყენებს."
 
-#: data/org.gnome.shell.gschema.xml.in:89
+#: data/org.gnome.shell.gschema.xml.in:102
 msgid "The last selected non-default power profile"
 msgstr "ბოლოს არჩეული არა-ნაგულისხმები კვების პროფილი"
 
-#: data/org.gnome.shell.gschema.xml.in:90
+#: data/org.gnome.shell.gschema.xml.in:103
 msgid ""
 "Some systems support more than two power profiles. In order to still support "
 "toggling between two profiles, this key records the last selected non-"
 "default profile."
 msgstr ""
+"ზოგიერთ სისტემას ორზე მეტი კვების პროფილის მხარდაჭერა გააჩნია. იმისთვის, რომ "
+"ორ პროფილს შორის გადართვა ჯერ კიდევ მხარდაჭერილ იყოს, ეს პარამეტრი ბოლოს "
+"არჩეულ არანაგულისხმევ პროფილს შეიცავს."
 
-#: data/org.gnome.shell.gschema.xml.in:98
+#: data/org.gnome.shell.gschema.xml.in:111
 msgid "The last version the “Welcome to GNOME” dialog was shown for"
 msgstr "ბოლო ვერსია, რომლისთვისაც \"მოგესალმებათ GNOME\" ფანჯარა იყო ნაჩვენები"
 
-#: data/org.gnome.shell.gschema.xml.in:99
+#: data/org.gnome.shell.gschema.xml.in:112
 msgid ""
 "This key determines for which version the “Welcome to GNOME” dialog was last "
 "shown. An empty string represents the oldest possible version, and a huge "
 "number will represent versions that do not exist yet. This huge number can "
 "be used to effectively disable the dialog."
 msgstr ""
+"ეს პარამეტრი განსაზღვრავს, \"მოგესალმებით GNOME-ში\"-ის რომელი ვერსია იყო "
+"ბოლოს ნაჩვენები. ცარიელი სტრიქონი უძველეს შესაძლო ვერსიას წარმოადგენს, დიდი "
+"რიცხვი კი წარმოადგენს ვერსიას, რომლებიც ჯერ არ არსებობს. ეს დიდი რიცხვი "
+"შეგიძლიათ ამ დიალოგის გამოსართავად გამოიყენოთ."
 
-#: data/org.gnome.shell.gschema.xml.in:132
+#: data/org.gnome.shell.gschema.xml.in:145
 msgid "Layout of the app picker"
 msgstr "აპლიკაციის ამრჩევის განლაგება"
 
-#: data/org.gnome.shell.gschema.xml.in:133
+#: data/org.gnome.shell.gschema.xml.in:146
 msgid ""
 "Layout of the app picker. Each entry in the array is a page. Pages are "
 "stored in the order they appear in GNOME Shell. Each page contains an "
 "“application id” → 'data' pair. Currently, the following values are stored "
 "as 'data': • “position”: the position of the application icon in the page"
 msgstr ""
+"აპების ამრჩევის განლაგება. ამ მასივის თითოეული ელემენტი გვერდია. გვერდები იმ "
+"მიმდევრობითაა დამახსოვრებული, როგორც GNOME-ის გარსში ჩანან. თითოეული გვერდი "
+"“application id” → 'data' წყვილს შეიცავს. ამჟამად დამახსოვრებულია შემდეგი "
+"მნიშვნელობები, როგორც 'data': * \"მდებარეობა\": აპლიკაციის ხატულის "
+"მდებარეობა გვერდზე"
 
-#: data/org.gnome.shell.gschema.xml.in:148
-msgid "Keybinding to open the application menu"
-msgstr "კლავიატურის მალსახმობი აპლიკაციის მენიუს გასახსნელად"
-
-#: data/org.gnome.shell.gschema.xml.in:149
-msgid "Keybinding to open the application menu."
-msgstr "კლავიატურის მალსახმობი აპლიკაციის მენიუს გასახსნელად."
-
-#: data/org.gnome.shell.gschema.xml.in:155
-#: data/org.gnome.shell.gschema.xml.in:162
+#: data/org.gnome.shell.gschema.xml.in:165
+#: data/org.gnome.shell.gschema.xml.in:172
 msgid "Keybinding to shift between overview states"
 msgstr "კლავიატურის მალსახმობი მდგომარეობებს შორის გადასართავად"
 
-#: data/org.gnome.shell.gschema.xml.in:156
+#: data/org.gnome.shell.gschema.xml.in:166
 msgid "Keybinding to shift between session, window picker and app grid"
 msgstr ""
 "კლავიატურის მალსახმობი სესიებს, ფანჯრებსა და აპლიკაციის ბადეს შორის "
 "გადართავად"
 
-#: data/org.gnome.shell.gschema.xml.in:163
+#: data/org.gnome.shell.gschema.xml.in:173
 msgid "Keybinding to shift between app grid, window picker and session"
 msgstr ""
 "კლავიატურის მალსახმობი აპლიკაციის ბადეს, ფანჯრებსა და სესიებს შორის "
 "გადასართავად"
 
-#: data/org.gnome.shell.gschema.xml.in:169
+#: data/org.gnome.shell.gschema.xml.in:179
 msgid "Keybinding to open the “Show Applications” view"
 msgstr "კლავიატურის მალსახმობი \"აპლიკაციების ჩვენების\" ხედის გასახსნელად"
 
-#: data/org.gnome.shell.gschema.xml.in:170
+#: data/org.gnome.shell.gschema.xml.in:180
 msgid ""
 "Keybinding to open the “Show Applications” view of the Activities Overview."
 msgstr ""
 "კლავიატურის მალსახმობი \"აპლიკაციების ჩვენების\" ხედის გასახსნელად "
 "ქმედებების მიმოხილვით."
 
-#: data/org.gnome.shell.gschema.xml.in:177
+#: data/org.gnome.shell.gschema.xml.in:187
 msgid "Keybinding to open the overview"
 msgstr "კლავიატურის მალსახმობი მიმოხილვის გასახსნელად"
 
-#: data/org.gnome.shell.gschema.xml.in:178
+#: data/org.gnome.shell.gschema.xml.in:188
 msgid "Keybinding to open the Activities Overview."
 msgstr "კლავიატურის მალსახმობი ქმედებების გადასახედად."
 
-#: data/org.gnome.shell.gschema.xml.in:184
+#: data/org.gnome.shell.gschema.xml.in:194
 msgid "Keybinding to toggle the visibility of the notification list"
 msgstr "კლავიატურის მალსახმობი გაფრთხილებების სიის ხილვადობის ჩართ/გამორთ"
 
-#: data/org.gnome.shell.gschema.xml.in:185
+#: data/org.gnome.shell.gschema.xml.in:195
 msgid "Keybinding to toggle the visibility of the notification list."
 msgstr "კლავიატურის მალსახმობი გაფრთხილებების სიის ხილვადობის ჩართ/გამორთ."
 
-#: data/org.gnome.shell.gschema.xml.in:191
+#: data/org.gnome.shell.gschema.xml.in:201
+msgid "Keybinding to toggle the quick settings menu"
+msgstr "კლავიატურის მალსახმობი სწრაფი პარამეტრების მენიუს გადასართავად"
+
+#: data/org.gnome.shell.gschema.xml.in:202
+msgid "Keybinding to toggle the quick settings menu."
+msgstr "კლავიატურის მალსახმობი სწრაფი პარამეტრების მენიუს გადასართავად."
+
+#: data/org.gnome.shell.gschema.xml.in:208
 msgid "Keybinding to focus the active notification"
 msgstr "კლავიატურის მალსახმობი აქტიურ გაფრთხილებაზე გადასართავად"
 
-#: data/org.gnome.shell.gschema.xml.in:192
+#: data/org.gnome.shell.gschema.xml.in:209
 msgid "Keybinding to focus the active notification."
 msgstr "კლავიატურის მალსახმობი აქტიურ გაფრთხილებაზე გადასართავად."
 
-#: data/org.gnome.shell.gschema.xml.in:198
+#: data/org.gnome.shell.gschema.xml.in:215
 msgid "Switch to application 1"
 msgstr "#1 აპლიკაციაზე გადართვა"
 
-#: data/org.gnome.shell.gschema.xml.in:202
+#: data/org.gnome.shell.gschema.xml.in:219
 msgid "Switch to application 2"
-msgstr "#2 აპლიკაციაზე გადართვა"
+msgstr "აპლიკაცია 2-ზე გადართვა"
 
-#: data/org.gnome.shell.gschema.xml.in:206
+#: data/org.gnome.shell.gschema.xml.in:223
 msgid "Switch to application 3"
 msgstr "#3 აპლიკაციაზე გადართვა"
 
-#: data/org.gnome.shell.gschema.xml.in:210
+#: data/org.gnome.shell.gschema.xml.in:227
 msgid "Switch to application 4"
 msgstr "#4 აპლიკაციაზე გადართვა"
 
-#: data/org.gnome.shell.gschema.xml.in:214
+#: data/org.gnome.shell.gschema.xml.in:231
 msgid "Switch to application 5"
 msgstr "#5 აპლიკაციაზე გადართვა"
 
-#: data/org.gnome.shell.gschema.xml.in:218
+#: data/org.gnome.shell.gschema.xml.in:235
 msgid "Switch to application 6"
 msgstr "#6 აპლიკაციაზე გადართვა"
 
-#: data/org.gnome.shell.gschema.xml.in:222
+#: data/org.gnome.shell.gschema.xml.in:239
 msgid "Switch to application 7"
 msgstr "#7 აპლიკაციაზე გადართვა"
 
-#: data/org.gnome.shell.gschema.xml.in:226
+#: data/org.gnome.shell.gschema.xml.in:243
 msgid "Switch to application 8"
 msgstr "#8 აპლიკაციაზე გადართვა"
 
-#: data/org.gnome.shell.gschema.xml.in:230
+#: data/org.gnome.shell.gschema.xml.in:247
 msgid "Switch to application 9"
 msgstr "#9 აპლიკაციაზე გადართვა"
 
+#: data/org.gnome.shell.gschema.xml.in:251
+msgid "Open a new instance of application 1"
+msgstr "აპლიკაცია 1-ის ახალი გაშვებული ასლის გახსნა"
+
 #: data/org.gnome.shell.gschema.xml.in:255
-#: data/org.gnome.shell.gschema.xml.in:282
+msgid "Open a new instance of application 2"
+msgstr "აპლიკაცია 2-ის ახალი გაშვებული ასლის გახსნა"
+
+#: data/org.gnome.shell.gschema.xml.in:259
+msgid "Open a new instance of application 3"
+msgstr "აპლიკაცია 3-ის ახალი გაშვებული ასლის გახსნა"
+
+#: data/org.gnome.shell.gschema.xml.in:263
+msgid "Open a new instance of application 4"
+msgstr "აპლიკაცია 4-ის ახალი გაშვებული ასლის გახსნა"
+
+#: data/org.gnome.shell.gschema.xml.in:267
+msgid "Open a new instance of application 5"
+msgstr "აპლიკაცია 5-ის ახალი გაშვებული ასლის გახსნა"
+
+#: data/org.gnome.shell.gschema.xml.in:271
+msgid "Open a new instance of application 6"
+msgstr "აპლიკაცია 6-ის ახალი გაშვებული ასლის გახსნა"
+
+#: data/org.gnome.shell.gschema.xml.in:275
+msgid "Open a new instance of application 7"
+msgstr "აპლიკაცია 7-ის ახალი გაშვებული ასლის გახსნა"
+
+#: data/org.gnome.shell.gschema.xml.in:279
+msgid "Open a new instance of application 8"
+msgstr "აპლიკაცია 8-ის ახალი გაშვებული ასლის გახსნა"
+
+#: data/org.gnome.shell.gschema.xml.in:283
+msgid "Open a new instance of application 9"
+msgstr "აპლიკაცია 9-ის ახალი გაშვებული ასლის გახსნა"
+
+#: data/org.gnome.shell.gschema.xml.in:308
+#: data/org.gnome.shell.gschema.xml.in:335
 msgid "Limit switcher to current workspace."
 msgstr "გადამრთველის მიმდინარე სამუშაო სივრცეზე შეზღუდვა."
 
-#: data/org.gnome.shell.gschema.xml.in:256
+#: data/org.gnome.shell.gschema.xml.in:309
 msgid ""
 "If true, only applications that have windows on the current workspace are "
 "shown in the switcher. Otherwise, all applications are included."
 msgstr ""
+"თუ ჩართულია, გადამრთველში მხოლოდ მიმდინარე სამუშაო სივრცეში ფანჯრების მქონე "
+"აპლიკაციები გამოჩნდება. სხვა შემთხვევაში გამოჩნდება ყველა აპლიკაცია."
 
-#: data/org.gnome.shell.gschema.xml.in:273
+#: data/org.gnome.shell.gschema.xml.in:326
 msgid "The application icon mode."
 msgstr "აპლიკაციის ხატულების რეჟიმი."
 
-#: data/org.gnome.shell.gschema.xml.in:274
+#: data/org.gnome.shell.gschema.xml.in:327
 msgid ""
 "Configures how the windows are shown in the switcher. Valid possibilities "
 "are “thumbnail-only” (shows a thumbnail of the window), “app-icon-"
@@ -374,73 +496,52 @@ msgstr ""
 "გადამრთველში ფანჯრების გარეგნობის მორგება. შესაძლო ვარიანტების \"მხოლოდ "
 "მინიატურები\", \"მხოლოდ აპლიკაციის ხატულები\" ან \"ორივე\"."
 
-#: data/org.gnome.shell.gschema.xml.in:283
+#: data/org.gnome.shell.gschema.xml.in:336
 msgid ""
 "If true, only windows from the current workspace are shown in the switcher. "
 "Otherwise, all windows are included."
 msgstr ""
+"თუ ჩართულია, გადამრთველში, მხოლოდ, მიმდინარე სამუშაო სივრცეში არსებული "
+"ფანჯრები გამოჩნდება. სხვა შემთხვევაში გამოჩნდება ყველა ფანჯარა."
 
-#: data/org.gnome.shell.gschema.xml.in:293
+#: data/org.gnome.shell.gschema.xml.in:346
 msgid "Locations"
 msgstr "მდებარეობები"
 
-#: data/org.gnome.shell.gschema.xml.in:294
+#: data/org.gnome.shell.gschema.xml.in:347
 msgid "The locations to show in world clocks"
 msgstr "საათის ჩვენების მდებარეობა"
 
-#: data/org.gnome.shell.gschema.xml.in:304
+#: data/org.gnome.shell.gschema.xml.in:357
 msgid "Automatic location"
 msgstr "ავტომატური მდებარეობა"
 
-#: data/org.gnome.shell.gschema.xml.in:305
+#: data/org.gnome.shell.gschema.xml.in:358
 msgid "Whether to fetch the current location or not"
 msgstr "გამოვითხოვო თუ არა მდებარეობა"
 
-#: data/org.gnome.shell.gschema.xml.in:312
+#: data/org.gnome.shell.gschema.xml.in:365
 msgid "Location"
 msgstr "მდებარეობა"
 
-#: data/org.gnome.shell.gschema.xml.in:313
+#: data/org.gnome.shell.gschema.xml.in:366
 msgid "The location for which to show a forecast"
 msgstr "მდებარეობა ამინდის პროგნოზის საჩვენებლად"
 
-#: data/org.gnome.shell.gschema.xml.in:325
-msgid "Attach modal dialog to the parent window"
-msgstr "მოდალური ფანჯრის მშობელ ფანჯარაზე მიმაგრება"
-
-#: data/org.gnome.shell.gschema.xml.in:326
-#: data/org.gnome.shell.gschema.xml.in:335
-#: data/org.gnome.shell.gschema.xml.in:343
-#: data/org.gnome.shell.gschema.xml.in:351
-#: data/org.gnome.shell.gschema.xml.in:359
-msgid ""
-"This key overrides the key in org.gnome.mutter when running GNOME Shell."
-msgstr ""
-"ეს გასაღები გადაფარავს org.gnome.mutter-ის გასაღებს, როცა GNOME-ის გარსია "
-"გაშვებული."
-
-#: data/org.gnome.shell.gschema.xml.in:334
-msgid "Enable edge tiling when dropping windows on screen edges"
-msgstr ""
-
-#: data/org.gnome.shell.gschema.xml.in:342
-msgid "Workspaces are managed dynamically"
-msgstr "სამუშაო სივრცეები დინამიკურად იმართება"
-
-#: data/org.gnome.shell.gschema.xml.in:350
-msgid "Workspaces only on primary monitor"
-msgstr "სამუშაო მაგიდები მხოლოდ აქტიურ ეკრანზე"
-
-#: data/org.gnome.shell.gschema.xml.in:358
-msgid "Delay focus changes in mouse mode until the pointer stops moving"
-msgstr "ფოკუსის შეცვლის მაჩვენებლის მოძრაობის შეწყვეტამდე დაყოვნება"
+#. Keep in sync with subprojects/extensions-app
+#: data/org.gnome.Shell.Extensions.desktop.in.in:5
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:5
+#: subprojects/extensions-app/data/org.gnome.Extensions.desktop.in.in:4
+#: subprojects/extensions-app/data/ui/extensions-window.ui:57
+msgid "Extensions"
+msgstr "გაფართოებები"
 
 #: data/org.gnome.Shell.PortalHelper.desktop.in.in:3
 msgid "Network Login"
 msgstr "ქსელური შესვლა"
 
 #: js/dbusServices/extensions/ui/extension-error-page.ui:15
-#: subprojects/extensions-app/data/ui/extensions-window.ui:144
+#: subprojects/extensions-app/data/ui/extensions-window.ui:275
 msgid "Something’s gone wrong"
 msgstr "რაღაც გაფუჭდა"
 
@@ -465,228 +566,297 @@ msgstr "Homepage"
 msgid "Visit extension homepage"
 msgstr "გაფართოებების ვებგვერდის გახსნა"
 
-#: js/gdm/authPrompt.js:146 js/ui/audioDeviceSelection.js:61
-#: js/ui/components/networkAgent.js:109 js/ui/components/polkitAgent.js:141
-#: js/ui/endSessionDialog.js:440 js/ui/extensionDownloader.js:223
-#: js/ui/shellMountOperation.js:377 js/ui/shellMountOperation.js:387
-#: subprojects/extensions-app/js/main.js:173
+#: js/gdm/authPrompt.js:151 js/gdm/loginDialog.js:465
+#: js/ui/audioDeviceSelection.js:66 js/ui/components/networkAgent.js:113
+#: js/ui/components/polkitAgent.js:144 js/ui/endSessionDialog.js:437
+#: js/ui/extensionDownloader.js:276 js/ui/shellMountOperation.js:382
+#: js/ui/shellMountOperation.js:392
 msgid "Cancel"
 msgstr "გაუქმება"
 
-#: js/gdm/authPrompt.js:312 js/ui/components/networkAgent.js:209
-#: js/ui/components/networkAgent.js:229 js/ui/components/networkAgent.js:261
-#: js/ui/components/networkAgent.js:294 js/ui/components/networkAgent.js:333
-#: js/ui/components/networkAgent.js:346 js/ui/components/polkitAgent.js:283
-#: js/ui/shellMountOperation.js:327
+#: js/gdm/authPrompt.js:317 js/ui/components/networkAgent.js:213
+#: js/ui/components/networkAgent.js:233 js/ui/components/networkAgent.js:265
+#: js/ui/components/networkAgent.js:298 js/ui/components/networkAgent.js:337
+#: js/ui/components/networkAgent.js:350 js/ui/components/polkitAgent.js:286
+#: js/ui/shellMountOperation.js:332
 msgid "Password"
 msgstr "პაროლი"
 
-#: js/gdm/loginDialog.js:317
+#: js/gdm/loginDialog.js:326
 msgid "Choose Session"
 msgstr "აირჩიეთ სესია"
 
-#: js/gdm/loginDialog.js:462
+#. Translators: is running for <username>
+#: js/gdm/loginDialog.js:423
+#, javascript-format
+msgid ""
+"Remote login is not possible because a remote session is already running for "
+"%s. To login remotely, you must log out from the remote session or force "
+"stop it."
+msgstr ""
+"დაშორებულად შესვლა შეუძლებელია, რადგან დაშორებული სესია უკვე გაშვებულია %s-"
+"სთვის. იმისათვის, რომ შეხვიდეთ, ჯერ გამოდით გაშვებული სესიიდან, ან ძალით "
+"დაასრულეთ ის."
+
+#. Translators: is running for <username>
+#: js/gdm/loginDialog.js:426
+#, javascript-format
+msgid ""
+"Login is not possible because a remote session is already running for %s. To "
+"login, you must log out from the remote session or force stop it."
+msgstr ""
+"შესვლა შეუძლებელია, რადგან დაშორებული სესია უკვე გაშვებულია %s-სთვის. "
+"იმისათვის, რომ შეხვიდეთ, ჯერ გამოდით დაშორებული სესიიდან, ან ძალით დაასრულეთ "
+"ის."
+
+#. Translators: is running for <username>
+#: js/gdm/loginDialog.js:429
+#, javascript-format
+msgid ""
+"Remote login is not possible because a local session is already running for "
+"%s. To login remotely, you must log out from the local session or force stop "
+"it."
+msgstr ""
+"დაშორებული შესვლა შეუძლებელია, რადგან ლოკალური სესია უკვე გაშვებულია %s-"
+"სთვის. დაშორებულად შესვლისთვის, თქვენ უნდა გამოხვიდეთ ლოკალური სესიიდან, ან "
+"ძალით დაასრულოთ ის."
+
+#. Translators: is running for <username>
+#: js/gdm/loginDialog.js:432
+#, javascript-format
+msgid ""
+"Login is not possible because a session is already running for %s. To login, "
+"you must log out from the session or force stop it."
+msgstr ""
+"შესვლა შეუძლებელია, რადგან სესია უკვე გაშვებულია %s-სთვის. მისათვის, რომ "
+"შეხვიდეთ, ჯერ უნდა გამოხვიდეთ სესიიდან, ან ძალით დაასრულოთ ის."
+
+#: js/gdm/loginDialog.js:441
+msgid "Session Already Running"
+msgstr "სესია უკვე გაშვებულია"
+
+#: js/gdm/loginDialog.js:453
+msgid ""
+"Force stopping will quit any running apps and processes, and could result in "
+"data loss"
+msgstr ""
+"ძალით დასრულება ასევე ძალით დაასრულებს ყველა გაშვებულ აპს და პროცესს და, "
+"შეიძლება, მონაცემების კარგვა გამოიწვიოს"
+
+#: js/gdm/loginDialog.js:473
+msgid "Force Stop"
+msgstr "ძალით გაჩერება"
+
+#: js/gdm/loginDialog.js:541
 msgid "Not listed?"
 msgstr "არაა სიაში?"
 
 #. Translators: this message is shown below the username entry field
 #. to clue the user in on how to login to the local network realm
-#: js/gdm/loginDialog.js:930
+#: js/gdm/loginDialog.js:1009
 #, javascript-format
 msgid "(e.g., user or %s)"
 msgstr "(მაგ, user ან %s)"
 
-#: js/gdm/loginDialog.js:935 js/ui/components/networkAgent.js:253
-#: js/ui/components/networkAgent.js:288 js/ui/components/networkAgent.js:322
+#: js/gdm/loginDialog.js:1014 js/ui/components/networkAgent.js:257
+#: js/ui/components/networkAgent.js:292 js/ui/components/networkAgent.js:326
 msgid "Username"
 msgstr "მომხმარებლის სახელი"
 
-#: js/gdm/loginDialog.js:1258
+#: js/gdm/loginDialog.js:1080
+msgid "Login Attempt Timed Out"
+msgstr "შესვლის მცდელობის მოლოდინის ვადა ამოიწურა"
+
+#: js/gdm/loginDialog.js:1081
+msgid "Login took too long, please try again"
+msgstr "შესვლას მეტისმეტად დიდხანს ცდილობდით. თავიდან სცადეთ"
+
+#: js/gdm/loginDialog.js:1426
 msgid "Login Window"
 msgstr "შესვლის ფანჯარა"
 
-#: js/gdm/util.js:431
+#: js/gdm/util.js:496
 msgid "Authentication error"
 msgstr "ავთენტიკაციის შეცდომა"
 
 #. Translators: this message is shown below the password entry field
 #. to indicate the user can swipe their finger on the fingerprint reader
-#: js/gdm/util.js:604
+#: js/gdm/util.js:727
 msgid "(or swipe finger across reader)"
 msgstr "(ან გადაუსვით თითი წამკითხველს)"
 
 #. Translators: this message is shown below the password entry field
 #. to indicate the user can place their finger on the fingerprint reader instead
-#: js/gdm/util.js:609
+#: js/gdm/util.js:732
 msgid "(or place finger on reader)"
 msgstr "(ან მოათავსეთ თითი წამკითხველზე)"
 
 #. Translators: The name of the power-off action in search
-#: js/misc/systemActions.js:84
+#: js/misc/systemActions.js:91
 msgctxt "search-result"
 msgid "Power Off"
 msgstr "გამორთვა"
 
 #. Translators: A list of keywords that match the power-off action, separated by semicolons
-#: js/misc/systemActions.js:87
-msgid "power off;shutdown;halt;stop"
-msgstr "power off;shutdown;halt;stop"
+#: js/misc/systemActions.js:94
+msgid "power off;poweroff;shutdown;halt;stop"
+msgstr "power off;poweroff;shutdown;halt;stop"
 
 #. Translators: The name of the restart action in search
-#: js/misc/systemActions.js:92
+#: js/misc/systemActions.js:99
 msgctxt "search-result"
 msgid "Restart"
 msgstr "გადატვრთვა"
 
 #. Translators: A list of keywords that match the restart action, separated by semicolons
-#: js/misc/systemActions.js:95
+#: js/misc/systemActions.js:102
 msgid "reboot;restart;"
 msgstr "reboot;restart;"
 
 #. Translators: The name of the lock screen action in search
-#: js/misc/systemActions.js:100
+#: js/misc/systemActions.js:107
 msgctxt "search-result"
 msgid "Lock Screen"
 msgstr "ეკრანის დაბლოკვა"
 
 #. Translators: A list of keywords that match the lock screen action, separated by semicolons
-#: js/misc/systemActions.js:103
+#: js/misc/systemActions.js:110
 msgid "lock screen"
 msgstr "lock screen"
 
 #. Translators: The name of the logout action in search
-#: js/misc/systemActions.js:108
+#: js/misc/systemActions.js:115
 msgctxt "search-result"
 msgid "Log Out"
 msgstr "გასვლა"
 
 #. Translators: A list of keywords that match the logout action, separated by semicolons
-#: js/misc/systemActions.js:111
+#: js/misc/systemActions.js:118
 msgid "logout;log out;sign off"
 msgstr "logout;log out;sign off"
 
 #. Translators: The name of the suspend action in search
-#: js/misc/systemActions.js:116
+#: js/misc/systemActions.js:123
 msgctxt "search-result"
 msgid "Suspend"
 msgstr "ძილი"
 
 #. Translators: A list of keywords that match the suspend action, separated by semicolons
-#: js/misc/systemActions.js:119
+#: js/misc/systemActions.js:126
 msgid "suspend;sleep"
 msgstr "suspend;sleep"
 
 #. Translators: The name of the switch user action in search
-#: js/misc/systemActions.js:124
+#: js/misc/systemActions.js:131
 msgctxt "search-result"
 msgid "Switch User"
 msgstr "მომხმარებლის გადართვა"
 
 #. Translators: A list of keywords that match the switch user action, separated by semicolons
-#: js/misc/systemActions.js:127
+#: js/misc/systemActions.js:134
 msgid "switch user"
 msgstr "მომხმარებლის გადართვა"
 
 #. Translators: A list of keywords that match the lock orientation action, separated by semicolons
-#: js/misc/systemActions.js:134
+#: js/misc/systemActions.js:141
 msgid "lock orientation;unlock orientation;screen;rotation"
 msgstr "lock orientation;unlock orientation;screen;rotation"
 
 #. Translators: The name of the screenshot UI action in search
-#: js/misc/systemActions.js:139
+#: js/misc/systemActions.js:146
 msgctxt "search-result"
 msgid "Take a Screenshot"
 msgstr "ეკრანის ანაბეჭდის გადაღება"
 
 #. Translators: A list of keywords that match the screenshot UI action, separated by semicolons
-#: js/misc/systemActions.js:142
+#: js/misc/systemActions.js:149
 msgid "screenshot;screencast;snip;capture;record"
 msgstr "screenshot;screencast;snip;capture;record"
 
-#: js/misc/systemActions.js:242
+#: js/misc/systemActions.js:249
 msgctxt "search-result"
 msgid "Unlock Screen Rotation"
 msgstr "ეკრანის ტრიალის განბლოკვა"
 
-#: js/misc/systemActions.js:243
+#: js/misc/systemActions.js:250
 msgctxt "search-result"
 msgid "Lock Screen Rotation"
 msgstr "ეკრანის ტრიალის დაბლოკვა"
 
-#: js/misc/util.js:129
+#: js/misc/util.js:130
 msgid "Command not found"
 msgstr "ბრძანება ვერ ვიპოვე"
 
 #. Replace "Error invoking GLib.shell_parse_argv: " with
 #. something nicer
-#: js/misc/util.js:166
+#: js/misc/util.js:170
 msgid "Could not parse command:"
 msgstr "ბრძანების ანალიზის შეცდომა:"
 
-#: js/misc/util.js:174
+#: js/misc/util.js:178
 #, javascript-format
 msgid "Execution of “%s” failed:"
 msgstr "%s-ის გაშვების შეცდომა:"
 
-#: js/misc/util.js:191
+#: js/misc/dateUtils.js:69
 msgid "Just now"
 msgstr "ახლა"
 
-#: js/misc/util.js:193
+#: js/misc/dateUtils.js:72
 #, javascript-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
 msgstr[0] "%d წუთის წინ"
 
-#: js/misc/util.js:197
+#: js/misc/dateUtils.js:79
 #, javascript-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "%d საათის წინ"
 
-#: js/misc/util.js:201 js/ui/dateMenu.js:167
+#: js/misc/dateUtils.js:85 js/ui/dateMenu.js:183
 msgid "Yesterday"
 msgstr "გუშინ"
 
-#: js/misc/util.js:203
+#: js/misc/dateUtils.js:88
 #, javascript-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
 msgstr[0] "%d დღის წინ"
 
-#: js/misc/util.js:207
+#: js/misc/dateUtils.js:95
 #, javascript-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
 msgstr[0] "%d კვირის წინ"
 
-#: js/misc/util.js:211
+#: js/misc/dateUtils.js:102
 #, javascript-format
 msgid "%d month ago"
 msgid_plural "%d months ago"
 msgstr[0] "%d თვის წინ"
 
-#: js/misc/util.js:214
+#: js/misc/dateUtils.js:108
 #, javascript-format
 msgid "%d year ago"
 msgid_plural "%d years ago"
 msgstr[0] "%d წლის წინ"
 
 #. Translators: Time in 24h format
-#: js/misc/util.js:247
+#: js/misc/dateUtils.js:155
 msgid "%H∶%M"
 msgstr "%H∶%M"
 
 #. Translators: this is the word "Yesterday" followed by a
 #. time string in 24h format. i.e. "Yesterday, 14:30"
-#: js/misc/util.js:253
+#: js/misc/dateUtils.js:161
 #, no-c-format
 msgid "Yesterday, %H∶%M"
 msgstr "გუშინ, %H∶%M"
 
 #. Translators: this is the week day name followed by a time
 #. string in 24h format. i.e. "Monday, 14:30"
-#: js/misc/util.js:259
+#: js/misc/dateUtils.js:167
 #, no-c-format
 msgid "%A, %H∶%M"
 msgstr "%A, %H∶%M"
@@ -694,7 +864,7 @@ msgstr "%A, %H∶%M"
 #. Translators: this is the month name and day number
 #. followed by a time string in 24h format.
 #. i.e. "May 25, 14:30"
-#: js/misc/util.js:265
+#: js/misc/dateUtils.js:173
 #, no-c-format
 msgid "%B %-d, %H∶%M"
 msgstr "%B %-d, %H∶%M"
@@ -702,7 +872,7 @@ msgstr "%B %-d, %H∶%M"
 #. Translators: this is the month name, day number, year
 #. number followed by a time string in 24h format.
 #. i.e. "May 25 2012, 14:30"
-#: js/misc/util.js:271
+#: js/misc/dateUtils.js:179
 #, no-c-format
 msgid "%B %-d %Y, %H∶%M"
 msgstr "%B %-d %Y, %H∶%M"
@@ -710,20 +880,20 @@ msgstr "%B %-d %Y, %H∶%M"
 #. Show only the time if date is on today
 #. eslint-disable-line no-lonely-if
 #. Translators: Time in 12h format
-#: js/misc/util.js:276
+#: js/misc/dateUtils.js:184
 msgid "%l∶%M %p"
 msgstr "%l∶%M %p"
 
 #. Translators: this is the word "Yesterday" followed by a
 #. time string in 12h format. i.e. "Yesterday, 2:30 pm"
-#: js/misc/util.js:282
+#: js/misc/dateUtils.js:190
 #, no-c-format
 msgid "Yesterday, %l∶%M %p"
 msgstr "გუშინ, %l∶%M %p"
 
 #. Translators: this is the week day name followed by a time
 #. string in 12h format. i.e. "Monday, 2:30 pm"
-#: js/misc/util.js:288
+#: js/misc/dateUtils.js:196
 #, no-c-format
 msgid "%A, %l∶%M %p"
 msgstr "%A, %l∶%M %p"
@@ -731,7 +901,7 @@ msgstr "%A, %l∶%M %p"
 #. Translators: this is the month name and day number
 #. followed by a time string in 12h format.
 #. i.e. "May 25, 2:30 pm"
-#: js/misc/util.js:294
+#: js/misc/dateUtils.js:202
 #, no-c-format
 msgid "%B %-d, %l∶%M %p"
 msgstr "%B %-d, %l∶%M %p"
@@ -739,113 +909,122 @@ msgstr "%B %-d, %l∶%M %p"
 #. Translators: this is the month name, day number, year
 #. number followed by a time string in 12h format.
 #. i.e. "May 25 2012, 2:30 pm"
-#: js/misc/util.js:300
+#: js/misc/dateUtils.js:208
 #, no-c-format
 msgid "%B %-d %Y, %l∶%M %p"
 msgstr "%B %-d %Y, %l∶%M %p"
 
-#: js/portalHelper/main.js:55
-msgid "Hotspot Login"
-msgstr "ჰოტსპოტზე შესვლა"
+#: js/portalHelper/main.js:98
+msgid "Your connection seems to be secure"
+msgstr "როგორც ჩანს, თქვენი შეერთება დაცულია"
 
-#: js/portalHelper/main.js:108
+#: js/portalHelper/main.js:104
 msgid ""
 "Your connection to this hotspot login is not secure. Passwords or other "
 "information you enter on this page can be viewed by people nearby."
 msgstr ""
+"თქვენი შეერთება ჰოტსპოტზე შესვლის გვერდამდე დაცული არაა. პაროლები და სხვა "
+"ინფორმაცია, რომელსაც შეიყვანთ, ახლომდებარე ხალხს შეუძლია, ნახოს."
+
+#: js/portalHelper/main.js:115
+msgid "Hotspot Login"
+msgstr "ჰოტსპოტზე შესვლა"
 
 #. No support for non-modal system dialogs, so ignore the option
 #. let modal = options['modal'] || true;
-#: js/ui/accessDialog.js:39 js/ui/status/location.js:350
-msgid "Deny Access"
-msgstr "წვდომის მინიჭება"
+#: js/ui/accessDialog.js:51 js/ui/inhibitShortcutsDialog.js:92
+msgid "Deny"
+msgstr "უარყოფა"
 
-#: js/ui/accessDialog.js:40 js/ui/status/location.js:355
-msgid "Grant Access"
-msgstr "უარი წვდომაზე"
+#: js/ui/accessDialog.js:52 js/ui/inhibitShortcutsDialog.js:101
+msgid "Allow"
+msgstr "დაშვება"
 
-#: js/ui/appDisplay.js:1731
+#: js/ui/appDisplay.js:1769
 msgid "Unnamed Folder"
 msgstr "უსახელო საქაღალდე"
 
-#: js/ui/appFavorites.js:166
+#: js/ui/appFavorites.js:163
 #, javascript-format
 msgid "%s has been pinned to the dash."
 msgstr "%s მიმაგრებულია."
 
-#: js/ui/appFavorites.js:199
+#: js/ui/appFavorites.js:194
 #, javascript-format
 msgid "%s has been unpinned from the dash."
 msgstr "%s ჩამოხსნილია."
 
+#: js/ui/appFavorites.js:208 js/ui/main.js:281
+msgid "Undo"
+msgstr "ბრძანების გაუქმება"
+
 #. Translators: This is the heading of a list of open windows
-#: js/ui/appMenu.js:46
+#: js/ui/appMenu.js:49
 msgid "Open Windows"
 msgstr "ფანჯრების გახსნა"
 
-#: js/ui/appMenu.js:54
+#: js/ui/appMenu.js:57
 msgid "New Window"
 msgstr "ახალი ფანჯარა"
 
-#: js/ui/appMenu.js:81
-msgid "Show Details"
-msgstr "დეტალების ჩვენება"
+#: js/ui/appMenu.js:84
+msgid "App Details"
+msgstr "აპის დეტალები"
 
-#: js/ui/appMenu.js:97
+#: js/ui/appMenu.js:100
 msgid "Quit"
 msgstr "გასვლა"
 
-#: js/ui/appMenu.js:157 js/ui/dash.js:249
+#: js/ui/appMenu.js:160 js/ui/dash.js:248
 msgid "Unpin"
 msgstr "ჩამოხსნა"
 
-#: js/ui/appMenu.js:158
+#: js/ui/appMenu.js:161
 msgid "Pin to Dash"
 msgstr "მიმაგრება"
 
-#: js/ui/appMenu.js:175
+#: js/ui/appMenu.js:178
 msgid "Launch using Integrated Graphics Card"
 msgstr "ჩაშენებული ვიდეობარათით გაშვება"
 
-#: js/ui/appMenu.js:176
+#: js/ui/appMenu.js:179
 msgid "Launch using Discrete Graphics Card"
 msgstr "დისკრეტული ვიდეობარათით გაშვება"
 
-#: js/ui/audioDeviceSelection.js:41
+#: js/ui/audioDeviceSelection.js:46
 msgid "Select Audio Device"
 msgstr "აირჩიეთ აუდიომოწყობილობა"
 
-#: js/ui/audioDeviceSelection.js:56 js/ui/status/volume.js:63
+#: js/ui/audioDeviceSelection.js:61 js/ui/status/volume.js:81
 msgid "Sound Settings"
 msgstr "ხმის მორგება"
 
-#: js/ui/audioDeviceSelection.js:69
+#: js/ui/audioDeviceSelection.js:74
 msgid "Headphones"
 msgstr "ყურსაცვამები"
 
-#: js/ui/audioDeviceSelection.js:71
+#: js/ui/audioDeviceSelection.js:76
 msgid "Headset"
 msgstr "ყურსაცვამები & მიკროფონი"
 
-#: js/ui/audioDeviceSelection.js:73 js/ui/status/volume.js:322
+#: js/ui/audioDeviceSelection.js:78 js/ui/status/volume.js:356
 msgid "Microphone"
 msgstr "მიკროფონი"
 
-#: js/ui/backgroundMenu.js:14
+#: js/ui/backgroundMenu.js:13
 msgid "Change Background…"
 msgstr "ფონის შეცვლა…"
 
-#: js/ui/backgroundMenu.js:16
+#: js/ui/backgroundMenu.js:15
 msgid "Display Settings"
 msgstr "ეკრანის მორგება"
 
-#: js/ui/backgroundMenu.js:17
-#: subprojects/extensions-app/data/ui/extension-row.ui:122
+#: js/ui/backgroundMenu.js:16
 msgid "Settings"
 msgstr "მორგება"
 
 #. Translators: Enter 0-6 (Sunday-Saturday) for non-work days. Examples: "0" (Sunday) "6" (Saturday) "06" (Sunday and Saturday).
-#: js/ui/calendar.js:35
+#: js/ui/calendar.js:37
 msgctxt "calendar-no-work"
 msgid "06"
 msgstr "06"
@@ -855,46 +1034,46 @@ msgstr "06"
 #. * NOTE: These grid abbreviations are always shown together
 #. * and in order, e.g. "S M T W T F S".
 #.
-#: js/ui/calendar.js:61
+#: js/ui/calendar.js:63
 msgctxt "grid sunday"
 msgid "S"
-msgstr "კ"
+msgstr "კვ"
 
 #. Translators: Calendar grid abbreviation for Monday
-#: js/ui/calendar.js:63
+#: js/ui/calendar.js:65
 msgctxt "grid monday"
 msgid "M"
-msgstr "მ"
+msgstr "ორ"
 
 #. Translators: Calendar grid abbreviation for Tuesday
-#: js/ui/calendar.js:65
+#: js/ui/calendar.js:67
 msgctxt "grid tuesday"
 msgid "T"
-msgstr "ტერა"
+msgstr "სა"
 
 #. Translators: Calendar grid abbreviation for Wednesday
-#: js/ui/calendar.js:67
+#: js/ui/calendar.js:69
 msgctxt "grid wednesday"
 msgid "W"
-msgstr "სიგ"
+msgstr "ოთხ"
 
 #. Translators: Calendar grid abbreviation for Thursday
-#: js/ui/calendar.js:69
+#: js/ui/calendar.js:71
 msgctxt "grid thursday"
 msgid "T"
-msgstr "ტერა"
+msgstr "ხუ"
 
 #. Translators: Calendar grid abbreviation for Friday
-#: js/ui/calendar.js:71
+#: js/ui/calendar.js:73
 msgctxt "grid friday"
 msgid "F"
-msgstr "პ"
+msgstr "პარ"
 
 #. Translators: Calendar grid abbreviation for Saturday
-#: js/ui/calendar.js:73
+#: js/ui/calendar.js:75
 msgctxt "grid saturday"
 msgid "S"
-msgstr "კ"
+msgstr "შა"
 
 #. *
 #. * Translators: The header displaying just the month name
@@ -902,7 +1081,7 @@ msgstr "კ"
 #. * "%OB" is the new format specifier introduced in glibc 2.27,
 #. * in most cases you should not change it.
 #.
-#: js/ui/calendar.js:414
+#: js/ui/calendar.js:426
 msgid "%OB"
 msgstr "%OB"
 
@@ -915,167 +1094,179 @@ msgstr "%OB"
 #. * in most cases you should not use the old "%B" here unless you
 #. * absolutely know what you are doing.
 #.
-#: js/ui/calendar.js:424
+#: js/ui/calendar.js:436
 msgid "%OB %Y"
 msgstr "%OB %Y"
 
-#: js/ui/calendar.js:485
+#: js/ui/calendar.js:498
 msgid "Previous month"
 msgstr "წინა თვე"
 
-#: js/ui/calendar.js:503
+#: js/ui/calendar.js:516
 msgid "Next month"
 msgstr "შემდეგი თვე"
 
-#: js/ui/calendar.js:654
+#: js/ui/calendar.js:667
 #, no-javascript-format
 msgctxt "date day number format"
 msgid "%d"
 msgstr "%d"
 
-#: js/ui/calendar.js:713
+#: js/ui/calendar.js:726
 msgid "Week %V"
 msgstr "%V კვირა"
 
-#: js/ui/calendar.js:892
+#: js/ui/calendar.js:918
 msgid "No Notifications"
 msgstr "შეტყობინებების გარეშე"
 
-#: js/ui/calendar.js:949
+#: js/ui/calendar.js:974
 msgid "Do Not Disturb"
 msgstr "არ შემაწუხო"
 
-#: js/ui/calendar.js:970
+#: js/ui/calendar.js:995
 msgid "Clear"
 msgstr "გასუფთავება"
 
+#: js/ui/calendar.js:999
+msgctxt "action"
+msgid "Clear all notifications"
+msgstr "ყველა გაფრთხილების გასუფთავება"
+
 #. Translators: %s is an application name
-#: js/ui/closeDialog.js:40
+#: js/ui/closeDialog.js:42
 #, javascript-format
-msgid "“%s” is not responding."
-msgstr "%s არ პასუხობს."
+msgid "“%s” Is Not Responding"
+msgstr "\"%s\" არ პასუხობს"
 
-#: js/ui/closeDialog.js:41
+#: js/ui/closeDialog.js:43
 msgid ""
-"You may choose to wait a short while for it to continue or force the "
-"application to quit entirely."
+"You may choose to wait a short while for it to continue or force the app to "
+"quit entirely"
 msgstr ""
+"შეგიძლიათ აირჩიოთ გასაგრძელებლად ცოტა ხანს დაელოდოთ, ან ძალით დახუროთ ის"
 
-#: js/ui/closeDialog.js:69
+#: js/ui/closeDialog.js:71
 msgid "Force Quit"
 msgstr "ძალით გასვლა"
 
-#: js/ui/closeDialog.js:74
+#: js/ui/closeDialog.js:76
 msgid "Wait"
 msgstr "მოცდა"
 
-#: js/ui/components/automountManager.js:84
+#: js/ui/components/automountManager.js:82
 msgid "External drive connected"
 msgstr "გარე საცავი მიერთებულია"
 
-#: js/ui/components/automountManager.js:96
+#: js/ui/components/automountManager.js:94
 msgid "External drive disconnected"
 msgstr "გარე საცავი გათიშულია"
 
-#: js/ui/components/automountManager.js:207
+#: js/ui/components/automountManager.js:208
 msgid "Unable to unlock volume"
 msgstr "საცავის განბლოკვის შეცდომა"
 
-#: js/ui/components/automountManager.js:208
+#: js/ui/components/automountManager.js:209
 msgid "The installed udisks version does not support the PIM setting"
 msgstr "Udisks-ის დაყენებულ ვერსიას PIM პარამეტრების მხარდაჭერა არ გააჩნია"
 
-#: js/ui/components/autorunManager.js:316
+#. Translators: %s is the name of a partition on a external drive
+#: js/ui/components/autorunManager.js:189
+#, javascript-format
+msgid "“%s” connected"
+msgstr "\"%s\" დაკავშირებულია"
+
+#: js/ui/components/autorunManager.js:190
+msgid "Disk can now be used"
+msgstr "ახლა დისკის გამოყენება შესაძლებელია"
+
+#: js/ui/components/autorunManager.js:202
 #, javascript-format
 msgid "Open with %s"
 msgstr "%s-ით გახსნა"
 
-#: js/ui/components/networkAgent.js:91
+#: js/ui/components/networkAgent.js:95
 msgid ""
-"Alternatively you can connect by pushing the “WPS” button on your router."
-msgstr "დაკავშირება ასევე შეგიძლიათ რაუტერზე \"WPS\" ღილაკზე დაწოლით."
+"Alternatively you can connect by pushing the “WPS” button on your router"
+msgstr "დაკავშირება ასევე შეგიძლიათ რაუტერზე \"WPS\" ღილაკზე დაწოლით"
 
-#: js/ui/components/networkAgent.js:103 js/ui/status/network.js:436
+#: js/ui/components/networkAgent.js:107 js/ui/status/bluetooth.js:245
+#: js/ui/status/network.js:360 js/ui/status/network.js:444
 msgid "Connect"
 msgstr "დაკავშირება"
 
-#: js/ui/components/networkAgent.js:218
+#: js/ui/components/networkAgent.js:222
 msgid "Key"
 msgstr "გასაღები"
 
-#: js/ui/components/networkAgent.js:269 js/ui/components/networkAgent.js:308
+#: js/ui/components/networkAgent.js:273 js/ui/components/networkAgent.js:312
 msgid "Private key password"
 msgstr "პირადი გასაღების პაროლი"
 
-#: js/ui/components/networkAgent.js:302
+#: js/ui/components/networkAgent.js:306
 msgid "Identity"
 msgstr "იდენტიფიკაცია"
 
-#: js/ui/components/networkAgent.js:328
+#: js/ui/components/networkAgent.js:332
 msgid "Service"
 msgstr "სერვისი"
 
-#: js/ui/components/networkAgent.js:366 js/ui/components/networkAgent.js:402
-#: js/ui/components/networkAgent.js:747 js/ui/components/networkAgent.js:768
+#: js/ui/components/networkAgent.js:370 js/ui/components/networkAgent.js:406
+#: js/ui/components/networkAgent.js:743 js/ui/components/networkAgent.js:764
 msgid "Authentication required"
 msgstr "საჭროა ავთენტიკაცია"
 
-#: js/ui/components/networkAgent.js:367 js/ui/components/networkAgent.js:748
+#: js/ui/components/networkAgent.js:371 js/ui/components/networkAgent.js:744
 #, javascript-format
 msgid ""
-"Passwords or encryption keys are required to access the wireless network "
-"“%s”."
+"Passwords or encryption keys are required to access the wireless network “%s”"
 msgstr ""
-"უსადენო ქსელთან (%s) წვდომისთვის საჭიროა პაროლები ან დაშიფვრის გასაღებები."
+"უსადენო ქსელთან (%s) წვდომისთვის საჭიროა პაროლები ან დაშიფვრის გასაღებები"
 
-#: js/ui/components/networkAgent.js:371 js/ui/components/networkAgent.js:752
+#: js/ui/components/networkAgent.js:375 js/ui/components/networkAgent.js:748
 msgid "Wired 802.1X authentication"
 msgstr "802.1X ავთენტიკაცია მავთულზე"
 
-#: js/ui/components/networkAgent.js:374
+#: js/ui/components/networkAgent.js:378
 msgid "Network name"
 msgstr "ქსელის სახელი"
 
-#: js/ui/components/networkAgent.js:382 js/ui/components/networkAgent.js:756
+#: js/ui/components/networkAgent.js:386 js/ui/components/networkAgent.js:752
 msgid "DSL authentication"
 msgstr "DSL ავთენტიკაცია"
 
-#: js/ui/components/networkAgent.js:389 js/ui/components/networkAgent.js:761
+#: js/ui/components/networkAgent.js:393 js/ui/components/networkAgent.js:757
 msgid "PIN code required"
 msgstr "საჭიროა PIN კოდი"
 
-#: js/ui/components/networkAgent.js:390 js/ui/components/networkAgent.js:762
+#: js/ui/components/networkAgent.js:394 js/ui/components/networkAgent.js:758
 msgid "PIN code is needed for the mobile broadband device"
 msgstr "მობილური კავშირის მოწყობილობას სჭირდება PIN კოდი"
 
-#: js/ui/components/networkAgent.js:392
+#: js/ui/components/networkAgent.js:396
 msgid "PIN"
 msgstr "PIN კოდი"
 
-#: js/ui/components/networkAgent.js:403 js/ui/components/networkAgent.js:753
-#: js/ui/components/networkAgent.js:757 js/ui/components/networkAgent.js:769
-#: js/ui/components/networkAgent.js:773
+#: js/ui/components/networkAgent.js:407 js/ui/components/networkAgent.js:749
+#: js/ui/components/networkAgent.js:753 js/ui/components/networkAgent.js:765
+#: js/ui/components/networkAgent.js:769
 #, javascript-format
-msgid "A password is required to connect to “%s”."
-msgstr "%s-თან დასაკავშირებლად საჭიროა პაროლი."
+msgid "A password is required to connect to “%s”"
+msgstr "\"%s\"-თან დასაკავშირებლად საჭიროა პაროლი"
 
-#: js/ui/components/networkAgent.js:736 js/ui/status/network.js:1954
-msgid "Network Manager"
-msgstr "ქსელის მმართველი"
-
-#: js/ui/components/networkAgent.js:772
+#: js/ui/components/networkAgent.js:768
 msgid "VPN password"
 msgstr "VPN-ის პაროლი"
 
-#: js/ui/components/polkitAgent.js:41
+#: js/ui/components/polkitAgent.js:44
 msgid "Authentication Required"
 msgstr "საჭროა ავთენტიკაცია"
 
-#: js/ui/components/polkitAgent.js:81
+#: js/ui/components/polkitAgent.js:84
 msgid "Administrator"
 msgstr "ადმინისტრატორი"
 
-#: js/ui/components/polkitAgent.js:146
+#: js/ui/components/polkitAgent.js:149
 msgid "Authenticate"
 msgstr "ავთენტიფიკაცია"
 
@@ -1083,26 +1274,21 @@ msgstr "ავთენტიფიკაცია"
 #. * requested authentication was not gained; this can happen
 #. * because of an authentication error (like invalid password),
 #. * for instance.
-#: js/ui/components/polkitAgent.js:260 js/ui/shellMountOperation.js:403
+#: js/ui/components/polkitAgent.js:263 js/ui/shellMountOperation.js:415
 msgid "Sorry, that didn’t work. Please try again."
 msgstr "უკაცრავად, არ იმუშავა. კიდევ სცადეთ."
 
-#: js/ui/components/telepathyClient.js:828
-#, javascript-format
-msgid "%s is now known as %s"
-msgstr "%s-ს ახლა ჰქვია %s"
-
-#: js/ui/ctrlAltTab.js:22 js/ui/overviewControls.js:417
+#: js/ui/ctrlAltTab.js:23 js/ui/overviewControls.js:404
 msgid "Windows"
 msgstr "ფანჯრები"
 
-#: js/ui/dash.js:205 js/ui/dash.js:251
-msgid "Show Applications"
-msgstr "აპლიკაციების ჩვენება"
+#: js/ui/dash.js:204 js/ui/dash.js:250
+msgid "Show Apps"
+msgstr "აპების ჩვენება"
 
 #. Translators: this is the name of the dock/favorites area on
-#. the left of the overview
-#: js/ui/dash.js:398
+#. the bottom of the overview
+#: js/ui/dash.js:408
 msgid "Dash"
 msgstr "პანელი"
 
@@ -1111,7 +1297,7 @@ msgstr "პანელი"
 #. * "Tue 9:29 AM").  The string itself should become a full date, e.g.,
 #. * "February 17 2015".
 #.
-#: js/ui/dateMenu.js:83
+#: js/ui/dateMenu.js:99
 msgid "%B %-d %Y"
 msgstr "%B %-d %Y"
 
@@ -1119,34 +1305,34 @@ msgstr "%B %-d %Y"
 #. * below the time in the shell; it should combine the weekday and the
 #. * date, e.g. "Tuesday February 17 2015".
 #.
-#: js/ui/dateMenu.js:90
+#: js/ui/dateMenu.js:106
 msgid "%A %B %e %Y"
 msgstr "%A %B %e %Y"
 
 #. Translators: Shown on calendar heading when selected day occurs on current year
-#: js/ui/dateMenu.js:156
+#: js/ui/dateMenu.js:172
 msgctxt "calendar heading"
 msgid "%B %-d"
 msgstr "%B %-d"
 
 #. Translators: Shown on calendar heading when selected day occurs on different year
-#: js/ui/dateMenu.js:159
+#: js/ui/dateMenu.js:175
 msgctxt "calendar heading"
 msgid "%B %-d %Y"
 msgstr "%B %-d %Y"
 
-#: js/ui/dateMenu.js:165
+#: js/ui/dateMenu.js:181
 msgid "Today"
 msgstr "დღეს"
 
-#: js/ui/dateMenu.js:169
+#: js/ui/dateMenu.js:185
 msgid "Tomorrow"
 msgstr "ხვალ"
 
 #. Translators: Shown in calendar event list for all day events
 #. * Keep it short, best if you can use less then 10 characters
 #.
-#: js/ui/dateMenu.js:200
+#: js/ui/dateMenu.js:216
 msgctxt "event list time"
 msgid "All Day"
 msgstr "მთელი დღე"
@@ -1154,145 +1340,145 @@ msgstr "მთელი დღე"
 #. Translators: Shown in calendar event list as the start/end of events
 #. * that only show day and month
 #.
-#: js/ui/dateMenu.js:222
+#: js/ui/dateMenu.js:238
 msgid "%m/%d"
 msgstr "%m/%d"
 
-#: js/ui/dateMenu.js:273
+#: js/ui/dateMenu.js:289
 msgid "No Events"
 msgstr "ღონისძიებების გარეშე"
 
-#: js/ui/dateMenu.js:396
-msgid "Add world clocks…"
+#: js/ui/dateMenu.js:411
+msgid "Add World Clocks…"
 msgstr "მსოფლიო საათების დამატება…"
 
-#: js/ui/dateMenu.js:397
+#: js/ui/dateMenu.js:412
 msgid "World Clocks"
 msgstr "მსოფლიო საათები"
 
-#: js/ui/dateMenu.js:681
+#: js/ui/dateMenu.js:702
 msgid "Loading…"
 msgstr "იტვირთება…"
 
-#: js/ui/dateMenu.js:691
-msgid "Go online for weather information"
+#: js/ui/dateMenu.js:712
+msgid "Go Online for Weather Information"
 msgstr "ამინდის ინფორმაციისთვის საჭიროა ინტერნეტი"
 
-#: js/ui/dateMenu.js:693
-msgid "Weather information is currently unavailable"
+#: js/ui/dateMenu.js:714
+msgid "Weather Information Unavailable"
 msgstr "ამინდის ინფორმაცია ხელმიუწვდომელია"
 
-#: js/ui/dateMenu.js:703
+#: js/ui/dateMenu.js:724
 msgid "Weather"
 msgstr "ამინდი"
 
-#: js/ui/dateMenu.js:705
-msgid "Select weather location…"
+#: js/ui/dateMenu.js:726
+msgid "Select Weather Location…"
 msgstr "აირჩიეთ ამინდის მდებარეობა…"
 
-#: js/ui/endSessionDialog.js:41
+#: js/ui/endSessionDialog.js:47
 #, javascript-format
 msgctxt "title"
 msgid "Log Out %s"
 msgstr "%s-დან გასვლა"
 
-#: js/ui/endSessionDialog.js:42
+#: js/ui/endSessionDialog.js:48
 msgctxt "title"
 msgid "Log Out"
 msgstr "გასვლა"
 
-#: js/ui/endSessionDialog.js:45
-#, javascript-format
-msgid "%s will be logged out automatically in %d second."
-msgid_plural "%s will be logged out automatically in %d seconds."
-msgstr[0] "%s გამოვა ავტომატურად, %d წამში."
-
 #: js/ui/endSessionDialog.js:51
 #, javascript-format
-msgid "You will be logged out automatically in %d second."
-msgid_plural "You will be logged out automatically in %d seconds."
-msgstr[0] "ავტომატური გამოსვლა %d წამში."
+msgid "%s will be logged out automatically in %d second"
+msgid_plural "%s will be logged out automatically in %d seconds"
+msgstr[0] "%s გავა ავტომატურად, %d წამში."
 
-#: js/ui/endSessionDialog.js:58
+#: js/ui/endSessionDialog.js:57
+#, javascript-format
+msgid "You will be logged out automatically in %d second"
+msgid_plural "You will be logged out automatically in %d seconds"
+msgstr[0] "ავტომატური გასვლა %d წამში"
+
+#: js/ui/endSessionDialog.js:64
 msgctxt "button"
 msgid "Log Out"
 msgstr "გასვლა"
 
-#: js/ui/endSessionDialog.js:64 js/ui/status/system.js:167
+#: js/ui/endSessionDialog.js:70 js/ui/status/system.js:174
 msgctxt "title"
 msgid "Power Off"
 msgstr "გამორთვა"
 
-#: js/ui/endSessionDialog.js:65
+#: js/ui/endSessionDialog.js:71
 msgctxt "title"
 msgid "Install Updates & Power Off"
 msgstr "განახლებების დაყენება და გამორთვა"
 
-#: js/ui/endSessionDialog.js:68
+#: js/ui/endSessionDialog.js:74
 #, javascript-format
-msgid "The system will power off automatically in %d second."
-msgid_plural "The system will power off automatically in %d seconds."
+msgid "The system will power off automatically in %d second"
+msgid_plural "The system will power off automatically in %d seconds"
 msgstr[0] "სისტემა გამოირთვება ავტომატურად %d წამში."
 
-#: js/ui/endSessionDialog.js:72 js/ui/endSessionDialog.js:91
+#: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:97
 msgctxt "checkbox"
 msgid "Install pending software updates"
 msgstr "დარჩენილი განახლებების დაყენება"
 
-#: js/ui/endSessionDialog.js:76
+#: js/ui/endSessionDialog.js:82
 msgctxt "button"
 msgid "Power Off"
 msgstr "გამორთვა"
 
-#: js/ui/endSessionDialog.js:83
+#: js/ui/endSessionDialog.js:89
 msgctxt "title"
 msgid "Restart"
 msgstr "გადატვრთვა"
 
-#: js/ui/endSessionDialog.js:84
+#: js/ui/endSessionDialog.js:90
 msgctxt "title"
 msgid "Install Updates & Restart"
 msgstr "განახლებების დაყენება და გადატვირთვა"
 
-#: js/ui/endSessionDialog.js:87
+#: js/ui/endSessionDialog.js:93
 #, javascript-format
-msgid "The system will restart automatically in %d second."
-msgid_plural "The system will restart automatically in %d seconds."
+msgid "The system will restart automatically in %d second"
+msgid_plural "The system will restart automatically in %d seconds"
 msgstr[0] "სისტემა გადაიტვირთება ავტომატურად %d წამში."
 
-#: js/ui/endSessionDialog.js:95
+#: js/ui/endSessionDialog.js:101
 msgctxt "button"
 msgid "Restart"
 msgstr "გადატვრთვა"
 
-#: js/ui/endSessionDialog.js:103
+#: js/ui/endSessionDialog.js:109
 msgctxt "title"
 msgid "Restart & Install Updates"
 msgstr "სისტემა გადაიტვირთება და განახლდება"
 
-#: js/ui/endSessionDialog.js:106
+#: js/ui/endSessionDialog.js:112
 #, javascript-format
-msgid "The system will automatically restart and install updates in %d second."
+msgid "The system will automatically restart and install updates in %d second"
 msgid_plural ""
-"The system will automatically restart and install updates in %d seconds."
+"The system will automatically restart and install updates in %d seconds"
 msgstr[0] "სისტემა გადაიტვირთება და განახლდება %d წამში."
 
-#: js/ui/endSessionDialog.js:113 js/ui/endSessionDialog.js:134
+#: js/ui/endSessionDialog.js:119 js/ui/endSessionDialog.js:140
 msgctxt "button"
-msgid "Restart &amp; Install"
-msgstr "გადატვირთვა &amp; დაყენება"
+msgid "Restart & Install"
+msgstr "გადატვირთვა & დაყენება"
 
-#: js/ui/endSessionDialog.js:115
+#: js/ui/endSessionDialog.js:121
 msgctxt "button"
-msgid "Install &amp; Power Off"
-msgstr "განახლებების დაყენება და გამორთვა"
+msgid "Install & Power Off"
+msgstr "დაყენება & გამორთვა"
 
-#: js/ui/endSessionDialog.js:116
+#: js/ui/endSessionDialog.js:122
 msgctxt "checkbox"
 msgid "Power off after updates are installed"
 msgstr "გამორთვა განახლებების დაყენების შემდეგ"
 
-#: js/ui/endSessionDialog.js:123
+#: js/ui/endSessionDialog.js:129
 msgctxt "title"
 msgid "Restart & Install Upgrade"
 msgstr "გადატვირთვა და განახლება"
@@ -1300,7 +1486,7 @@ msgstr "გადატვირთვა და განახლება"
 #. Translators: This is the text displayed for system upgrades in the
 #. shut down dialog. First %s gets replaced with the distro name and
 #. second %s with the distro version to upgrade to
-#: js/ui/endSessionDialog.js:128
+#: js/ui/endSessionDialog.js:134
 #, javascript-format
 msgid ""
 "%s %s will be installed after restart. Upgrade installation can take a long "
@@ -1310,95 +1496,87 @@ msgstr ""
 "დიდი დრო შეიძლება დასჭირდეს. დარწმუნდით, რომ გაქვთ მონაცემების მარქაფი და "
 "კომპიუტერი შეერთებულია ელ-წყაროში."
 
-#: js/ui/endSessionDialog.js:285
-msgid "Low battery power: please plug in before installing updates."
+#: js/ui/endSessionDialog.js:283
+msgid "Low battery power: please plug in before installing updates"
 msgstr ""
 "ელემენტი თითქმის დამჯდარია. განახლებების დაყენებამდე გთხოვთ შეართოთ კვების "
-"კაბელი."
+"კაბელი"
 
-#: js/ui/endSessionDialog.js:294
+#: js/ui/endSessionDialog.js:292
 msgid "Some applications are busy or have unsaved work"
 msgstr "ზოგიერთი აპლიკაცია დაკავებულია ან აქვს შეუნახავი ცვლილებები"
 
-#: js/ui/endSessionDialog.js:299
+#: js/ui/endSessionDialog.js:297
 msgid "Other users are logged in"
 msgstr "სხვა მომხმარებლებიც არიან შემოსული"
 
-#: js/ui/endSessionDialog.js:470
+#: js/ui/endSessionDialog.js:467
 msgctxt "button"
 msgid "Boot Options"
 msgstr "ჩატვირთვის მორგება"
 
 #. Translators: Remote here refers to a remote session, like a ssh login
-#: js/ui/endSessionDialog.js:675
+#: js/ui/endSessionDialog.js:672
 #, javascript-format
 msgid "%s (remote)"
 msgstr "%s (დაშორებული)"
 
 #. Translators: Console here refers to a tty like a VT console
-#: js/ui/endSessionDialog.js:678
+#: js/ui/endSessionDialog.js:675
 #, javascript-format
 msgid "%s (console)"
 msgstr "%s (კონსოლიდან)"
 
-#: js/ui/extensionDownloader.js:227
+#: js/ui/extensionDownloader.js:280
 msgid "Install"
 msgstr "დაყენება"
 
-#: js/ui/extensionDownloader.js:233
+#: js/ui/extensionDownloader.js:286
 msgid "Install Extension"
 msgstr "გაფართოების დაყენება"
 
-#: js/ui/extensionDownloader.js:234
+#: js/ui/extensionDownloader.js:287
 #, javascript-format
 msgid "Download and install “%s” from extensions.gnome.org?"
 msgstr "გადმოვწერო და დავაყენო %s extensions.gnome.org-დან?"
 
-#: js/ui/extensionSystem.js:270
+#: js/ui/extensionSystem.js:352
 msgid "Extension Updates Available"
 msgstr "ხელმისაწვდომია გაფართოების განახლება"
 
-#: js/ui/extensionSystem.js:271
-msgid "Extension updates are ready to be installed."
-msgstr "გაფართოების განახლება მზადაა დასაყენებლად."
+#: js/ui/extensionSystem.js:353
+msgid "Extension updates are ready to be installed"
+msgstr "გაფართოების განახლება მზადაა დასაყენებლად"
 
-#: js/ui/inhibitShortcutsDialog.js:75
+#: js/ui/inhibitShortcutsDialog.js:70
 msgid "Allow inhibiting shortcuts"
 msgstr "მალსახმობების გათიშვის ნების დართვა"
 
 #. Translators: %s is an application name like "Settings"
-#: js/ui/inhibitShortcutsDialog.js:78
+#: js/ui/inhibitShortcutsDialog.js:73
 #, javascript-format
-msgid "The application %s wants to inhibit shortcuts"
-msgstr "აპლიკაცია %s-ს უნდა მალსახმობების გათიშვა"
+msgid "The app %s wants to inhibit shortcuts"
+msgstr "აპლიკაცია %s-ს მალსახმობების გათიშვას ითხოვს"
 
-#: js/ui/inhibitShortcutsDialog.js:79
-msgid "An application wants to inhibit shortcuts"
-msgstr "აპლიკაციას უნდა მალსახმობების გათიშვა"
+#: js/ui/inhibitShortcutsDialog.js:74
+msgid "An app wants to inhibit shortcuts"
+msgstr "აპლიკაციას მალსახმობების გათიშვა უნდა"
 
 #. Translators: %s is a keyboard shortcut like "Super+x"
-#: js/ui/inhibitShortcutsDialog.js:86
+#: js/ui/inhibitShortcutsDialog.js:81
 #, javascript-format
-msgid "You can restore shortcuts by pressing %s."
-msgstr "მალსახმობების აღდგენა შეგიძლიათ %s-ზე დაწოლით."
+msgid "You can restore shortcuts by pressing %s"
+msgstr "მალსახმობების აღდგენა შეგიძლიათ %s-ზე დაწოლით"
 
-#: js/ui/inhibitShortcutsDialog.js:97
-msgid "Deny"
-msgstr "უარყოფა"
-
-#: js/ui/inhibitShortcutsDialog.js:106
-msgid "Allow"
-msgstr "დაშვება"
-
-#: js/ui/kbdA11yDialog.js:32
+#: js/ui/kbdA11yDialog.js:34
 msgid "Slow Keys Turned On"
 msgstr "ნელი ღილაკები ჩართულია"
 
-#: js/ui/kbdA11yDialog.js:33
+#: js/ui/kbdA11yDialog.js:35
 msgid "Slow Keys Turned Off"
 msgstr "ნელი ღილაკები გამორთულია"
 
-#: js/ui/kbdA11yDialog.js:34
+#: js/ui/kbdA11yDialog.js:36
 msgid ""
 "You just held down the Shift key for 8 seconds. This is the shortcut for the "
 "Slow Keys feature, which affects the way your keyboard works."
@@ -1406,15 +1584,15 @@ msgstr ""
 "თქვენ Shift ღილაკს 8 წამით დააჭირეთ. ეს ნელი კლავიატურის თვისების "
 "მალსახმობია, რომელიც განსაზღვრავს, როგორ მუშაობს თქვენი კლავიატურა."
 
-#: js/ui/kbdA11yDialog.js:40
+#: js/ui/kbdA11yDialog.js:42
 msgid "Sticky Keys Turned On"
 msgstr "წებოვანი ღილაკები ჩართულია"
 
-#: js/ui/kbdA11yDialog.js:41
+#: js/ui/kbdA11yDialog.js:43
 msgid "Sticky Keys Turned Off"
 msgstr "წებოვანი ღილაკები გამორთულია"
 
-#: js/ui/kbdA11yDialog.js:43
+#: js/ui/kbdA11yDialog.js:45
 msgid ""
 "You just pressed the Shift key 5 times in a row. This is the shortcut for "
 "the Sticky Keys feature, which affects the way your keyboard works."
@@ -1422,7 +1600,7 @@ msgstr ""
 "თქვენ Shift ღილაკს 5 წამით დააჭირეთ. ეს წებოვანი კლავიატურის თვისების "
 "მალსახმობია, რომელიც განსაზღვრავს, როგორ მუშაობს თქვენი კლავიატურა."
 
-#: js/ui/kbdA11yDialog.js:45
+#: js/ui/kbdA11yDialog.js:47
 msgid ""
 "You just pressed two keys at once, or pressed the Shift key 5 times in a "
 "row. This turns off the Sticky Keys feature, which affects the way your "
@@ -1432,91 +1610,93 @@ msgstr ""
 "ეს გამორთავს წებოვანი კლავიატურის თვისებას, რომელიც განსაზღვრავს, როგორ "
 "მუშაობს თქვენი კლავიატურა."
 
-#: js/ui/kbdA11yDialog.js:55
+#: js/ui/kbdA11yDialog.js:57
 msgid "Leave On"
 msgstr "ჩართული დატოვება"
 
-#: js/ui/kbdA11yDialog.js:55
+#: js/ui/kbdA11yDialog.js:57
 msgid "Turn On"
 msgstr "ჩართვა"
 
-#: js/ui/kbdA11yDialog.js:65 js/ui/status/network.js:447
+#: js/ui/kbdA11yDialog.js:67 js/ui/status/network.js:455
 msgid "Turn Off"
 msgstr "გამორთვა"
 
-#: js/ui/kbdA11yDialog.js:65
+#: js/ui/kbdA11yDialog.js:67
 msgid "Leave Off"
 msgstr "გამორთული დატოვება"
 
-#: js/ui/keyboard.js:219
-msgid "Region & Language Settings"
-msgstr "ქვეყნისა და ენის მორგება"
+#: js/ui/keyboard.js:180 js/ui/status/keyboard.js:897
+msgid "Keyboard Settings"
+msgstr "კლავიატურის მორგება"
 
-#: js/ui/lookingGlass.js:713
+#: js/ui/lookingGlass.js:727
 msgid "No extensions installed"
 msgstr "გაფართოებები დაყენებული არაა"
 
 #. Translators: argument is an extension UUID.
-#: js/ui/lookingGlass.js:774
+#: js/ui/lookingGlass.js:788
 #, javascript-format
-msgid "%s has not emitted any errors."
-msgstr "%s-მა შეცდომა არ დააბრუნა."
+msgid "%s has not emitted any errors"
+msgstr "\"%s\"-მა შეცდომა არ დააბრუნა"
 
-#: js/ui/lookingGlass.js:780
+#: js/ui/lookingGlass.js:794
 msgid "Hide Errors"
 msgstr "შეცდომების დამალვა"
 
-#: js/ui/lookingGlass.js:784 js/ui/lookingGlass.js:857
+#: js/ui/lookingGlass.js:798 js/ui/lookingGlass.js:875
 msgid "Show Errors"
 msgstr "შეცდომების ჩვენება"
 
-#: js/ui/lookingGlass.js:793
-msgid "Enabled"
-msgstr "ჩაირთო"
+#: js/ui/lookingGlass.js:807
+msgid "Active"
+msgstr "აქტიური"
 
-#. translators:
-#. * The device has been disabled
-#: js/ui/lookingGlass.js:796 subprojects/gvc/gvc-mixer-control.c:1908
-msgid "Disabled"
-msgstr "გამოირთო"
+#: js/ui/lookingGlass.js:810
+msgid "Inactive"
+msgstr "არააქტიური"
 
-#: js/ui/lookingGlass.js:798
+#: js/ui/lookingGlass.js:812
 msgid "Error"
 msgstr "შეცდომა"
 
-#: js/ui/lookingGlass.js:800
+#: js/ui/lookingGlass.js:814
 msgid "Out of date"
 msgstr "ვადაგასული"
 
-#: js/ui/lookingGlass.js:802
+#: js/ui/lookingGlass.js:816
 msgid "Downloading"
 msgstr "გადმოწერა"
 
-#: js/ui/lookingGlass.js:835
+#: js/ui/lookingGlass.js:818
+msgid "Deactivating"
+msgstr "დეაქტივაცია"
+
+#: js/ui/lookingGlass.js:820
+msgid "Activating"
+msgstr "აქტივაცია"
+
+#: js/ui/lookingGlass.js:853
 msgid "View Source"
 msgstr "წყაროს ნახვა"
 
-#: js/ui/lookingGlass.js:846
+#: js/ui/lookingGlass.js:864
 msgid "Web Page"
 msgstr "ვებ გვერდი"
 
-#: js/ui/main.js:286
+#: js/ui/main.js:277
 msgid "System was put in unsafe mode"
 msgstr "სისტემა უსაფრთხო რეჟიმზე გადაერთო"
 
-#: js/ui/main.js:287
-msgid "Applications now have unrestricted access"
-msgstr "ახლა აპლიკაციებს განუსაზღვრელი წვდომა აქვთ"
+#: js/ui/main.js:278
+msgid "Apps now have unrestricted access"
+msgstr "ახლა აპების წვდომა განუსაზღვრელია"
 
-#: js/ui/main.js:288 js/ui/overview.js:58
-msgid "Undo"
-msgstr "ბრძანების გაუქმება"
-
-#: js/ui/main.js:334
+#: js/ui/main.js:338
 msgid "Logged in as a privileged user"
 msgstr "შეხვედით, როგორც პრივილეგირებული მომხმარებელი"
 
-#: js/ui/main.js:335
+#: js/ui/main.js:339
 msgid ""
 "Running a session as a privileged user should be avoided for security "
 "reasons. If possible, you should log in as a normal user."
@@ -1524,23 +1704,29 @@ msgstr ""
 "სესიის პრივილეგირებული მომხმარებლით გაშვება უსაფრთხოების მიზნით თავიდან უნდა "
 "აირიდოთ. თუ ეს შესაძლებელია, ჩვეულებრივი მომხმარებლით შედით."
 
-#: js/ui/main.js:384
+#: js/ui/main.js:387
 msgid "Screen Lock disabled"
 msgstr "ეკრანის ჩაკეტვა გათიშულია"
 
-#: js/ui/main.js:385
-msgid "Screen Locking requires the GNOME display manager."
-msgstr "ეკრანის ჩაკეტვას GNOME-ის ეკრანის მმართველი სჭირდება."
+#: js/ui/main.js:388
+msgid "Screen Locking requires the GNOME display manager"
+msgstr "ეკრანის ჩაკეტვას GNOME-ის ეკრანის მმართველი სჭირდება"
 
-#: js/ui/messageTray.js:1418
-msgid "System Information"
-msgstr "ინფორმაცის სისტემის შესახებ"
+#. Translators: this is the string displayed in the header when a message
+#. source doesn't have a name
+#: js/ui/messageList.js:374
+msgid "Unknown App"
+msgstr "უცნობი აპი"
 
-#: js/ui/mpris.js:202
+#: js/ui/messageTray.js:326 js/ui/messageTray.js:328
+msgid "Notification sound"
+msgstr "შეტყობინების ხმა"
+
+#: js/ui/mpris.js:198
 msgid "Unknown artist"
 msgstr "უცნობი შემსრულებელი"
 
-#: js/ui/mpris.js:212
+#: js/ui/mpris.js:208
 msgid "Unknown title"
 msgstr "უცნობი სათაური"
 
@@ -1548,237 +1734,270 @@ msgstr "უცნობი სათაური"
 #. in the search entry when no search is
 #. active; it should not exceed ~30
 #. characters.
-#: js/ui/overviewControls.js:327
+#: js/ui/overviewControls.js:328
 msgid "Type to search"
 msgstr "მოსაძებნად აკრიფეთ"
 
-#: js/ui/overviewControls.js:405
-msgid "Applications"
-msgstr "აპლიკაციები"
+#: js/ui/overviewControls.js:392
+msgid "Apps"
+msgstr "აპები"
 
 #. Translators: This is the main view to select
 #. activities. See also note for "Activities" string.
-#: js/ui/overview.js:71
+#: js/ui/overview.js:33
 msgid "Overview"
 msgstr "მიმოხილვა"
 
-#: js/ui/padOsd.js:100
+#: js/ui/padOsd.js:98
 msgid "New shortcut…"
 msgstr "ახალი მალსახმობი…"
 
-#: js/ui/padOsd.js:154
-msgid "Application defined"
-msgstr "აპლიკაციის განსაზღვრულია"
+#: js/ui/padOsd.js:151
+msgid "App defined"
+msgstr "აპის განსაზღვრული"
 
-#: js/ui/padOsd.js:155
+#: js/ui/padOsd.js:152
 msgid "Show on-screen help"
 msgstr "ეკრანზე ნაჩვენები დახმარება"
 
-#: js/ui/padOsd.js:156
+#: js/ui/padOsd.js:153
 msgid "Switch monitor"
 msgstr "ეკრანის შეცვლა"
 
-#: js/ui/padOsd.js:157
+#: js/ui/padOsd.js:154
 msgid "Assign keystroke"
 msgstr "ღილაკების თანამიმდევრობის მინიჭება"
 
-#: js/ui/padOsd.js:226
+#: js/ui/padOsd.js:223
 msgid "Done"
 msgstr "დასრულდა"
 
-#: js/ui/padOsd.js:743
+#: js/ui/padOsd.js:726
 msgid "Edit…"
 msgstr "ჩასწორება…"
 
-#: js/ui/padOsd.js:785 js/ui/padOsd.js:902
+#: js/ui/padOsd.js:773
 msgid "None"
 msgstr "არაფერი"
 
-#: js/ui/padOsd.js:856
+#: js/ui/padOsd.js:844
 msgid "Press a button to configure"
 msgstr "მოსარგებად დააწექით ღილაკს"
 
-#: js/ui/padOsd.js:857
+#: js/ui/padOsd.js:845
 msgid "Press Esc to exit"
 msgstr "დასახურად დააწექით ESC-ს"
 
-#: js/ui/padOsd.js:860
+#: js/ui/padOsd.js:848
 msgid "Press any key to exit"
 msgstr "გასასვლელად დააჭირეთ ნებისმიერ ღილაკს"
 
-#: js/ui/panel.js:244
+#. Translators: If there is no suitable word for "Activities"
+#. in your language, you can use the word for "Overview".
+#: js/ui/panel.js:423
 msgid "Activities"
 msgstr "ქმედებები"
 
-#: js/ui/panel.js:338
+#: js/ui/panel.js:504
 msgctxt "System menu in the top bar"
 msgid "System"
 msgstr "სისტემა"
 
-#: js/ui/panel.js:457
+#: js/ui/panel.js:678
 msgid "Top Bar"
 msgstr "ზედა ზოლი"
 
-#: js/ui/runDialog.js:58
+#: js/ui/quickSettings.js:188
+msgid "Open menu"
+msgstr "მენიუს გახსნა"
+
+#: js/ui/runDialog.js:61
 msgid "Run a Command"
 msgstr "ბრძანების გაშვება"
 
-#: js/ui/runDialog.js:73
+#: js/ui/runDialog.js:76
 msgid "Press ESC to close"
 msgstr "დასახურად დააწექით ESC-ს"
 
-#: js/ui/runDialog.js:238
+#: js/ui/runDialog.js:241
 msgid "Restart is not available on Wayland"
 msgstr "Wayland-ში გადატვირთვა მიუწვდომელია"
 
-#: js/ui/runDialog.js:243
+#: js/ui/runDialog.js:246
 msgid "Restarting…"
 msgstr "გადატვირთვა…"
 
-#: js/ui/screenShield.js:235
+#: js/ui/screenShield.js:233
 msgid "GNOME needs to lock the screen"
 msgstr "GNOME -ს სჭირდება თქვენი ეკრანის ჩაკეტვა"
 
-#. We could not become modal, so we can't activate the
-#. screenshield. The user is probably very upset at this
-#. point, but any application using global grabs is broken
-#. Just tell them to stop using this app
-#.
-#. XXX: another option is to kick the user into the gdm login
-#. screen, where we're not affected by grabs
-#: js/ui/screenShield.js:275 js/ui/screenShield.js:652
+#: js/ui/screenShield.js:274 js/ui/screenShield.js:667
 msgid "Unable to lock"
 msgstr "ჩაკეტვის შეცდომა"
 
-#: js/ui/screenShield.js:276 js/ui/screenShield.js:653
-msgid "Lock was blocked by an application"
-msgstr "ჩაკეტვა დაბლოკილია აპლიკაციის მიერ"
+#: js/ui/screenShield.js:275 js/ui/screenShield.js:668
+msgid "Lock was blocked by an app"
+msgstr "ჩაკეტვა დაბლოკილია აპის მიერ"
 
-#: js/ui/screenshot.js:1161
+#: js/ui/screenshot.js:1252
 msgid "Selection"
 msgstr "მონიშნული"
 
-#: js/ui/screenshot.js:1171
+#: js/ui/screenshot.js:1262
 msgid "Area Selection"
 msgstr "მონიშნული მონაკვეთი"
 
-#: js/ui/screenshot.js:1176
+#: js/ui/screenshot.js:1267
 msgid "Screen"
 msgstr "ეკრანი"
 
-#: js/ui/screenshot.js:1186
+#: js/ui/screenshot.js:1277
 msgid "Screen Selection"
 msgstr "ეკრანის არჩევანი"
 
-#: js/ui/screenshot.js:1191
+#: js/ui/screenshot.js:1282
 msgid "Window"
 msgstr "ფანჯარა"
 
-#: js/ui/screenshot.js:1201
+#: js/ui/screenshot.js:1292
 msgid "Window Selection"
 msgstr "ფანჯრის არჩევანი"
 
-#: js/ui/screenshot.js:1239
-msgid "Screenshot / Screencast"
-msgstr "ეკრანის ანაბეჭდი / ჩანაწერი"
+#. Translators: entry in the window right click menu.
+#: js/ui/screenshot.js:1317 js/ui/status/system.js:111 js/ui/windowMenu.js:28
+msgid "Take Screenshot"
+msgstr "ეკრანის ანაბეჭდის გადაღება"
 
-#: js/ui/screenshot.js:1275
+#: js/ui/screenshot.js:1333
+msgid "Record Screen"
+msgstr "ეკრანის ჩაწერა"
+
+#. Translators: since this string refers to an action,
+#. it needs to be phrased as a verb.
+#: js/ui/screenshot.js:1350
+msgid "Capture"
+msgstr "ჩაჭერა"
+
+#: js/ui/screenshot.js:1372
 msgid "Show Pointer"
 msgstr "კურსორის ჩვენება"
 
 #. Translators: this is the folder where recorded
 #. screencasts are stored.
-#: js/ui/screenshot.js:1866
+#: js/ui/screenshot.js:1996
 msgid "Screencasts"
 msgstr "ეკრანის ვიდეოჩანაწერი"
 
 #. Translators: this is a filename used for screencast
 #. * recording, where "%d" and "%t" date and time, e.g.
-#. * "Screencast from 07-17-2013 10:00:46 PM.webm"
-#: js/ui/screenshot.js:1871
+#. * "Screencast From 07-17-2013 10:00:46 PM"
+#: js/ui/screenshot.js:2001
 #, no-c-format
-msgid "Screencast from %d %t.webm"
-msgstr "ეკრანის ვიდეოჩანაწერი %d %t-დან.webm"
-
-#. Translators: notification source name.
-#: js/ui/screenshot.js:1913 js/ui/screenshot.js:2125
-msgid "Screenshot"
-msgstr "ეკრანის ანაბეჭდი"
+msgid "Screencast From %d %t"
+msgstr "ეკრანის ვიდეოჩანაწერი %d %t-დან"
 
 #. Translators: notification title.
-#: js/ui/screenshot.js:1919
+#: js/ui/screenshot.js:2047
 msgid "Screencast recorded"
 msgstr "ეკრანის ვიდეოჩანაწერი დასრულებულია"
 
+#. Translators: notification title.
+#: js/ui/screenshot.js:2060
+msgid "Screencast failed to start"
+msgstr "ეკრანის ტრანსლაციის დაწყება ჩავარდა"
+
+#. Translators: notification title.
+#: js/ui/screenshot.js:2066
+msgid "Screencast ended: Out of disk space"
+msgstr "Screencast დასრულდა: დისკზე ადგილი აღარაა"
+
+#. We can encourage user to try again on service crashes since the
+#. recorder will auto-blocklist the pipeline that crashed.
+#. Translators: notification title.
+#: js/ui/screenshot.js:2072
+msgid "Screencast ended unexpectedly, please try again"
+msgstr "Screencast მოულოდნელად დასრულდა. თავიდან სცადეთ"
+
+#. Translators: notification title.
+#: js/ui/screenshot.js:2075
+msgid "Screencast ended unexpectedly"
+msgstr "Screencast მოულოდნელად დასრულდა"
+
+#. Translators: notification source name.
+#: js/ui/screenshot.js:2085 js/ui/screenshot.js:2327
+msgid "Screenshot"
+msgstr "ეკრანის ანაბეჭდი"
+
 #. Translators: notification body when a screencast was recorded.
-#: js/ui/screenshot.js:1921
+#: js/ui/screenshot.js:2092
 msgid "Click here to view the video."
 msgstr "ვიდეოს სანახავად დააწკაპუნეთ აქ."
 
 #. Translators: button on the screencast notification.
 #. Translators: button on the screenshot notification.
-#: js/ui/screenshot.js:1924 js/ui/screenshot.js:2139
+#: js/ui/screenshot.js:2100 js/ui/screenshot.js:2343
 msgid "Show in Files"
 msgstr "ფაილებში ჩვენება"
 
 #. Translators: this is the name of the file that the screenshot is
 #. saved to. The placeholder is a timestamp, e.g. "2017-05-21 12-24-03".
-#: js/ui/screenshot.js:2085
+#: js/ui/screenshot.js:2287
 #, javascript-format
-msgid "Screenshot from %s"
+msgid "Screenshot From %s"
 msgstr "ეკრანის ანაბეჭდი %s-დან"
 
 #. Translators: notification title.
-#: js/ui/screenshot.js:2131
+#: js/ui/screenshot.js:2333
 msgid "Screenshot captured"
 msgstr "ეკრანის ანაბეჭდი დათრეულია"
 
 #. Translators: notification body when a screenshot was captured.
-#: js/ui/screenshot.js:2133
+#: js/ui/screenshot.js:2335
 msgid "You can paste the image from the clipboard."
 msgstr "შეგიძლიათ მიმოცვლის ბაფერიდან ჩასვათ."
 
-#: js/ui/screenshot.js:2186 js/ui/screenshot.js:2351
+#: js/ui/screenshot.js:2391 js/ui/screenshot.js:2555
 msgid "Screenshot taken"
 msgstr "ეკრანის ანაბეჭდი აღებულია"
 
-#: js/ui/search.js:804
+#: js/ui/search.js:829
 msgid "Searching…"
 msgstr "ძებნა…"
 
-#: js/ui/search.js:806
-msgid "No results."
-msgstr "შედეგების გარეშე."
+#: js/ui/search.js:831
+msgid "No results"
+msgstr "შედეგების გარეშე"
 
-#: js/ui/search.js:937
+#: js/ui/search.js:962
 #, javascript-format
 msgid "%d more"
 msgid_plural "%d more"
 msgstr[0] "კიდევ %d"
 
 #: js/ui/searchController.js:87
+#: subprojects/extensions-app/data/ui/extensions-window.ui:73
 msgid "Search"
 msgstr "ძებნა"
 
-#: js/ui/shellEntry.js:20
+#: js/ui/shellEntry.js:21
 msgid "Copy"
 msgstr "კოპირება"
 
-#: js/ui/shellEntry.js:25
+#: js/ui/shellEntry.js:26
 msgid "Paste"
 msgstr "ჩასმა"
 
-#: js/ui/shellEntry.js:77
+#: js/ui/shellEntry.js:78
 msgid "Show Text"
 msgstr "ტექსტის ჩვენება"
 
-#: js/ui/shellEntry.js:79
+#: js/ui/shellEntry.js:80
 msgid "Hide Text"
 msgstr "ტექსტის დამალვა"
 
-#: js/ui/shellEntry.js:166
-msgid "Caps lock is on."
-msgstr "CapsLock ჩართულია."
+#: js/ui/shellEntry.js:174
+msgid "Caps lock is on"
+msgstr "CapsLock ჩართულია"
 
 #: js/ui/shellMountOperation.js:286
 msgid "Hidden Volume"
@@ -1793,50 +2012,46 @@ msgid "Uses Keyfiles"
 msgstr "მოხმარებლის გასაღების ფაილები"
 
 #. Translators: %s is the Disks application
-#: js/ui/shellMountOperation.js:299
+#: js/ui/shellMountOperation.js:300
 #, javascript-format
 msgid ""
-"To unlock a volume that uses keyfiles, use the <i>%s</i> utility instead."
+"To unlock a volume that uses keyfiles, use the <i>%s</i> utility instead"
 msgstr ""
-"საცავების, რომლებიც იყენებენ გასაღებებს, განსაბლოკად გამოიყენეთ <i>%s</i>."
+"საცავების, რომლებიც იყენებენ გასაღებებს, განსაბლოკად გამოიყენეთ <i>%s</i>"
 
-#: js/ui/shellMountOperation.js:307
+#: js/ui/shellMountOperation.js:304
+msgid ""
+"You need an external utility like <i>Disks</i> to unlock a volume that uses "
+"keyfiles"
+msgstr ""
+"ტომის, რომელიც გასაღების ფაილებს იყენებს, განბლოკვისთვის გარე პროგრამა, "
+"მაგალითად <i>დისკები</i> გჭირდებათ"
+
+#: js/ui/shellMountOperation.js:312
 msgid "PIM Number"
 msgstr "PIM-ის ნომერი"
 
-#: js/ui/shellMountOperation.js:366
+#: js/ui/shellMountOperation.js:371
 msgid "Remember Password"
 msgstr "პაროლის დამასოვრება"
 
-#: js/ui/shellMountOperation.js:381
+#: js/ui/shellMountOperation.js:386
 msgid "Unlock"
 msgstr "განბლოკვა"
 
 #. Translators: %s is the Disks application
-#: js/ui/shellMountOperation.js:392
+#: js/ui/shellMountOperation.js:400
 #, javascript-format
 msgid "Open %s"
 msgstr "გახსენი %s"
 
-#: js/ui/shellMountOperation.js:424
-msgid "The PIM must be a number or empty."
-msgstr "PIM უნდა იყოს ან რიცხვი, ან არაფერი."
-
-#. Translators: %s is the Disks application
-#: js/ui/shellMountOperation.js:466
-#, javascript-format
-msgid "Unable to start %s"
-msgstr "%s-ის გაშვების შეცდომა"
-
-#. Translators: %s is the Disks application
-#: js/ui/shellMountOperation.js:468
-#, javascript-format
-msgid "Couldn’t find the %s application"
-msgstr "აპლიკაცია %s ვერ ვიპოვე"
+#: js/ui/shellMountOperation.js:436
+msgid "The PIM must be a number or empty"
+msgstr "PIM უნდა იყოს ან რიცხვი, ან არაფერი"
 
 #: js/ui/status/accessibility.js:34
 msgid "Accessibility"
-msgstr "_დამხმარე საშუალებები"
+msgstr "წვდომადობა"
 
 #: js/ui/status/accessibility.js:44
 msgid "High Contrast"
@@ -1858,23 +2073,27 @@ msgstr "კლავიატურა ეკრანზე"
 msgid "Visual Alerts"
 msgstr "ვიზუალური გართხილებები"
 
-#: js/ui/status/accessibility.js:65
+#: js/ui/status/accessibility.js:66
 msgid "Sticky Keys"
 msgstr "წებოვანი ღილაკები"
 
-#: js/ui/status/accessibility.js:68
+#: js/ui/status/accessibility.js:70
 msgid "Slow Keys"
 msgstr "ნელი ღილაკები"
 
-#: js/ui/status/accessibility.js:71
+#: js/ui/status/accessibility.js:74
 msgid "Bounce Keys"
 msgstr "მხტუნავი ღილაკები"
 
-#: js/ui/status/accessibility.js:74
+#: js/ui/status/accessibility.js:78
 msgid "Mouse Keys"
 msgstr "თაგუნას ღილაკები"
 
-#: js/ui/status/accessibility.js:131
+#: js/ui/status/accessibility.js:83
+msgid "Accessibility Settings"
+msgstr "წვდომადობის მორგება"
+
+#: js/ui/status/accessibility.js:140
 msgid "Large Text"
 msgstr "დიდი ტექსტი"
 
@@ -1882,216 +2101,311 @@ msgstr "დიდი ტექსტი"
 msgid "Auto Rotate"
 msgstr "ავტომატური მობრუნება"
 
-#: js/ui/status/bluetooth.js:151
-msgid "Bluetooth"
-msgstr "Bluetooth"
+#: js/ui/status/backgroundApps.js:156
+msgctxt "title"
+msgid "Background Apps"
+msgstr "ფონური აპები"
 
-#: js/ui/status/brightness.js:34
-msgid "Brightness"
-msgstr "სიკაშკაშე"
+#: js/ui/status/backgroundApps.js:171
+msgid "Apps known to be running without a window"
+msgstr "ცნობილი ფანჯრის გარეშე არსებული აპები"
 
-#: js/ui/status/darkMode.js:11
-msgid "Dark Mode"
-msgstr "მუქი რეჟიმი"
+#: js/ui/status/backgroundApps.js:182
+msgid "App Settings"
+msgstr "აპის მორგება"
 
-#: js/ui/status/dwellClick.js:12
-msgid "Single Click"
-msgstr "ერთი წკაპი"
+#: js/ui/status/backgroundApps.js:239
+msgid "No Background Apps"
+msgstr "ფონური აპების გარეშე"
 
-#: js/ui/status/dwellClick.js:17
-msgid "Double Click"
-msgstr "ორმაგი წკაპი"
+#: js/ui/status/backgroundApps.js:241
+#, javascript-format
+msgid "%d Background App"
+msgid_plural "%d Background Apps"
+msgstr[0] "%d ფონური აპი"
 
-#: js/ui/status/dwellClick.js:22
-msgid "Drag"
-msgstr "გადათრევა"
+#: js/ui/status/backlight.js:39
+msgid "Keyboard Brightness"
+msgstr "კლავიატურის სიკაშკაშე"
 
-#: js/ui/status/dwellClick.js:27
-msgid "Secondary Click"
-msgstr "დამატებით წკაპი"
+#: js/ui/status/backlight.js:79
+msgid "Off"
+msgstr "გამორთვა"
 
-#: js/ui/status/dwellClick.js:36
-msgid "Dwell Click"
-msgstr "დიდხნიანია წკაპი"
+#: js/ui/status/backlight.js:80
+msgid "Low"
+msgstr "დაბალი"
 
-#: js/ui/status/keyboard.js:842
+#: js/ui/status/backlight.js:81
+msgid "High"
+msgstr "მაღალი"
+
+#: js/ui/status/backlight.js:147 js/ui/status/keyboard.js:879
 msgid "Keyboard"
 msgstr "კლავიატურა"
 
-#: js/ui/status/keyboard.js:859
+#: js/ui/status/bluetooth.js:245 js/ui/status/network.js:360
+msgid "Disconnect"
+msgstr "გათიშვა"
+
+#: js/ui/status/bluetooth.js:262 js/ui/status/bluetooth.js:264
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+#: js/ui/status/bluetooth.js:287 js/ui/status/network.js:1900
+msgid "Bluetooth Settings"
+msgstr "Bluetooth-ის მორგება"
+
+#: js/ui/status/bluetooth.js:334
+msgid "No available or connected devices"
+msgstr "ხელმისაწვდომი ან მიერთებული მოწყობილობების გარეშე"
+
+#: js/ui/status/bluetooth.js:335
+msgid "Turn on Bluetooth to connect to devices"
+msgstr "მოწყობილობებთან მისაერთებლად ჩართეთ ბლუთუზი"
+
+#. Translators: This is the number of connected bluetooth devices
+#: js/ui/status/bluetooth.js:389
+#, javascript-format
+msgid "%d Connected"
+msgid_plural "%d Connected"
+msgstr[0] "%d მიერთებულია"
+
+#: js/ui/status/brightness.js:32
+msgid "Brightness"
+msgstr "სიკაშკაშე"
+
+#: js/ui/status/darkMode.js:12
+msgid "Dark Style"
+msgstr "მუქი სტილი"
+
+#: js/ui/status/dwellClick.js:15
+msgid "Single Click"
+msgstr "ერთი წკაპი"
+
+#: js/ui/status/dwellClick.js:20
+msgid "Double Click"
+msgstr "ორმაგი წკაპი"
+
+#: js/ui/status/dwellClick.js:25
+msgid "Drag"
+msgstr "გადათრევა"
+
+#: js/ui/status/dwellClick.js:30
+msgid "Secondary Click"
+msgstr "დამატებით წკაპი"
+
+#: js/ui/status/dwellClick.js:39
+msgid "Dwell Click"
+msgstr "დიდხნიანია წკაპი"
+
+#: js/ui/status/keyboard.js:896
 msgid "Show Keyboard Layout"
 msgstr "კლავიატურის განლაგების ჩვენება"
 
-#: js/ui/status/location.js:330
+#: js/ui/status/location.js:337
 msgid "Allow location access"
 msgstr "მდებარეობის პოვნის წვდომა"
 
 #. Translators: %s is an application name
-#: js/ui/status/location.js:332
+#: js/ui/status/location.js:339
 #, javascript-format
 msgid "The app %s wants to access your location"
 msgstr "აპლიკაციას %s უნდა თქვენი მდებარეობის გაგება"
 
-#: js/ui/status/location.js:342
-msgid "Location access can be changed at any time from the privacy settings."
+#: js/ui/status/location.js:349
+msgid "Location access can be changed at any time from the privacy settings"
 msgstr ""
-"მდებარეობაზე წვდომა შეიძლება შეიცვალოს ნებისმიერ დროს კონფიდენციალურობის "
-"პარამეტრებიდან."
+"მდებარეობაზე წვდომა შეიძლება შეიცვალოს ნებისმიერ დროს კონფიდენციალობის "
+"პარამეტრებიდან"
 
-#: js/ui/status/network.js:53
+#: js/ui/status/location.js:357
+msgid "Deny Access"
+msgstr "წვდომის მინიჭება"
+
+#: js/ui/status/location.js:362
+msgid "Grant Access"
+msgstr "უარი წვდომაზე"
+
+#: js/ui/status/network.js:62
 msgid "<unknown>"
 msgstr "<უცნობი>"
 
 #. Translators: %s is a device name like "MyPhone"
-#: js/ui/status/network.js:356
+#: js/ui/status/network.js:354
 #, javascript-format
 msgid "Disconnect %s"
 msgstr "გათიშვა %s"
 
 #. Translators: %s is a device name like "MyPhone"
-#: js/ui/status/network.js:358
+#: js/ui/status/network.js:356
 #, javascript-format
 msgid "Connect to %s"
 msgstr "%s-სთან დაკავშირება"
 
+#: js/ui/status/network.js:1050
+msgid "Secure"
+msgstr "დაცული"
+
+#: js/ui/status/network.js:1050
+msgid "Not secure"
+msgstr "დაცული არაა"
+
+#: js/ui/status/network.js:1051
+#, javascript-format
+msgid "Signal strength %s%%"
+msgstr "სიგნალის სიძლიერე %s%%"
+
+#. translators: The first placeholder is the network name, the second and indication whether it is secure, and the last the signal strength indication
+#: js/ui/status/network.js:1053
+#, javascript-format
+msgid "%s, %s, %s"
+msgstr "%s, %s, %s"
+
 #. Translators: %s is a network identifier
-#: js/ui/status/network.js:1107
+#: js/ui/status/network.js:1155
 #, javascript-format
 msgid "%s Hotspot"
 msgstr "%s Hotspot-ი"
 
-#: js/ui/status/network.js:1466 js/ui/status/network.js:1482
+#: js/ui/status/network.js:1426
+#, javascript-format
+msgid "%d connected"
+msgid_plural "%d connected"
+msgstr[0] "%d მიერთებულია"
+
+#: js/ui/status/network.js:1524 js/ui/status/network.js:1540
 msgid "VPN"
 msgstr "VPN"
 
-#: js/ui/status/network.js:1467
+#: js/ui/status/network.js:1525
 msgid "VPN Settings"
 msgstr "VPN-ის მორგება"
 
-#: js/ui/status/network.js:1716
+#: js/ui/status/network.js:1785
 msgid "Wi–Fi"
 msgstr "Wi–Fi"
 
-#: js/ui/status/network.js:1718
+#: js/ui/status/network.js:1787
 msgid "All Networks"
 msgstr "ყველა ქსელი"
 
-#: js/ui/status/network.js:1815
+#: js/ui/status/network.js:1884
 msgid "Wired Connections"
 msgstr "მავთულიანი კავშირები"
 
-#: js/ui/status/network.js:1816
+#: js/ui/status/network.js:1885
 msgid "Wired Settings"
 msgstr "მავთულით მიერთების მორგება"
 
-#: js/ui/status/network.js:1830
+#: js/ui/status/network.js:1899
 msgid "Bluetooth Tethers"
 msgstr "ბლუთუზით მიბმა"
 
-#: js/ui/status/network.js:1831
-msgid "Bluetooth Settings"
-msgstr "Bluetooth-ის მორგება"
+#. Translators: "Tether" from "Bluetooth Tether"
+#: js/ui/status/network.js:1906
+msgid "Tether"
+msgstr "მიბმა"
 
-#: js/ui/status/network.js:1845
+#: js/ui/status/network.js:1919
 msgid "Mobile Connections"
 msgstr "მობილური კავშირები"
 
-#: js/ui/status/network.js:1847
+#: js/ui/status/network.js:1921
 msgid "Mobile Broadband Settings"
 msgstr "მობილური კავშირის მორგება"
 
-#: js/ui/status/network.js:1959
+#. Translators: "Mobile" from "Mobile Broadband"
+#: js/ui/status/network.js:1930
+msgid "Mobile"
+msgstr "მობილური"
+
+#: js/ui/status/network.js:1964
+msgid "Sign Into Wi–Fi Network"
+msgstr "შესვლა Wi-Fi ქსელში"
+
+#: js/ui/status/network.js:2151
 msgid "Connection failed"
 msgstr "დაკავშირება ვერ მოხერხდა"
 
-#: js/ui/status/network.js:1960
+#: js/ui/status/network.js:2152
 msgid "Activation of network connection failed"
 msgstr "ქსელის კავშირის აქტივაციის შეცდომა"
 
-#: js/ui/status/nightLight.js:20
+#: js/ui/status/nightLight.js:19
 msgid "Night Light"
 msgstr "ღამის სინათლე"
 
-#: js/ui/status/powerProfiles.js:20
+#: js/ui/status/powerProfiles.js:19
 msgctxt "Power profile"
 msgid "Performance"
 msgstr "წარმადობა"
 
-#: js/ui/status/powerProfiles.js:25
+#: js/ui/status/powerProfiles.js:24
 msgctxt "Power profile"
 msgid "Balanced"
 msgstr "ბალანსირებული"
 
-#: js/ui/status/powerProfiles.js:30
+#: js/ui/status/powerProfiles.js:29
 msgctxt "Power profile"
 msgid "Power Saver"
 msgstr "ელემენტის შენახვის რეჟიმი"
 
-#: js/ui/status/powerProfiles.js:70
-msgid "Power Profiles"
-msgstr "კვების პროფილები"
+#: js/ui/status/powerProfiles.js:39 js/ui/status/powerProfiles.js:69
+msgid "Power Mode"
+msgstr "კვების რეჟიმი"
 
-#: js/ui/status/remoteAccess.js:72
+#: js/ui/status/powerProfiles.js:71
+msgid "Power Settings"
+msgstr "კვების პარამეტრები"
+
+#: js/ui/status/remoteAccess.js:74
 msgid "Stop Screencast"
 msgstr "ეკრანის ვიდეოჩანაწერის დასრულება"
 
-#: js/ui/status/remoteAccess.js:142
+#: js/ui/status/remoteAccess.js:144
 msgid "Stop Screen Sharing"
 msgstr "ეკრანის გაზიარების შეწყვეტა"
 
-#: js/ui/status/rfkill.js:96
+#: js/ui/status/rfkill.js:99
 msgid "Airplane Mode"
 msgstr "თვითმფრინავის რეჟიმი"
 
-#: js/ui/status/system.js:90
-#, javascript-format
-msgid "%d %%"
-msgstr "%d %%"
-
-#. Translators: entry in the window right click menu.
-#: js/ui/status/system.js:105 js/ui/windowMenu.js:29
-msgid "Take Screenshot"
-msgstr "ეკრანის ანაბეჭდის გადაღება"
-
-#: js/ui/status/system.js:161
+#: js/ui/status/system.js:168
 msgid "Power Off Menu"
 msgstr "გამორთვის მენიუ"
 
-#: js/ui/status/system.js:169
+#: js/ui/status/system.js:176
 msgid "Suspend"
 msgstr "ძილი"
 
-#: js/ui/status/system.js:174
+#: js/ui/status/system.js:181
 msgid "Restart…"
 msgstr "გადატვირთვა…"
 
-#: js/ui/status/system.js:179
+#: js/ui/status/system.js:186
 msgid "Power Off…"
 msgstr "გამორთვა…"
 
-#: js/ui/status/system.js:186
-#: subprojects/extensions-app/data/ui/extensions-window.ui:190
+#: js/ui/status/system.js:193
+#: subprojects/extensions-app/data/ui/extensions-window.ui:124
 msgid "Log Out…"
 msgstr "გასვლა…"
 
-#: js/ui/status/system.js:191
+#: js/ui/status/system.js:198
 msgid "Switch User…"
 msgstr "მომხმარებლის გადართვა…"
 
-#: js/ui/status/system.js:235
+#: js/ui/status/system.js:242
 msgctxt "action"
 msgid "Lock Screen"
 msgstr "ეკრანის ჩაკეტვა"
 
-#: js/ui/status/thunderbolt.js:256
-msgid "Thunderbolt"
-msgstr "Thunderbolt"
-
-#: js/ui/status/thunderbolt.js:317
+#: js/ui/status/thunderbolt.js:308
 msgid "Unknown Thunderbolt device"
 msgstr "Thunderbolt-ის უცნობი მოწყობილობა"
 
-#: js/ui/status/thunderbolt.js:318
+#: js/ui/status/thunderbolt.js:309
 msgid ""
 "New device has been detected while you were away. Please disconnect and "
 "reconnect the device to start using it."
@@ -2099,38 +2413,46 @@ msgstr ""
 "სანამ გასული ბრძანდებოდით, აღმოჩენილია ახალი მოწყობილობები. გამოსაყენებლად "
 "ჯერ გამოაერთეთ ისინი, შემდეგ კი თავიდან მიაერთეთ."
 
-#: js/ui/status/thunderbolt.js:321
+#: js/ui/status/thunderbolt.js:312
 msgid "Unauthorized Thunderbolt device"
 msgstr "უცნობი Thunderbolt მოწყობილობა"
 
-#: js/ui/status/thunderbolt.js:322
+#: js/ui/status/thunderbolt.js:313
 msgid ""
-"New device has been detected and needs to be authorized by an administrator."
+"New device has been detected and needs to be authorized by an administrator"
 msgstr ""
-"აღმოჩენილია ახალი მოწყობილობა და ადმინისტრატორის მიერ ავტორიზებული უნდა იყოს."
+"აღმოჩენილია ახალი მოწყობილობა და ადმინისტრატორის მიერ ავტორიზებული უნდა იყოს"
 
-#: js/ui/status/thunderbolt.js:328
+#: js/ui/status/thunderbolt.js:319
 msgid "Thunderbolt authorization error"
 msgstr "Thunderbolt მოწყობილობის ავტორიზაციის შეცდომა"
 
-#: js/ui/status/thunderbolt.js:329
+#: js/ui/status/thunderbolt.js:320
 #, javascript-format
 msgid "Could not authorize the Thunderbolt device: %s"
 msgstr "Thunderbolt მოწყობილობასთან ავტორიზაციის შეცდომა: %s"
 
-#: js/ui/status/volume.js:194
+#: js/ui/status/volume.js:218
 msgid "Volume changed"
 msgstr "საცავი შეიცვალა"
 
-#: js/ui/status/volume.js:256
+#: js/ui/status/volume.js:231
+msgid "Unmute"
+msgstr "დადუმების გამორთვა"
+
+#: js/ui/status/volume.js:231
+msgid "Mute"
+msgstr "დადუმება"
+
+#: js/ui/status/volume.js:286
 msgid "Volume"
 msgstr "ტომი"
 
-#: js/ui/status/volume.js:272
+#: js/ui/status/volume.js:302
 msgid "Sound Output"
 msgstr "ხმის გამოტანა"
 
-#: js/ui/status/volume.js:340
+#: js/ui/status/volume.js:374
 msgid "Sound Input"
 msgstr "ხმის შეყვანა"
 
@@ -2148,7 +2470,7 @@ msgstr "სარკე"
 msgid "Join Displays"
 msgstr "ეკრანების შეერთება"
 
-#. Translators: this is for using only an external display.
+#. Translators: this is for using only external displays.
 #. * Try to keep it under around 15 characters.
 #.
 #: js/ui/switchMonitor.js:39
@@ -2164,62 +2486,67 @@ msgstr "მხოლოდ ჩაშენებული"
 
 #. Translators: This is a time format for a date in
 #. long format
-#: js/ui/unlockDialog.js:364
+#: js/ui/unlockDialog.js:378
 msgid "%A %B %-d"
 msgstr "%A %B %-d"
 
-#: js/ui/unlockDialog.js:370
+#: js/ui/unlockDialog.js:384
 msgid "Swipe up to unlock"
 msgstr "გადაუსვით ბლოკის მოსახსნელად"
 
-#: js/ui/unlockDialog.js:371
+#: js/ui/unlockDialog.js:385
 msgid "Click or press a key to unlock"
-msgstr "ბლოკის მოსახსნელად წკაპი ან ღილაკს დააწექით"
+msgstr "ბლოკის მოსახსნელად დააწექით ნებისმიერ ღილაკს"
 
-#: js/ui/unlockDialog.js:554
+#: js/ui/unlockDialog.js:568
 msgid "Unlock Window"
 msgstr "ფანჯრის განბლოკვა"
 
-#: js/ui/unlockDialog.js:563
+#: js/ui/unlockDialog.js:577
 msgid "Log in as another user"
 msgstr "სხვა მომხმარებლით შესვლა"
 
-#: js/ui/welcomeDialog.js:36
+#: js/ui/welcomeDialog.js:47
 #, javascript-format
-msgid "Welcome to GNOME %s"
-msgstr "მოგესალმებათ GNOME %s"
-
-#: js/ui/welcomeDialog.js:37
-msgid "If you want to learn your way around, check out the tour."
-msgstr "თუ გნებავთ, ისწავლოთ, დაიწყეთ ჩვენი ტურით."
-
-#: js/ui/welcomeDialog.js:46
-msgid "No Thanks"
-msgstr "არა, მადლობა"
+msgid "GNOME %s"
+msgstr "GNOME %s"
 
 #: js/ui/welcomeDialog.js:51
+#, javascript-format
+msgid "Welcome to %s"
+msgstr "მოგესალმებათ %s"
+
+#: js/ui/welcomeDialog.js:52
+msgid "If you want to learn your way around, check out the tour"
+msgstr "თუ გნებავთ, ისწავლოთ, დაიწყეთ ჩვენი ტურით"
+
+#: js/ui/welcomeDialog.js:61
+msgid "Skip"
+msgstr "გამოტოვება"
+
+#: js/ui/welcomeDialog.js:66
 msgid "Take Tour"
 msgstr "ტურის აღება"
 
-#: js/ui/windowAttentionHandler.js:20
+#: js/ui/windowAttentionHandler.js:18
 #, javascript-format
 msgid "“%s” is ready"
 msgstr "\"%s\" მზადაა"
 
 #. Translators: This string should be shorter than 30 characters
-#: js/ui/windowManager.js:62
+#: js/ui/windowManager.js:68
 msgid "Keep these display settings?"
 msgstr "დაიტოვებთ ამ პარამეტრებს?"
 
-#: js/ui/windowManager.js:72
+#: js/ui/windowManager.js:78
 msgid "Revert Settings"
 msgstr "პარამეტრების დაბრუნება"
 
-#: js/ui/windowManager.js:77
+#: js/ui/windowManager.js:83
 msgid "Keep Changes"
 msgstr "ცვლილებების დატოვება"
 
-#: js/ui/windowManager.js:97
+#: js/ui/windowManager.js:103
 #, javascript-format
 msgid "Settings changes will revert in %d second"
 msgid_plural "Settings changes will revert in %d seconds"
@@ -2227,112 +2554,108 @@ msgstr[0] "კონფიგურაცია დაბრუნდება %
 
 #. Translators: This represents the size of a window. The first number is
 #. * the width of the window and the second is the height.
-#: js/ui/windowManager.js:544
+#: js/ui/windowManager.js:500
 #, javascript-format
 msgid "%d × %d"
 msgstr "%d × %d"
 
-#: js/ui/windowMenu.js:41
+#: js/ui/windowMenu.js:40
 msgid "Hide"
 msgstr "დამალვა"
 
-#: js/ui/windowMenu.js:48
+#: js/ui/windowMenu.js:47
 msgid "Restore"
 msgstr "აღდგენა"
 
-#: js/ui/windowMenu.js:52
+#: js/ui/windowMenu.js:51
 msgid "Maximize"
 msgstr "გადიდება"
 
-#: js/ui/windowMenu.js:59
+#: js/ui/windowMenu.js:58
 msgid "Move"
 msgstr "გადაადგილება"
 
-#: js/ui/windowMenu.js:65
+#: js/ui/windowMenu.js:78
 msgid "Resize"
 msgstr "ზომის შეცვლა"
 
-#: js/ui/windowMenu.js:72
-msgid "Move Titlebar Onscreen"
-msgstr "სათაურის ზოლის ეკრანზე გადატანა"
-
-#: js/ui/windowMenu.js:77
+#: js/ui/windowMenu.js:98
 msgid "Always on Top"
 msgstr "ყოველთვის ყველაზე ზემოთ"
 
-#: js/ui/windowMenu.js:96
+#: js/ui/windowMenu.js:117
 msgid "Always on Visible Workspace"
 msgstr "ყოველთვის ხილულ სამუშაო სივრცეში"
 
-#: js/ui/windowMenu.js:110
+#: js/ui/windowMenu.js:131
 msgid "Move to Workspace Left"
 msgstr "მარცხენა სამუშაო სივრცეში გადატანა"
 
-#: js/ui/windowMenu.js:116
+#: js/ui/windowMenu.js:137
 msgid "Move to Workspace Right"
 msgstr "მარჯვენა სამუშაო სივრცეში გადატანა"
 
-#: js/ui/windowMenu.js:122
+#: js/ui/windowMenu.js:143
 msgid "Move to Workspace Up"
 msgstr "ზედა სამუშაო სივრცეში გადატანა"
 
-#: js/ui/windowMenu.js:128
+#: js/ui/windowMenu.js:149
 msgid "Move to Workspace Down"
 msgstr "ქვედა სამუშაო სივრცეში გადატანა"
 
-#: js/ui/windowMenu.js:146
+#: js/ui/windowMenu.js:167
 msgid "Move to Monitor Up"
 msgstr "ეკრანის მაღლა ატანა"
 
-#: js/ui/windowMenu.js:155
+#: js/ui/windowMenu.js:176
 msgid "Move to Monitor Down"
 msgstr "ეკრანის დაბლა ჩამოტანა"
 
-#: js/ui/windowMenu.js:164
+#: js/ui/windowMenu.js:185
 msgid "Move to Monitor Left"
 msgstr "ეკრანის მარცხნივ გატანა"
 
-#: js/ui/windowMenu.js:173
+#: js/ui/windowMenu.js:194
 msgid "Move to Monitor Right"
 msgstr "ეკრანის მარჯვნივ გატანა"
 
-#: js/ui/windowMenu.js:181
+#: js/ui/windowMenu.js:202
 msgid "Close"
 msgstr "დახურვა"
 
-#: src/calendar-server/evolution-calendar.desktop.in:3
-msgid "Evolution Calendar"
-msgstr "Evolution-ის კალენდარი"
-
-#: src/main.c:435 subprojects/extensions-tool/src/main.c:321
+#: src/main.c:527 subprojects/extensions-tool/src/main.c:336
 msgid "Print version"
 msgstr "მიმდინარე ვერსიის დაბეჭდვა"
 
-#: src/main.c:441
+#: src/main.c:533
 msgid "Mode used by GDM for login screen"
 msgstr "რეჟიმი, რომელსაც GDM შემოსვლის ეკრანისთვის იყენებს"
 
-#: src/main.c:447
+#: src/main.c:539
 msgid "Use a specific mode, e.g. “gdm” for login screen"
 msgstr "შესვლის ეკრანის რეჟიმის მითითება. მაგ: \"gdm\""
 
-#: src/main.c:453
+#: src/main.c:545
 msgid "List possible modes"
 msgstr "შესაძლო რეჟიმების სია"
 
-#: src/shell-app.c:305
+#: src/main.c:551
+msgid "Force animations to be enabled"
+msgstr "ანიმაციების ნაძალადევი ჩართვა"
+
+#: src/shell-app.c:252
 msgctxt "program"
 msgid "Unknown"
-msgstr "Unknown"
+msgstr "უცნობი"
 
-#: src/shell-app.c:556
+#: src/shell-app.c:503
 #, c-format
 msgid "Failed to launch “%s”"
 msgstr "%s-ის გაშვების შეცდომა"
 
 #: src/shell-keyring-prompt.c:764
-msgid "Passwords do not match."
-msgstr "პაროლები არ ემთხვევა."
+msgid "Passwords do not match"
+msgstr "პაროლები არ ემთხვევა"
 
 #: src/shell-keyring-prompt.c:772
 msgid "Password cannot be blank"
@@ -2342,44 +2665,92 @@ msgstr "პაროლები ცარიელი ვერ იქნებ
 msgid "Authentication dialog was dismissed by the user"
 msgstr "ავთენტიკაციის ფანჯარა დახურულია მომხმარებლის მიერ"
 
-#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:5
-#: subprojects/extensions-app/data/org.gnome.Extensions.desktop.in.in:4
-#: subprojects/extensions-app/js/main.js:212
-#: subprojects/extensions-app/data/ui/extensions-window.ui:18
-#: subprojects/extensions-app/data/ui/extensions-window.ui:83
-msgid "Extensions"
-msgstr "გაფართოებები"
+#: src/st/st-icon-theme.c:1865
+#, c-format
+msgid "Icon '%s' not present in theme %s"
+msgstr "ხატულა '%s' თემაში '%s' არ არსებობს"
+
+#: src/st/st-icon-theme.c:3454 src/st/st-icon-theme.c:3757
+msgid "Failed to load icon"
+msgstr "ხატულის ჩატვირთვის შეცდომა"
 
 #: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:6
 msgid "Manage your GNOME Extensions"
 msgstr "GNOME-ის თქვენი გაფართოებების მართვა"
 
-#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:17
-#: subprojects/extensions-app/js/main.js:216
+#. developer_name tag deprecated with Appstream 1.0
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:19
 msgid "The GNOME Project"
 msgstr "პროექტი \"GNOME\""
 
-#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:36
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:51
 msgid ""
 "GNOME Extensions handles updating extensions, configuring extension "
 "preferences and removing or disabling unwanted extensions."
 msgstr ""
+"GNOME-ის გაფართოებები დაკავებულია გაფართოებების განახლებით, მათი "
+"პარამეტრების მორგებით და არასასურველი გაფართოებების წაშლით ან გამორთვით."
+
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:64
+msgid "Main Window"
+msgstr "მთავარი ფანჯარა"
+
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:68
+msgid "Available Updates"
+msgstr "ხელმისაწვდომი განახლებები"
+
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:72
+msgid "Search View"
+msgstr "ძებნის ხედი"
 
 #: subprojects/extensions-app/data/org.gnome.Extensions.desktop.in.in:7
 msgid "Configure GNOME Shell Extensions"
 msgstr "GNOME-ის გარსის გაფართოებების მორგება"
 
-#: subprojects/extensions-app/js/main.js:130
-#: subprojects/extensions-app/js/main.js:141
-msgid "No Matches"
-msgstr "დათხვევა არ არსებობს"
+#: subprojects/extensions-app/js/extensionManager.js:237
+#, javascript-format
+msgid ""
+"The installed version of this extension (%s) is incompatible with the "
+"current version of GNOME (%s). The extension has been disabled."
+msgstr ""
+"ამ გაფართოების (%s) დაყენებული ვერსია არასათავსებადია GNOME-ის მიმდინარე "
+"ვერსიასთან (%s). გაფართოება გათიშულია."
 
-#: subprojects/extensions-app/js/main.js:169
+#: subprojects/extensions-app/js/extensionManager.js:238
+#, javascript-format
+msgid ""
+"The installed version of this extension is incompatible with the current "
+"version of GNOME (%s). The extension has been disabled."
+msgstr ""
+"ამ გაფართოების დაყენებული ვერსია არასათავსებადია GNOME-ის მიმდინარე "
+"ვერსიასთან (%s). გაფართოება გათიშულია."
+
+#: subprojects/extensions-app/js/extensionManager.js:242
+msgid ""
+"An error has occurred in this extension. This could cause issues elsewhere "
+"in the system. It is recommended to turn the extension off until the error "
+"is resolved."
+msgstr ""
+"ამ გაფართოებაში აღმოჩენილია შეცდომა. ამას სისტემაში სხვა ადგილასაც შეუძლია "
+"შეცდომების გამოწვევა. რეკომენდებულია, გამორთოთ ეს გაფართოება, სანამ შეცდომას "
+"აღმოფხვრით."
+
+#. translators: Details for an extension error
+#: subprojects/extensions-app/js/extensionManager.js:248
+msgid "Error details:"
+msgstr "შეცდომის დეტალები:"
+
+#: subprojects/extensions-app/js/extensionRow.js:82
+#, javascript-format
+msgid "Version %s"
+msgstr "ვერისა %s"
+
+#: subprojects/extensions-app/js/extensionsWindow.js:113
 #, javascript-format
 msgid "Remove “%s”?"
 msgstr "წავშალო %s?"
 
-#: subprojects/extensions-app/js/main.js:170
+#: subprojects/extensions-app/js/extensionsWindow.js:114
 msgid ""
 "If you remove the extension, you need to return to download it if you want "
 "to enable it again"
@@ -2387,61 +2758,110 @@ msgstr ""
 "თუ ამ გაფართოებას წაშლით, მის თავიდან ჩასართავად გადმოწერებზე დაბრუნება "
 "მოგიწევთ"
 
-#: subprojects/extensions-app/js/main.js:174
-msgid "Remove"
-msgstr "წაშლა"
+#: subprojects/extensions-app/js/extensionsWindow.js:117
+msgid "_Cancel"
+msgstr "_გაუქმება"
 
-#: subprojects/extensions-app/js/main.js:211
+#: subprojects/extensions-app/js/extensionsWindow.js:118
+msgid "_Remove"
+msgstr "_წაშლა"
+
+#: subprojects/extensions-app/js/extensionsWindow.js:158
 msgid "translator-credits"
 msgstr "თარგმანი-შესრულებულია"
 
-#: subprojects/extensions-app/js/main.js:339
+#: subprojects/extensions-app/js/extensionsWindow.js:203
 #, javascript-format
 msgid "%d extension will be updated on next login."
 msgid_plural "%d extensions will be updated on next login."
 msgstr[0] "%d გაფართოება განახლდება შემდეგი შემოსვლისას."
 
-#: subprojects/extensions-app/js/main.js:481
-msgid "The extension is incompatible with the current GNOME version"
-msgstr "ეს გაფართოება GNOME-ის მიმდინარე ვერსიასთან შეუთავსებელია"
-
-#: subprojects/extensions-app/js/main.js:484
-#: subprojects/extensions-app/data/ui/extension-row.ui:52
-msgid "The extension had an error"
-msgstr "გაფართოების შეცდომა"
+#: subprojects/extensions-app/data/ui/extension-row.ui:22
+msgid "Error Details"
+msgstr "შეცდომის დეტალები"
 
 #: subprojects/extensions-app/data/ui/extension-row.ui:62
-msgid "The extension can be updated"
-msgstr "გაფართოება შეიძლება განახლდეს"
+msgid "Updates Details"
+msgstr "განახლების დეტალები"
 
-#: subprojects/extensions-app/data/ui/extension-row.ui:112
-msgid "Website"
-msgstr "ვებგვერდი"
+#: subprojects/extensions-app/data/ui/extension-row.ui:72
+msgid ""
+"A new version of this extension is ready and will be loaded on next login."
+msgstr "ამ გაფართოების ახალი ვერსია მზადაა და შემდეგი შემოსვლისას ჩაიტვირთება."
 
-#: subprojects/extensions-app/data/ui/extension-row.ui:134
-msgid "Remove…"
-msgstr "წაშლა…"
+#: subprojects/extensions-app/data/ui/extension-row.ui:104
+msgid "Extension Details"
+msgstr "გაფართოების დეტალები"
+
+#: subprojects/extensions-app/data/ui/extension-row.ui:192
+msgid "_Website"
+msgstr "_ვებსაიტი"
+
+#: subprojects/extensions-app/data/ui/extension-row.ui:219
+msgid "_Settings"
+msgstr "_მორგება"
+
+#: subprojects/extensions-app/data/ui/extension-row.ui:246
+msgid "_Remove…"
+msgstr "_წაშლა…"
 
 #: subprojects/extensions-app/data/ui/extensions-window.ui:6
-msgid "Help"
-msgstr "დახმარება"
+msgid "Keyboard Shortcuts"
+msgstr "კლავიატურის მალსახმობები"
 
 #: subprojects/extensions-app/data/ui/extensions-window.ui:10
 msgid "About Extensions"
 msgstr "გაფართოებების შესახებ"
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:84
-msgid ""
-"Extensions can cause performance and stability issues. Disable extensions if "
-"you encounter problems with your system."
-msgstr ""
+#: subprojects/extensions-app/data/ui/extensions-window.ui:64
+msgid "Main Menu"
+msgstr "მთავარი მენიუ"
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:98
-msgid "Manually Installed"
-msgstr "ხელით დაყენებული"
+#: subprojects/extensions-app/data/ui/extensions-window.ui:106
+msgid "Search extensions"
+msgstr "გაფართოებების ძიება"
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:99
 #: subprojects/extensions-app/data/ui/extensions-window.ui:134
+msgid "_Extensions"
+msgstr "_გაფართოებები"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:139
+msgid "More Information"
+msgstr "მეტი ინფორმაცია"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:151
+msgid ""
+"Extensions can cause performance and stability issues. It is recommended to "
+"disable all extensions if you experience problems with your system."
+msgstr ""
+"გაფართოებებს წარმადობისა და სტაბილურობის პრობლემები შეუძლიათ, გამოიწვიონ. "
+"რეკომენდებულია, გამორთოთ გაფართოებები, თუ სისტემასთან პრობლემები დაგეწყებათ."
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:178
+msgid "User Extensions"
+msgstr "მომხმარებლის გაფართოებები"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:198
+msgid "System Extensions"
+msgstr "სისტემური გაფართოებები"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:233
+msgid "Search Results"
+msgstr "ძებნის შედეგები"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:252
+msgid "No Results Found"
+msgstr "შედეგების გარეშე"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:253
+msgid "Try a different search"
+msgstr "სცადეთ, სხვანაირად მოძებნოთ"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:264
+msgid "No Installed Extensions"
+msgstr "არცერთი გაფართოება დაყენებული არაა"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:265
 msgid ""
 "To find and add extensions, visit <a href=\"https://extensions.gnome."
 "org\">extensions.gnome.org</a>."
@@ -2449,15 +2869,7 @@ msgstr ""
 "გაფართოებების საპოვნელად და დასამატებლად ეწვიეთ ვებგვერდს <a href=\"https://"
 "extensions.gnome.org\">extensions.gnome.org</a>."
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:112
-msgid "Built-In"
-msgstr "ჩაშენებული"
-
-#: subprojects/extensions-app/data/ui/extensions-window.ui:133
-msgid "No Installed Extensions"
-msgstr "არცერთი გაფართოება დაყენებული არაა"
-
-#: subprojects/extensions-app/data/ui/extensions-window.ui:145
+#: subprojects/extensions-app/data/ui/extensions-window.ui:276
 msgid ""
 "We’re very sorry, but it was not possible to get the list of installed "
 "extensions. Make sure you are logged into GNOME and try again."
@@ -2465,17 +2877,38 @@ msgstr ""
 "სამწუხაროდ დაყენებული გაფართოებების სიის მიღება შეუძლებელია. დარწმუნდით, რომ "
 "შეხვედით GNOME-ში და თავიდან სცადეთ."
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:175
-msgid "Extension Updates Ready"
-msgstr "გაფართოების განახლება მზადაა"
+#: subprojects/extensions-app/data/ui/help-overlay.ui:9
+msgctxt "shortcut window"
+msgid "General"
+msgstr "ზოგადი"
+
+#: subprojects/extensions-app/data/ui/help-overlay.ui:12
+msgctxt "shortcut window"
+msgid "Open Menu"
+msgstr "მენიუს გახსნა"
+
+#: subprojects/extensions-app/data/ui/help-overlay.ui:18
+msgctxt "shortcut window"
+msgid "Toggle Search"
+msgstr "ძებნის გადართვა"
+
+#: subprojects/extensions-app/data/ui/help-overlay.ui:24
+msgctxt "shortcut window"
+msgid "Show Shortcuts"
+msgstr "მალსახმობების ჩვენება"
+
+#: subprojects/extensions-app/data/ui/help-overlay.ui:30
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr "გასვლა"
 
 #. Translators: a file path to an extension directory
-#: subprojects/extensions-tool/src/command-create.c:222
+#: subprojects/extensions-tool/src/command-create.c:284
 #, c-format
 msgid "The new extension was successfully created in %s.\n"
 msgstr "%s-ში ახალი გაფართოება წარმატებით შეიქმნა.\n"
 
-#: subprojects/extensions-tool/src/command-create.c:296
+#: subprojects/extensions-tool/src/command-create.c:376
 #, c-format
 msgid ""
 "Name should be a very short (ideally descriptive) string.\n"
@@ -2484,12 +2917,12 @@ msgstr ""
 "სახელები ძალიან მოკლე უნდა იყოს (აღწერა).\n"
 "მაგალითები: %s"
 
-#: subprojects/extensions-tool/src/command-create.c:302
-#: subprojects/extensions-tool/src/main.c:238
+#: subprojects/extensions-tool/src/command-create.c:382
+#: subprojects/extensions-tool/src/main.c:243
 msgid "Name"
 msgstr "სახელი"
 
-#: subprojects/extensions-tool/src/command-create.c:316
+#: subprojects/extensions-tool/src/command-create.c:396
 #, c-format
 msgid ""
 "Description is a single-sentence explanation of what your extension does.\n"
@@ -2498,12 +2931,12 @@ msgstr ""
 "აღწერა ერთწინადადებიანი აღწერაა, რას აკეთებს ეს გაფართოება.\n"
 "მაგალითად: %s"
 
-#: subprojects/extensions-tool/src/command-create.c:322
-#: subprojects/extensions-tool/src/main.c:241
+#: subprojects/extensions-tool/src/command-create.c:402
+#: subprojects/extensions-tool/src/main.c:246
 msgid "Description"
 msgstr "აღწერა"
 
-#: subprojects/extensions-tool/src/command-create.c:336
+#: subprojects/extensions-tool/src/command-create.c:416
 msgid ""
 "UUID is a globally-unique identifier for your extension.\n"
 "This should be in the format of an email address (clicktofocus@janedoe."
@@ -2512,56 +2945,78 @@ msgstr ""
 "UUID გლობალურად-უნიკალური იდენტიფიკატორია თქვენი გაფართოებისთვის.\n"
 "უნდა იყოს ელფოსტის მისამართის ფორმატში (clicktofocus@janedoe.example.com)\n"
 
-#: subprojects/extensions-tool/src/command-create.c:363
+#: subprojects/extensions-tool/src/command-create.c:443
 msgid "Choose one of the available templates:\n"
 msgstr "აირჩიეთ ერთერთი ხელმისაწვდომის შაბლონი:\n"
 
-#: subprojects/extensions-tool/src/command-create.c:377
+#: subprojects/extensions-tool/src/command-create.c:457
 msgid "Template"
 msgstr "ნიმუში"
 
-#: subprojects/extensions-tool/src/command-create.c:432
+#: subprojects/extensions-tool/src/command-create.c:515
 msgid "The unique identifier of the new extension"
 msgstr "ახალ გაფართოებების UID"
 
-#: subprojects/extensions-tool/src/command-create.c:435
+#: subprojects/extensions-tool/src/command-create.c:518
 msgid "NAME"
 msgstr "სახელი"
 
-#: subprojects/extensions-tool/src/command-create.c:436
+#: subprojects/extensions-tool/src/command-create.c:519
 msgid "The user-visible name of the new extension"
 msgstr "ახალი გაფართოების სასიამოვნოდ დასანახი სახელი"
 
-#: subprojects/extensions-tool/src/command-create.c:438
+#: subprojects/extensions-tool/src/command-create.c:521
 msgid "DESCRIPTION"
 msgstr "აღწერა"
 
-#: subprojects/extensions-tool/src/command-create.c:440
+#: subprojects/extensions-tool/src/command-create.c:523
 msgid "A short description of what the extension does"
 msgstr "ამ გაფართოების მოკლე აღწერა"
 
-#: subprojects/extensions-tool/src/command-create.c:443
+#: subprojects/extensions-tool/src/command-create.c:525
+#: subprojects/extensions-tool/src/command-pack.c:455
+msgid "DOMAIN"
+msgstr "დომენი"
+
+#: subprojects/extensions-tool/src/command-create.c:527
+msgid "The gettext domain used by the extension"
+msgstr "გაფართოების მერ გამოყენებული gettext-ის დომენი"
+
+#: subprojects/extensions-tool/src/command-create.c:529
+#: subprojects/extensions-tool/src/command-pack.c:448
+msgid "SCHEMA"
+msgstr "სქემა"
+
+#: subprojects/extensions-tool/src/command-create.c:531
+msgid "The GSettings schema used by the extension"
+msgstr "გაფართოების მიერ გამოყენებული GSettngs-ის სქემა"
+
+#: subprojects/extensions-tool/src/command-create.c:534
 msgid "TEMPLATE"
 msgstr "ნიმუში"
 
-#: subprojects/extensions-tool/src/command-create.c:444
+#: subprojects/extensions-tool/src/command-create.c:535
 msgid "The template to use for the new extension"
 msgstr "ახალ გაფართოებებთან გამოსაყენებელი შაბლონი"
 
-#: subprojects/extensions-tool/src/command-create.c:450
+#: subprojects/extensions-tool/src/command-create.c:538
+msgid "Include prefs.js template"
+msgstr "ჩაისმება prefs.js შაბლონი"
+
+#: subprojects/extensions-tool/src/command-create.c:544
 msgid "Enter extension information interactively"
 msgstr "გაფართოების ინფორმაციის ინტერაქტიურად შეყვანა"
 
-#: subprojects/extensions-tool/src/command-create.c:458
+#: subprojects/extensions-tool/src/command-create.c:552
 msgid "Create a new extension"
 msgstr "ახალი გაფართოების შექმნა"
 
-#: subprojects/extensions-tool/src/command-create.c:476
-#: subprojects/extensions-tool/src/command-list.c:172
+#: subprojects/extensions-tool/src/command-create.c:570
+#: subprojects/extensions-tool/src/command-list.c:190
 msgid "Unknown arguments"
 msgstr "უცნობი არგუმენტები"
 
-#: subprojects/extensions-tool/src/command-create.c:501
+#: subprojects/extensions-tool/src/command-create.c:595
 msgid "UUID, name and description are required"
 msgstr "საჭიროა UUID, სახელი და აღწერა"
 
@@ -2598,13 +3053,13 @@ msgid "Enable an extension"
 msgstr "გაფართოების ჩართვა"
 
 #: subprojects/extensions-tool/src/command-info.c:50
-#: subprojects/extensions-tool/src/command-list.c:64
-#: subprojects/extensions-tool/src/main.c:146
+#: subprojects/extensions-tool/src/command-list.c:66
+#: subprojects/extensions-tool/src/main.c:150
 msgid "Failed to connect to GNOME Shell\n"
 msgstr "GNOME -ის გარსთან დაკავშირების შეცდომა\n"
 
 #: subprojects/extensions-tool/src/command-info.c:59
-#: subprojects/extensions-tool/src/main.c:155
+#: subprojects/extensions-tool/src/main.c:159
 #, c-format
 msgid "Extension “%s” doesn't exist\n"
 msgstr "გაფართოება %s არ არსებობს\n"
@@ -2613,108 +3068,108 @@ msgstr "გაფართოება %s არ არსებობს\n"
 msgid "Show extensions info"
 msgstr "გაფართოების შესახებ ინფორმაციის ჩვენება"
 
-#: subprojects/extensions-tool/src/command-install.c:173
+#: subprojects/extensions-tool/src/command-install.c:190
 msgid "Overwrite an existing extension"
 msgstr "არსებულ გაფართოების გადაწერა"
 
-#: subprojects/extensions-tool/src/command-install.c:175
+#: subprojects/extensions-tool/src/command-install.c:192
 msgid "EXTENSION_BUNDLE"
 msgstr "გაფართოების პაკეტი"
 
-#: subprojects/extensions-tool/src/command-install.c:184
+#: subprojects/extensions-tool/src/command-install.c:201
 msgid "Install an extension bundle"
 msgstr "გაფართოების პაკეტის დაყენება"
 
-#: subprojects/extensions-tool/src/command-install.c:202
+#: subprojects/extensions-tool/src/command-install.c:219
 msgid "No extension bundle specified"
 msgstr "გაფართოების პაკეტი მითითებული არაა"
 
-#: subprojects/extensions-tool/src/command-install.c:208
+#: subprojects/extensions-tool/src/command-install.c:225
 msgid "More than one extension bundle specified"
 msgstr "მითითებულია ერთზე მეტი გაფართოების პაკეტი"
 
-#: subprojects/extensions-tool/src/command-list.c:128
+#: subprojects/extensions-tool/src/command-list.c:140
 msgid "Show user-installed extensions"
 msgstr "მომხმარებლის მიერ დაყენებული გაფართოებების ჩვენება"
 
-#: subprojects/extensions-tool/src/command-list.c:131
+#: subprojects/extensions-tool/src/command-list.c:143
 msgid "Show system-installed extensions"
 msgstr "სისტემის მიერ დაყენებული გაფართოებების ჩვენება"
 
-#: subprojects/extensions-tool/src/command-list.c:134
+#: subprojects/extensions-tool/src/command-list.c:146
 msgid "Show enabled extensions"
 msgstr "ჩართული გაფართოებების ჩვენება"
 
-#: subprojects/extensions-tool/src/command-list.c:137
+#: subprojects/extensions-tool/src/command-list.c:149
 msgid "Show disabled extensions"
 msgstr "გამორთული გაფართოებების ჩვენება"
 
-#: subprojects/extensions-tool/src/command-list.c:140
+#: subprojects/extensions-tool/src/command-list.c:152
+msgid "Show extensions in active state"
+msgstr "აქტიურ მდგომარეობაში მყოფი გაფართოებების ჩვენება"
+
+#: subprojects/extensions-tool/src/command-list.c:155
+msgid "Show extensions in inactive state"
+msgstr "არააქტიურ მდგომარეობაში მყოფი გაფართოებების ჩვენება"
+
+#: subprojects/extensions-tool/src/command-list.c:158
 msgid "Show extensions with preferences"
 msgstr "მორგებადი გაფართოებების ჩვენება"
 
-#: subprojects/extensions-tool/src/command-list.c:143
+#: subprojects/extensions-tool/src/command-list.c:161
 msgid "Show extensions with updates"
 msgstr "განახლებადი გაფართოებების ჩვენება"
 
-#: subprojects/extensions-tool/src/command-list.c:146
+#: subprojects/extensions-tool/src/command-list.c:164
 msgid "Print extension details"
 msgstr "გაფართოების შესახებ ინფორმაციის დაბეჭდვა"
 
-#: subprojects/extensions-tool/src/command-list.c:154
+#: subprojects/extensions-tool/src/command-list.c:172
 msgid "List installed extensions"
 msgstr "დაყენებული გაფართოებების სია"
 
-#: subprojects/extensions-tool/src/command-pack.c:450
+#: subprojects/extensions-tool/src/command-pack.c:444
 msgid "FILE"
 msgstr "ფაილი"
 
-#: subprojects/extensions-tool/src/command-pack.c:451
+#: subprojects/extensions-tool/src/command-pack.c:445
 msgid "Additional source to include in the bundle"
 msgstr "დამატებით წყაროები ნაკრებში ჩასართავად"
 
-#: subprojects/extensions-tool/src/command-pack.c:454
-msgid "SCHEMA"
-msgstr "სქემა"
-
-#: subprojects/extensions-tool/src/command-pack.c:455
+#: subprojects/extensions-tool/src/command-pack.c:449
 msgid "A GSettings schema that should be included"
 msgstr "GSettings-ის თემა, რომელსაც უნდა შეიცავდეს"
 
-#: subprojects/extensions-tool/src/command-pack.c:457
-#: subprojects/extensions-tool/src/command-pack.c:468
+#: subprojects/extensions-tool/src/command-pack.c:451
+#: subprojects/extensions-tool/src/command-pack.c:462
 msgid "DIRECTORY"
 msgstr "საქაღალდე"
 
-#: subprojects/extensions-tool/src/command-pack.c:459
+#: subprojects/extensions-tool/src/command-pack.c:453
 msgid "The directory where translations are found"
 msgstr "საქაღალდე, სადაც თარგმანები მოიპოვება"
 
-#: subprojects/extensions-tool/src/command-pack.c:461
-msgid "DOMAIN"
-msgstr "დომენი"
-
-#: subprojects/extensions-tool/src/command-pack.c:463
+#: subprojects/extensions-tool/src/command-pack.c:457
 msgid "The gettext domain to use for translations"
-msgstr "Gettext-ის დომენი თარგმამენისთვის"
+msgstr "Gettext-ის დომენი თარგმანებითვის"
 
-#: subprojects/extensions-tool/src/command-pack.c:466
+#: subprojects/extensions-tool/src/command-pack.c:460
 msgid "Overwrite an existing pack"
 msgstr "არსებული პაკეტის თავზე გადაწერა"
 
-#: subprojects/extensions-tool/src/command-pack.c:470
+#: subprojects/extensions-tool/src/command-pack.c:464
 msgid "The directory where the pack should be created"
 msgstr "საქაღალდე, სადაც პაკეტი შეიქმნება"
 
-#: subprojects/extensions-tool/src/command-pack.c:472
+#: subprojects/extensions-tool/src/command-pack.c:466
 msgid "SOURCE_DIRECTORY"
 msgstr "საწყისი_საქაღალდე"
 
-#: subprojects/extensions-tool/src/command-pack.c:481
+#: subprojects/extensions-tool/src/command-pack.c:475
 msgid "Create an extension bundle"
 msgstr "გაფართოების პაკეტის შექმნა"
 
-#: subprojects/extensions-tool/src/command-pack.c:501
+#: subprojects/extensions-tool/src/command-pack.c:495
 msgid "More than one source directory specified"
 msgstr "მითითებულია ერთზე მეტი საწყისი საქაღალდე"
 
@@ -2749,102 +3204,116 @@ msgstr "\"%s\"-ის წაშლის შეცდომა\n"
 msgid "Uninstall an extension"
 msgstr "გაფართოების წაშლა"
 
-#: subprojects/extensions-tool/src/main.c:72
+#: subprojects/extensions-tool/src/main.c:76
 msgid "Do not print error messages"
 msgstr "არ დაბეჭდო შეცდომები"
 
-#: subprojects/extensions-tool/src/main.c:244
+#: subprojects/extensions-tool/src/main.c:249
 msgid "Path"
 msgstr "მისამართი"
 
-#: subprojects/extensions-tool/src/main.c:247
+#: subprojects/extensions-tool/src/main.c:252
 msgid "URL"
 msgstr "URL"
 
-#: subprojects/extensions-tool/src/main.c:250
+#: subprojects/extensions-tool/src/main.c:255
 msgid "Original author"
 msgstr "საწყისი ავტორი"
 
-#: subprojects/extensions-tool/src/main.c:253
+#: subprojects/extensions-tool/src/main.c:261
+#: subprojects/extensions-tool/src/main.c:263
+#: subprojects/extensions-tool/src/main.c:265
 msgid "Version"
 msgstr "ვერსია"
 
-#: subprojects/extensions-tool/src/main.c:256
+#: subprojects/extensions-tool/src/main.c:268
+msgid "Enabled"
+msgstr "ჩაირთო"
+
+#: subprojects/extensions-tool/src/main.c:268
+msgid "Yes"
+msgstr "დიახ"
+
+#: subprojects/extensions-tool/src/main.c:268
+msgid "No"
+msgstr "არა"
+
+#: subprojects/extensions-tool/src/main.c:271
 msgid "State"
 msgstr "მდგომარეობა"
 
-#: subprojects/extensions-tool/src/main.c:294
+#: subprojects/extensions-tool/src/main.c:309
 msgid "“version” takes no arguments"
 msgstr "\"version\"-ს არგუმენტები არ აქვს"
 
-#: subprojects/extensions-tool/src/main.c:296
-#: subprojects/extensions-tool/src/main.c:316
+#: subprojects/extensions-tool/src/main.c:311
+#: subprojects/extensions-tool/src/main.c:331
 msgid "Usage:"
 msgstr "გამოყენება:"
 
-#: subprojects/extensions-tool/src/main.c:299
+#: subprojects/extensions-tool/src/main.c:314
 msgid "Print version information and exit."
 msgstr "ვერსიის ინფორმაციის გამოტანა და გასვლა."
 
-#: subprojects/extensions-tool/src/main.c:314
-#: subprojects/extensions-tool/src/main.c:317
+#: subprojects/extensions-tool/src/main.c:329
+#: subprojects/extensions-tool/src/main.c:332
 msgid "COMMAND"
 msgstr "ბრძანება"
 
-#: subprojects/extensions-tool/src/main.c:317
+#: subprojects/extensions-tool/src/main.c:332
 msgid "[ARGS…]"
 msgstr "[არგუმენტები…]"
 
-#: subprojects/extensions-tool/src/main.c:319
+#: subprojects/extensions-tool/src/main.c:334
 msgid "Commands:"
 msgstr "ბრძანებები:"
 
-#: subprojects/extensions-tool/src/main.c:320
+#: subprojects/extensions-tool/src/main.c:335
 msgid "Print help"
 msgstr "დახმარების ჩვენება"
 
-#: subprojects/extensions-tool/src/main.c:322
+#: subprojects/extensions-tool/src/main.c:337
 msgid "Enable extension"
 msgstr "გაფართოების ჩართვა"
 
-#: subprojects/extensions-tool/src/main.c:323
+#: subprojects/extensions-tool/src/main.c:338
 msgid "Disable extension"
 msgstr "გაფართოების გამორთვა"
 
-#: subprojects/extensions-tool/src/main.c:324
+#: subprojects/extensions-tool/src/main.c:339
 msgid "Reset extension"
 msgstr "გაფართოების საწყის მდგომარეობაში დაბრუნება"
 
-#: subprojects/extensions-tool/src/main.c:325
+#: subprojects/extensions-tool/src/main.c:340
 msgid "Uninstall extension"
 msgstr "გაფართოების წაშლა"
 
-#: subprojects/extensions-tool/src/main.c:326
+#: subprojects/extensions-tool/src/main.c:341
 msgid "List extensions"
 msgstr "გაფართოებების სია"
 
-#: subprojects/extensions-tool/src/main.c:327
-#: subprojects/extensions-tool/src/main.c:328
+#: subprojects/extensions-tool/src/main.c:342
+#: subprojects/extensions-tool/src/main.c:343
 msgid "Show extension info"
 msgstr "გაფართოების შესახებ ინფორმაციის ჩვენება"
 
-#: subprojects/extensions-tool/src/main.c:329
+#: subprojects/extensions-tool/src/main.c:344
 msgid "Open extension preferences"
 msgstr "გაფართოების მორგება"
 
-#: subprojects/extensions-tool/src/main.c:330
+#: subprojects/extensions-tool/src/main.c:345
 msgid "Create extension"
 msgstr "გაფართოების შექმნა"
 
-#: subprojects/extensions-tool/src/main.c:331
+#: subprojects/extensions-tool/src/main.c:346
 msgid "Package extension"
 msgstr "გაფართოების პაკეტად გადაქცევა"
 
-#: subprojects/extensions-tool/src/main.c:332
+#: subprojects/extensions-tool/src/main.c:347
 msgid "Install extension bundle"
 msgstr "გაფართოების პაკეტის დაყენება"
 
-#: subprojects/extensions-tool/src/main.c:334
+#: subprojects/extensions-tool/src/main.c:349
 #, c-format
 msgid "Use “%s” to get detailed help.\n"
 msgstr "დეტალური დახმარების მისაღებად გამოიყენეთ %s\n"
@@ -2865,9 +3334,23 @@ msgstr "ინდიკატორი"
 msgid "Add an icon to the top bar"
 msgstr "ზედა ზოლში ხატულის დამატება"
 
+#: subprojects/extensions-tool/src/templates/quick-settings.desktop.in:4
+msgid "Quick Settings Item"
+msgstr "სწრაფი მორგების ელემენტი"
+
+#: subprojects/extensions-tool/src/templates/quick-settings.desktop.in:5
+msgid "Add an item to quick settings"
+msgstr "სწრაფი მორგების მენიუში ელემენტის ჩამატება"
+
+#. translators:
+#. * The device has been disabled
+#: subprojects/gvc/gvc-mixer-control.c:1872
+msgid "Disabled"
+msgstr "გამოირთო"
+
 #. translators:
 #. * The number of sound outputs on a particular device
-#: subprojects/gvc/gvc-mixer-control.c:1915
+#: subprojects/gvc/gvc-mixer-control.c:1879
 #, c-format
 msgid "%u Output"
 msgid_plural "%u Outputs"
@@ -2875,15 +3358,104 @@ msgstr[0] "%u გამოტანა"
 
 #. translators:
 #. * The number of sound inputs on a particular device
-#: subprojects/gvc/gvc-mixer-control.c:1925
+#: subprojects/gvc/gvc-mixer-control.c:1889
 #, c-format
 msgid "%u Input"
 msgid_plural "%u Inputs"
 msgstr[0] "%u შეტანა"
 
-#: subprojects/gvc/gvc-mixer-control.c:2876
+#: subprojects/gvc/gvc-mixer-control.c:2872
 msgid "System Sounds"
 msgstr "სისტემური ხმები"
+
+#~ msgid "Move Titlebar Onscreen"
+#~ msgstr "სათაურის ზოლის ეკრანზე გადატანა"
+
+#~ msgid "Stop conflicting session dialog closed"
+#~ msgstr "კონფლიქტური სესიის გაჩერების დიალოგი დაიხურა"
+
+#, javascript-format
+#~ msgid "Try to login again to start a session for user %s."
+#~ msgstr "სცადეთ, თავიდან შეხვიდეთ, რომ დაიწყოთ სესია მომხმარებლისთვის %s."
+
+#, javascript-format
+#~ msgid "%s is now known as %s"
+#~ msgstr "%s-ს ახლა ჰქვია %s"
+
+#~ msgid "Network Manager"
+#~ msgstr "ქსელის მმართველი"
+
+#~ msgid "System Information"
+#~ msgstr "ინფორმაცის სისტემის შესახებ"
+
+#~ msgid "Thunderbolt"
+#~ msgstr "Thunderbolt"
+
+#~ msgid "Disabling"
+#~ msgstr "გათიშვა"
+
+#~ msgid "Enabling"
+#~ msgstr "ჩართვა"
+
+#~ msgid "No Matches"
+#~ msgstr "დათხვევა არ არსებობს"
+
+#~ msgid "The extension had an error"
+#~ msgstr "გაფართოების შეცდომა"
+
+#~ msgid "The extension can be updated"
+#~ msgstr "გაფართოება შეიძლება განახლდეს"
+
+#~ msgid "Help"
+#~ msgstr "დახმარება"
+
+#~ msgid "Manually Installed"
+#~ msgstr "ხელით დაყენებული"
+
+#~ msgid "Built-In"
+#~ msgstr "ჩაშენებული"
+
+#~ msgid "Extension Updates Ready"
+#~ msgstr "გაფართოების განახლება მზადაა"
+
+#~ msgid "No Thanks"
+#~ msgstr "არა, მადლობა"
+
+#, javascript-format
+#~ msgid "%d %%"
+#~ msgstr "%d %%"
+
+#~ msgid "Screenshot / Screencast"
+#~ msgstr "ეკრანის ანაბეჭდი / ჩანაწერი"
+
+#~ msgid "Power Profiles"
+#~ msgstr "კვების პროფილები"
+
+#~ msgid "Evolution Calendar"
+#~ msgstr "Evolution-ის კალენდარი"
+
+#~ msgid "Applications"
+#~ msgstr "აპლიკაციები"
+
+#, javascript-format
+#~ msgid "Unable to start %s"
+#~ msgstr "%s-ის გაშვების შეცდომა"
+
+#, javascript-format
+#~ msgid "Couldn’t find the %s application"
+#~ msgstr "აპლიკაცია %s ვერ ვიპოვე"
+
+#~ msgid "Attach modal dialog to the parent window"
+#~ msgstr "მოდალური ფანჯრის მშობელ ფანჯარაზე მიმაგრება"
+
+#~ msgid "Workspaces are managed dynamically"
+#~ msgstr "სამუშაო სივრცეები დინამიკურად იმართება"
+
+#~ msgid "Workspaces only on primary monitor"
+#~ msgstr "სამუშაო მაგიდები მხოლოდ აქტიურ ეკრანზე"
+
+#~ msgid "Region & Language Settings"
+#~ msgstr "ქვეყნისა და ენის მორგება"
 
 #~ msgid ""
 #~ "Whether the default Bluetooth adapter had set up devices associated to it"
@@ -2893,42 +3465,17 @@ msgstr "სისტემური ხმები"
 #~ msgid "Log Out"
 #~ msgstr "გასვლა"
 
-#, javascript-format
-#~ msgid "%d Connected"
-#~ msgid_plural "%d Connected"
-#~ msgstr[0] "%d მიერთებული"
-
 #~ msgid "Bluetooth On"
 #~ msgstr "Bluetooth ჩართულია"
 
 #~ msgid "Bluetooth Off"
 #~ msgstr "Bluetooth გამორთულია"
 
-#~ msgid "Location Enabled"
-#~ msgstr "მდებარეობის პოვნა ჩართულია"
-
-#~ msgid "Disable"
-#~ msgstr "გამორთვა"
-
-#~ msgid "Privacy Settings"
-#~ msgstr "პირადი კონფიგურაცია"
-
 #~ msgid "Location In Use"
 #~ msgstr "მდებარეობის პოვნა გამოიყენება"
 
 #~ msgid "Location Disabled"
 #~ msgstr "მდებარეობის პოვნა გამორთულია"
-
-#~ msgid "Enable"
-#~ msgstr "ჩართვა"
-
-#, javascript-format
-#~ msgid "%s Off"
-#~ msgstr "%s გამორთული"
-
-#, javascript-format
-#~ msgid "%s Connected"
-#~ msgstr "%s მიერთებული"
 
 #, javascript-format
 #~ msgid "%s Unmanaged"
@@ -2983,9 +3530,6 @@ msgstr "სისტემური ხმები"
 #~ msgid "Turn On Wi-Fi"
 #~ msgstr "Wi-Fi-ის ჩართვა"
 
-#~ msgid "Wi-Fi Networks"
-#~ msgstr "Wi-Fi ქსელები"
-
 #~ msgid "Select a network"
 #~ msgstr "აირჩიეთ ქსელი"
 
@@ -3005,15 +3549,6 @@ msgstr "სისტემური ხმები"
 #~ msgid "unknown"
 #~ msgstr "უცნობი"
 
-#~ msgid "activating…"
-#~ msgstr "aქტივაცია…"
-
-#~ msgid "deactivating…"
-#~ msgstr "დეაქტივაცია…"
-
-#~ msgid "deactivated"
-#~ msgstr "დეაქტივირებულია"
-
 #~ msgid "connecting…"
 #~ msgstr "დაკავშირება…"
 
@@ -3025,9 +3560,6 @@ msgstr "სისტემური ხმები"
 
 #~ msgid "VPN Off"
 #~ msgstr "VPN გამორთულია"
-
-#~ msgid "Network Settings"
-#~ msgstr "ქსელის მორგება"
 
 #, javascript-format
 #~ msgid "%s Wi-Fi Connection"
@@ -3042,9 +3574,6 @@ msgstr "სისტემური ხმები"
 
 #~ msgid "Disable Until Tomorrow"
 #~ msgstr "ხვალამდე გამორთვა"
-
-#~ msgid "Power Settings"
-#~ msgstr "კვების პარამეტრები"
 
 #~ msgid "Fully Charged"
 #~ msgstr "სრულად დატენილი"

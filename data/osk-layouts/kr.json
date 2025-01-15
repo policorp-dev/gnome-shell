@@ -1,7 +1,7 @@
 {
   "levels": [
     {
-      "level": "",
+      "level": "default",
       "mode": "default",
       "rows": [
         [
@@ -74,6 +74,7 @@
         [
           {
             "label": "ㅁ",
+            "leftOffset": 0.5,
             "strings": [
               "a"
             ]
@@ -134,6 +135,11 @@
         ],
         [
           {
+            "action": "levelSwitch",
+            "iconName": "keyboard-shift-symbolic",
+            "level": "shift"
+          },
+          {
             "label": "ㅋ",
             "strings": [
               "z"
@@ -192,13 +198,256 @@
               "'",
               "@"
             ]
+          },
+          {
+            "action": "levelSwitch",
+            "iconName": "keyboard-shift-symbolic",
+            "level": "shift",
+            "width": 1.5
           }
         ],
         [
           {
             "action": "levelSwitch",
             "label": "?123",
-            "level": 2,
+            "level": "opt",
+            "width": 1.5
+          },
+          {
+            "action": "emoji",
+            "iconName": "face-smile-symbolic",
+            "width": 1.5
+          },
+          {
+            "strings": [
+              " "
+            ],
+            "width": 5
+          },
+          {
+            "action": "languageMenu",
+            "iconName": "keyboard-layout-symbolic",
+            "width": 1.5
+          },
+          {
+            "action": "hide",
+            "iconName": "keyboard-hide-symbolic",
+            "width": 2
+          }
+        ]
+      ]
+    },
+    {
+      "level": "shift",
+      "mode": "latched",
+      "rows": [
+        [
+          {
+            "label": "ㅃ",
+            "strings": [
+              "Q"
+            ]
+          },
+          {
+            "label": "ㅉ",
+            "strings": [
+              "W"
+            ]
+          },
+          {
+            "label": "ㄸ",
+            "strings": [
+              "E"
+            ]
+          },
+          {
+            "label": "ㄲ",
+            "strings": [
+              "R"
+            ]
+          },
+          {
+            "label": "ㅆ",
+            "strings": [
+              "T"
+            ]
+          },
+          {
+            "label": "ㅛ",
+            "strings": [
+              "Y"
+            ]
+          },
+          {
+            "label": "ㅕ",
+            "strings": [
+              "U"
+            ]
+          },
+          {
+            "label": "ㅑ",
+            "strings": [
+              "I"
+            ]
+          },
+          {
+            "label": "ㅒ",
+            "strings": [
+              "O"
+            ]
+          },
+          {
+            "label": "ㅖ",
+            "strings": [
+              "P"
+            ]
+          },
+          {
+            "iconName": "edit-clear-symbolic",
+            "keyval": "0xff08",
+            "width": 1.5
+          }
+        ],
+        [
+          {
+            "label": "ㅁ",
+            "leftOffset": 0.5,
+            "strings": [
+              "A"
+            ]
+          },
+          {
+            "label": "ㄴ",
+            "strings": [
+              "S"
+            ]
+          },
+          {
+            "label": "ㅇ",
+            "strings": [
+              "D"
+            ]
+          },
+          {
+            "label": "ㄹ",
+            "strings": [
+              "F"
+            ]
+          },
+          {
+            "label": "ㅎ",
+            "strings": [
+              "G"
+            ]
+          },
+          {
+            "label": "ㅗ",
+            "strings": [
+              "H"
+            ]
+          },
+          {
+            "label": "ㅓ",
+            "strings": [
+              "J"
+            ]
+          },
+          {
+            "label": "ㅏ",
+            "strings": [
+              "K"
+            ]
+          },
+          {
+            "label": "ㅣ",
+            "strings": [
+              "L"
+            ]
+          },
+          {
+            "iconName": "keyboard-enter-symbolic",
+            "keyval": "0xff0d",
+            "width": 2
+          }
+        ],
+        [
+          {
+            "action": "levelSwitch",
+            "iconName": "keyboard-shift-symbolic",
+            "level": "default"
+          },
+          {
+            "label": "ㅋ",
+            "strings": [
+              "Z"
+            ]
+          },
+          {
+            "label": "ㅌ",
+            "strings": [
+              "X"
+            ]
+          },
+          {
+            "label": "ㅊ",
+            "strings": [
+              "C"
+            ]
+          },
+          {
+            "label": "ㅍ",
+            "strings": [
+              "V"
+            ]
+          },
+          {
+            "label": "ㅠ",
+            "strings": [
+              "B"
+            ]
+          },
+          {
+            "label": "ㅜ",
+            "strings": [
+              "N"
+            ]
+          },
+          {
+            "label": "ㅡ",
+            "strings": [
+              "M"
+            ]
+          },
+          {
+            "strings": [
+              ","
+            ]
+          },
+          {
+            "strings": [
+              ".",
+              "#",
+              "!",
+              ",",
+              "?",
+              "-",
+              ":",
+              "'",
+              "@"
+            ]
+          },
+          {
+            "action": "levelSwitch",
+            "iconName": "keyboard-shift-symbolic",
+            "level": "default",
+            "width": 1.5
+          }
+        ],
+        [
+          {
+            "action": "levelSwitch",
+            "label": "?123",
+            "level": "opt",
             "width": 1.5
           },
           {
@@ -303,6 +552,7 @@
         ],
         [
           {
+            "leftOffset": 0.5,
             "strings": [
               "@"
             ]
@@ -374,7 +624,7 @@
           {
             "action": "levelSwitch",
             "label": "=/<",
-            "level": 3,
+            "level": "opt+shift",
             "width": 1.5
           },
           {
@@ -428,7 +678,7 @@
           {
             "action": "levelSwitch",
             "label": "=/<",
-            "level": 3,
+            "level": "opt+shift",
             "width": 3
           }
         ],
@@ -436,7 +686,7 @@
           {
             "action": "levelSwitch",
             "label": "ABC",
-            "level": 0,
+            "level": "default",
             "width": 1.5
           },
           {
@@ -551,6 +801,7 @@
         ],
         [
           {
+            "leftOffset": 0.5,
             "strings": [
               "£"
             ]
@@ -614,7 +865,7 @@
           {
             "action": "levelSwitch",
             "label": "?123",
-            "level": 2,
+            "level": "opt",
             "width": 1.5
           },
           {
@@ -655,7 +906,7 @@
           {
             "action": "levelSwitch",
             "label": "?123",
-            "level": 2,
+            "level": "opt",
             "width": 3
           }
         ],
@@ -663,7 +914,7 @@
           {
             "action": "levelSwitch",
             "label": "ABC",
-            "level": 0,
+            "level": "default",
             "width": 1.5
           },
           {

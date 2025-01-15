@@ -14,31 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __ST_TYPES_H__
-#define __ST_TYPES_H__
 
 #if !defined(ST_H_INSIDE) && !defined(ST_COMPILATION)
 #error "Only <st/st.h> can be included directly.h"
 #endif
 
+#pragma once
+
 #include <glib-object.h>
 #include <clutter/clutter.h>
-#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
-
-/**
- * SECTION:st-types
- * @short_description: type definitions used throughout St
- *
- * Common types for StWidgets.
- */
-
-typedef enum {
-  ST_ALIGN_START,
-  ST_ALIGN_MIDDLE,
-  ST_ALIGN_END
-} StAlign;
 
 typedef enum {
   ST_BACKGROUND_SIZE_AUTO,
@@ -48,5 +34,3 @@ typedef enum {
 } StBackgroundSize;
 
 G_END_DECLS
-
-#endif /* __ST_TYPES_H__ */

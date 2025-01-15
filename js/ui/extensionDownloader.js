@@ -1,23 +1,26 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported init, installExtension, uninstallExtension, checkForUpdates */
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Soup from 'gi://Soup';
 
-const { Clutter, Gio, GLib, GObject, Soup } = imports.gi;
+import * as Config from '../misc/config.js';
+import * as Dialog from './dialog.js';
+import * as ExtensionUtils from '../misc/extensionUtils.js';
+import * as FileUtils from '../misc/fileUtils.js';
+import * as Main from './main.js';
+import * as ModalDialog from './modalDialog.js';
 
-const Config = imports.misc.config;
-const Dialog = imports.ui.dialog;
-const ExtensionUtils = imports.misc.extensionUtils;
-const FileUtils = imports.misc.fileUtils;
-const Main = imports.ui.main;
-const ModalDialog = imports.ui.modalDialog;
+import {ExtensionErrors, ExtensionError} from '../misc/dbusErrors.js';
 
 Gio._promisify(Soup.Session.prototype, 'send_and_read_async');
 Gio._promisify(Gio.OutputStream.prototype, 'write_bytes_async');
 Gio._promisify(Gio.IOStream.prototype, 'close_async');
 Gio._promisify(Gio.Subprocess.prototype, 'wait_check_async');
 
-var REPOSITORY_URL_DOWNLOAD = 'https://extensions.gnome.org/download-extension/%s.shell-extension.zip';
-var REPOSITORY_URL_INFO     = 'https://extensions.gnome.org/extension-info/';
-var REPOSITORY_URL_UPDATE   = 'https://extensions.gnome.org/update-info/';
+const REPOSITORY_URL_DOWNLOAD = 'https://extensions.gnome.org/download-extension/%s.shell-extension.zip';
+const REPOSITORY_URL_INFO     = 'https://extensions.gnome.org/extension-info/';
+const REPOSITORY_URL_UPDATE   = 'https://extensions.gnome.org/update-info/';
 
 let _httpSession;
 
@@ -26,7 +29,14 @@ let _httpSession;
  * @param {Gio.DBusMethodInvocation} invocation - the caller
  * @returns {void}
  */
-async function installExtension(uuid, invocation) {
+export async function installExtension(uuid, invocation) {
+    if (!global.settings.get_boolean('allow-extension-installation')) {
+        invocation.return_error_literal(
+            ExtensionErrors, ExtensionError.NOT_ALLOWED,
+            'Extension installation is not allowed');
+        return;
+    }
+
     const params = {
         uuid,
         shell_version: Config.PACKAGE_VERSION,
@@ -47,16 +57,20 @@ async function installExtension(uuid, invocation) {
         info = JSON.parse(decoder.decode(bytes.get_data()));
     } catch (e) {
         Main.extensionManager.logExtensionError(uuid, e);
-        invocation.return_dbus_error(
-            'org.gnome.Shell.ExtensionError', e.message);
+        invocation.return_error_literal(
+            ExtensionErrors, ExtensionError.INFO_DOWNLOAD_FAILED,
+            e.message);
         return;
     }
 
     const dialog = new InstallExtensionDialog(uuid, info, invocation);
-    dialog.open(global.get_current_time());
+    dialog.open();
 }
 
-function uninstallExtension(uuid) {
+/**
+ * @param {string} uuid
+ */
+export function uninstallExtension(uuid) {
     let extension = Main.extensionManager.lookup(uuid);
     if (!extension)
         return false;
@@ -89,7 +103,7 @@ function uninstallExtension(uuid) {
  * @throws
  */
 function checkResponse(message) {
-    const { statusCode } = message;
+    const {statusCode} = message;
     const phrase = Soup.Status.get_phrase(statusCode);
     if (statusCode !== Soup.Status.OK)
         throw new Error(`Unexpected response: ${phrase}`);
@@ -113,20 +127,47 @@ async function extractExtensionArchive(bytes, dir) {
         ['unzip', '-uod', dir.get_path(), '--', file.get_path()],
         Gio.SubprocessFlags.NONE);
     await unzip.wait_check_async(null);
+
+    const schemasPath = dir.get_child('schemas');
+
+    try {
+        const info = await schemasPath.query_info_async(
+            Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
+            Gio.FileQueryInfoFlags.NONE,
+            GLib.PRIORITY_DEFAULT,
+            null);
+
+        if (info.get_file_type() !== Gio.FileType.DIRECTORY)
+            throw new Error('schemas is not a directory');
+    } catch (e) {
+        if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
+            console.warn(`Error while looking for schema for extension ${dir.get_basename()}: ${e.message}`);
+        return;
+    }
+
+    const compileSchema = Gio.Subprocess.new(
+        ['glib-compile-schemas', '--strict', schemasPath.get_path()],
+        Gio.SubprocessFlags.NONE);
+
+    try {
+        await compileSchema.wait_check_async(null);
+    } catch (e) {
+        log(`Error while compiling schema for extension ${dir.get_basename()}: (${e.message})`);
+    }
 }
 
 /**
  * @param {string} uuid - extension uuid
  * @returns {void}
  */
-async function downloadExtensionUpdate(uuid) {
+export async function downloadExtensionUpdate(uuid) {
     if (!Main.extensionManager.updatesSupported)
         return;
 
     const dir = Gio.File.new_for_path(
         GLib.build_filenamev([global.userdatadir, 'extension-updates', uuid]));
 
-    const params = { shell_version: Config.PACKAGE_VERSION };
+    const params = {shell_version: Config.PACKAGE_VERSION};
     const message = Soup.Message.new_from_encoded_form('GET',
         REPOSITORY_URL_DOWNLOAD.format(uuid),
         Soup.form_encode_hash(params));
@@ -150,7 +191,7 @@ async function downloadExtensionUpdate(uuid) {
  *
  * @returns {void}
  */
-async function checkForUpdates() {
+export async function checkForUpdates() {
     if (!Main.extensionManager.updatesSupported)
         return;
 
@@ -210,10 +251,22 @@ async function checkForUpdates() {
     }
 }
 
-var InstallExtensionDialog = GObject.registerClass(
+class ExtractError extends Error {
+    get name() {
+        return 'ExtractError';
+    }
+}
+
+class EnableError extends Error {
+    get name() {
+        return 'EnableError';
+    }
+}
+
+const InstallExtensionDialog = GObject.registerClass(
 class InstallExtensionDialog extends ModalDialog.ModalDialog {
     _init(uuid, info, invocation) {
-        super._init({ styleClass: 'extension-dialog' });
+        super._init({styleClass: 'extension-dialog'});
 
         this._uuid = uuid;
         this._info = info;
@@ -234,7 +287,7 @@ class InstallExtensionDialog extends ModalDialog.ModalDialog {
             description: _('Download and install “%s” from extensions.gnome.org?').format(info.name),
         });
 
-        this.contentLayout.add(content);
+        this.contentLayout.add_child(content);
     }
 
     _onCancelButtonPressed() {
@@ -245,7 +298,7 @@ class InstallExtensionDialog extends ModalDialog.ModalDialog {
     async _onInstallButtonPressed() {
         this.close();
 
-        const params = { shell_version: Config.PACKAGE_VERSION };
+        const params = {shell_version: Config.PACKAGE_VERSION};
         const message = Soup.Message.new_from_encoded_form('GET',
             REPOSITORY_URL_DOWNLOAD.format(this._uuid),
             Soup.form_encode_hash(params));
@@ -260,23 +313,35 @@ class InstallExtensionDialog extends ModalDialog.ModalDialog {
                 null);
             checkResponse(message);
 
-            await extractExtensionArchive(bytes, dir);
+            try {
+                await extractExtensionArchive(bytes, dir);
+            } catch (e) {
+                throw new ExtractError(e.message);
+            }
 
             const extension = Main.extensionManager.createExtensionObject(
                 this._uuid, dir, ExtensionUtils.ExtensionType.PER_USER);
             Main.extensionManager.loadExtension(extension);
             if (!Main.extensionManager.enableExtension(this._uuid))
-                throw new Error(`Cannot enable ${this._uuid}`);
+                throw new EnableError(`Cannot enable ${this._uuid}`);
 
             this._invocation.return_value(new GLib.Variant('(s)', ['successful']));
         } catch (e) {
+            let code;
+            if (e instanceof ExtractError)
+                code = ExtensionError.EXTRACT_FAILED;
+            else if (e instanceof EnableError)
+                code = ExtensionError.ENABLE_FAILED;
+            else
+                code = ExtensionError.DOWNLOAD_FAILED;
+
             log(`Error while installing ${this._uuid}: ${e.message}`);
-            this._invocation.return_dbus_error(
-                'org.gnome.Shell.ExtensionError', e.message);
+            this._invocation.return_error_literal(
+                ExtensionErrors, code, e.message);
         }
     }
 });
 
-function init() {
+export function init() {
     _httpSession = new Soup.Session();
 }

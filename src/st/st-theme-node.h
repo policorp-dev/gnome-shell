@@ -20,8 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ST_THEME_NODE_H__
-#define __ST_THEME_NODE_H__
+#pragma once
 
 #include <clutter/clutter.h>
 #include "st-border-image.h"
@@ -31,8 +30,9 @@
 G_BEGIN_DECLS
 
 /**
- * SECTION:st-theme-node
- * @short_description: style information for one node in a tree of themed objects
+ * StThemeNode:
+ *
+ * Style information for one node in a tree of themed objects
  *
  * A #StThemeNode represents the CSS style information (the set of CSS properties) for one
  * node in a tree of themed objects. In typical usage, it represents the style information
@@ -170,9 +170,9 @@ struct _StThemeNodePaintState {
   float resource_scale;
 
   CoglPipeline *box_shadow_pipeline;
-  CoglPipeline *prerendered_texture;
+  CoglTexture *prerendered_texture;
   CoglPipeline *prerendered_pipeline;
-  CoglPipeline *corner_material[4];
+  CoglPipeline *corner_pipeline[4];
 };
 
 StThemeNode *st_theme_node_new (StThemeContext *context,
@@ -204,7 +204,7 @@ GStrv       st_theme_node_get_pseudo_classes (StThemeNode *node);
 gboolean st_theme_node_lookup_color  (StThemeNode  *node,
                                       const char   *property_name,
                                       gboolean      inherit,
-                                      ClutterColor *color);
+                                      CoglColor    *color);
 gboolean st_theme_node_lookup_double (StThemeNode  *node,
                                       const char   *property_name,
                                       gboolean      inherit,
@@ -229,7 +229,7 @@ gboolean st_theme_node_lookup_url    (StThemeNode  *node,
 /* Easier-to-use variants of the above, for application-level use */
 void          st_theme_node_get_color  (StThemeNode  *node,
                                         const char   *property_name,
-                                        ClutterColor *color);
+                                        CoglColor    *color);
 gdouble       st_theme_node_get_double (StThemeNode  *node,
                                         const char   *property_name);
 gdouble       st_theme_node_get_length (StThemeNode  *node,
@@ -242,13 +242,13 @@ GFile        *st_theme_node_get_url    (StThemeNode  *node,
 /* Specific getters for particular properties: cached
  */
 void st_theme_node_get_background_color (StThemeNode  *node,
-                                         ClutterColor *color);
+                                         CoglColor    *color);
 void st_theme_node_get_foreground_color (StThemeNode  *node,
-                                         ClutterColor *color);
+                                         CoglColor    *color);
 void st_theme_node_get_background_gradient (StThemeNode   *node,
                                             StGradientType *type,
-                                            ClutterColor   *start,
-                                            ClutterColor   *end);
+                                            CoglColor      *start,
+                                            CoglColor      *end);
 
 GFile *st_theme_node_get_background_image (StThemeNode *node);
 
@@ -258,11 +258,11 @@ int    st_theme_node_get_border_radius (StThemeNode  *node,
                                         StCorner      corner);
 void   st_theme_node_get_border_color  (StThemeNode  *node,
                                         StSide        side,
-                                        ClutterColor *color);
+                                        CoglColor   *color);
 
 int    st_theme_node_get_outline_width (StThemeNode  *node);
 void   st_theme_node_get_outline_color (StThemeNode  *node,
-                                        ClutterColor *color);
+                                        CoglColor   *color);
 
 double st_theme_node_get_padding       (StThemeNode  *node,
                                         StSide        side);
@@ -342,7 +342,8 @@ gboolean st_theme_node_paint_equal    (StThemeNode *node,
  */
 void st_theme_node_paint (StThemeNode            *node,
                           StThemeNodePaintState  *state,
-                          CoglFramebuffer        *framebuffer,
+                          ClutterPaintContext    *paint_context,
+                          ClutterPaintNode       *root,
                           const ClutterActorBox  *box,
                           guint8                  paint_opacity,
                           float                   resource_scale);
@@ -364,5 +365,3 @@ void st_theme_node_paint_state_set_node (StThemeNodePaintState *state,
                                          StThemeNode           *node);
 
 G_END_DECLS
-
-#endif /* __ST_THEME_NODE_H__ */

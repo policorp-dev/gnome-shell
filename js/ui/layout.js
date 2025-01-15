@@ -1,22 +1,26 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported MonitorConstraint, LayoutManager */
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Meta from 'gi://Meta';
+import Mtk from 'gi://Mtk';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+import * as Signals from '../misc/signals.js';
 
-const { Clutter, Gio, GLib, GObject, Meta, Shell, St } = imports.gi;
-const Signals = imports.misc.signals;
+import * as Background from './background.js';
+import * as BackgroundMenu from './backgroundMenu.js';
 
-const Background = imports.ui.background;
-const BackgroundMenu = imports.ui.backgroundMenu;
+import * as DND from './dnd.js';
+import * as Main from './main.js';
+import * as Params from '../misc/params.js';
+import * as Ripples from './ripples.js';
 
-const DND = imports.ui.dnd;
-const Main = imports.ui.main;
-const Params = imports.misc.params;
-const Ripples = imports.ui.ripples;
+const STARTUP_ANIMATION_TIME = 500;
+const BACKGROUND_FADE_ANIMATION_TIME = 1000;
 
-var STARTUP_ANIMATION_TIME = 500;
-var BACKGROUND_FADE_ANIMATION_TIME = 1000;
-
-var HOT_CORNER_PRESSURE_THRESHOLD = 100; // pixels
-var HOT_CORNER_PRESSURE_TIMEOUT = 1000; // ms
+const HOT_CORNER_PRESSURE_THRESHOLD = 100; // pixels
+const HOT_CORNER_PRESSURE_TIMEOUT = 1000; // ms
 
 const SCREEN_TRANSITION_DELAY = 250; // ms
 const SCREEN_TRANSITION_DURATION = 500; // ms
@@ -32,20 +36,20 @@ function isPopupMetaWindow(actor) {
     }
 }
 
-var MonitorConstraint = GObject.registerClass({
+export const MonitorConstraint = GObject.registerClass({
     Properties: {
-        'primary': GObject.ParamSpec.boolean('primary',
-                                             'Primary', 'Track primary monitor',
-                                             GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
-                                             false),
-        'index': GObject.ParamSpec.int('index',
-                                       'Monitor index', 'Track specific monitor',
-                                       GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
-                                       -1, 64, -1),
-        'work-area': GObject.ParamSpec.boolean('work-area',
-                                               'Work-area', 'Track monitor\'s work-area',
-                                               GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
-                                               false),
+        'primary': GObject.ParamSpec.boolean(
+            'primary', null, null,
+            GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
+            false),
+        'index': GObject.ParamSpec.int(
+            'index', null, null,
+            GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
+            -1, 64, -1),
+        'work-area': GObject.ParamSpec.boolean(
+            'work-area', null, null,
+            GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
+            false),
     },
 }, class MonitorConstraint extends Clutter.Constraint {
     _init(props) {
@@ -86,7 +90,7 @@ var MonitorConstraint = GObject.registerClass({
     }
 
     set workArea(v) {
-        if (v == this._workArea)
+        if (v === this._workArea)
             return;
         this._workArea = v;
         if (this.actor)
@@ -149,7 +153,7 @@ var MonitorConstraint = GObject.registerClass({
     }
 });
 
-var Monitor = class Monitor {
+class Monitor {
     constructor(index, geometry, geometryScale) {
         this.index = index;
         this.x = geometry.x;
@@ -162,7 +166,7 @@ var Monitor = class Monitor {
     get inFullscreen() {
         return global.display.get_monitor_in_fullscreen(this.index);
     }
-};
+}
 
 const UiActor = GObject.registerClass(
 class UiActor extends St.Widget {
@@ -183,7 +187,7 @@ const defaultParams = {
     affectsInputRegion: true,
 };
 
-var LayoutManager = GObject.registerClass({
+export const LayoutManager = GObject.registerClass({
     Signals: {
         'hot-corners-changed': {},
         'startup-complete': {},
@@ -195,7 +199,7 @@ var LayoutManager = GObject.registerClass({
     _init() {
         super._init();
 
-        this._rtl = Clutter.get_default_text_direction() == Clutter.TextDirection.RTL;
+        this._rtl = Clutter.get_default_text_direction() === Clutter.TextDirection.RTL;
         this.monitors = [];
         this.primaryMonitor = null;
         this.primaryIndex = -1;
@@ -214,20 +218,39 @@ var LayoutManager = GObject.registerClass({
         this._pendingLoadBackground = false;
 
         // Set up stage hierarchy to group all UI actors under one container.
-        this.uiGroup = new UiActor({ name: 'uiGroup' });
-        this.uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
+        this.uiGroup = new UiActor({name: 'uiGroup'});
+        this.uiGroup.set_no_layout(true);
 
         global.stage.add_child(this.uiGroup);
 
-        global.stage.remove_actor(global.window_group);
-        this.uiGroup.add_actor(global.window_group);
+        global.stage.remove_child(global.window_group);
+        this.uiGroup.add_child(global.window_group);
+        global.connect('shutdown', () => {
+            const monitorManager = global.backend.get_monitor_manager();
+            monitorManager.disconnectObject(this);
+
+            const adoptedUiGroupActors = [
+                global.window_group,
+                global.top_window_group,
+                global.compositor.get_feedback_group(),
+            ];
+
+            for (let adoptedActor of adoptedUiGroupActors) {
+                this.uiGroup.remove_child(adoptedActor);
+                global.stage.add_child(adoptedActor);
+            }
+
+            this._destroyHotCorners();
+            this._destroyPanelBarrier();
+            this.uiGroup.destroy();
+        });
 
         // Using addChrome() to add actors to uiGroup will position actors
         // underneath the top_window_group.
         // To insert actors at the top of uiGroup, we use addTopChrome() or
-        // add the actor directly using uiGroup.add_actor().
-        global.stage.remove_actor(global.top_window_group);
-        this.uiGroup.add_actor(global.top_window_group);
+        // add the actor directly using uiGroup.add_child().
+        global.stage.remove_child(global.top_window_group);
+        this.uiGroup.add_child(global.top_window_group);
 
         this.overviewGroup = new St.Widget({
             name: 'overviewGroup',
@@ -261,13 +284,13 @@ var LayoutManager = GObject.registerClass({
             trackFullscreen: true,
         });
         this.panelBox.connect('notify::allocation',
-                              this._panelBoxChanged.bind(this));
+            this._panelBoxChanged.bind(this));
 
         this.modalDialogGroup = new St.Widget({
             name: 'modalDialogGroup',
             layout_manager: new Clutter.BinLayout(),
         });
-        this.uiGroup.add_actor(this.modalDialogGroup);
+        this.uiGroup.add_child(this.modalDialogGroup);
 
         this.keyboardBox = new St.BoxLayout({
             name: 'keyboardBox',
@@ -285,12 +308,12 @@ var LayoutManager = GObject.registerClass({
 
         // A dummy actor that tracks the mouse or text cursor, based on the
         // position and size set in setDummyCursorGeometry.
-        this.dummyCursor = new St.Widget({ width: 0, height: 0, opacity: 0 });
-        this.uiGroup.add_actor(this.dummyCursor);
+        this.dummyCursor = new St.Widget({width: 0, height: 0, opacity: 0});
+        this.uiGroup.add_child(this.dummyCursor);
 
-        let feedbackGroup = Meta.get_feedback_group_for_display(global.display);
-        global.stage.remove_actor(feedbackGroup);
-        this.uiGroup.add_actor(feedbackGroup);
+        const feedbackGroup = global.compositor.get_feedback_group();
+        global.stage.remove_child(feedbackGroup);
+        this.uiGroup.add_child(feedbackGroup);
 
         this._backgroundGroup = new Meta.BackgroundGroup();
         global.window_group.add_child(this._backgroundGroup);
@@ -302,22 +325,23 @@ var LayoutManager = GObject.registerClass({
         });
 
         this._interfaceSettings.connect('changed::enable-hot-corners',
-                                        this._updateHotCorners.bind(this));
+            this._updateHotCorners.bind(this));
 
         // Need to update struts on new workspaces when they are added
         let workspaceManager = global.workspace_manager;
         workspaceManager.connect('notify::n-workspaces',
-                                 this._queueUpdateRegions.bind(this));
+            this._queueUpdateRegions.bind(this));
 
         let display = global.display;
         display.connect('restacked',
-                        this._windowsRestacked.bind(this));
+            this._windowsRestacked.bind(this));
         display.connect('in-fullscreen-changed',
-                        this._updateFullscreen.bind(this));
+            this._updateFullscreen.bind(this));
 
-        let monitorManager = Meta.MonitorManager.get();
-        monitorManager.connect('monitors-changed',
-                               this._monitorsChanged.bind(this));
+        const monitorManager = global.backend.get_monitor_manager();
+        monitorManager.connectObject(
+            'monitors-changed', this._monitorsChanged.bind(this),
+            this);
         this._monitorsChanged();
 
         this.screenTransition = new ScreenTransition();
@@ -363,13 +387,13 @@ var LayoutManager = GObject.registerClass({
         let nMonitors = display.get_n_monitors();
         for (let i = 0; i < nMonitors; i++) {
             this.monitors.push(new Monitor(i,
-                                           display.get_monitor_geometry(i),
-                                           display.get_monitor_scale(i)));
+                display.get_monitor_geometry(i),
+                display.get_monitor_scale(i)));
         }
 
-        if (nMonitors == 0) {
+        if (nMonitors === 0) {
             this.primaryIndex = this.bottomIndex = -1;
-        } else if (nMonitors == 1) {
+        } else if (nMonitors === 1) {
             this.primaryIndex = this.bottomIndex = 0;
         } else {
             // If there are monitors below the primary, then we need
@@ -383,7 +407,7 @@ var LayoutManager = GObject.registerClass({
                 }
             }
         }
-        if (this.primaryIndex != -1) {
+        if (this.primaryIndex !== -1) {
             this.primaryMonitor = this.monitors[this.primaryIndex];
             this.bottomMonitor = this.monitors[this.bottomIndex];
 
@@ -397,13 +421,14 @@ var LayoutManager = GObject.registerClass({
         }
     }
 
+    _destroyHotCorners() {
+        this.hotCorners.forEach(corner => corner?.destroy());
+        this.hotCorners = [];
+    }
+
     _updateHotCorners() {
         // destroy old hot corners
-        this.hotCorners.forEach(corner => {
-            if (corner)
-                corner.destroy();
-        });
-        this.hotCorners = [];
+        this._destroyHotCorners();
 
         if (!this._interfaceSettings.get_boolean('enable-hot-corners')) {
             this.emit('hot-corners-changed');
@@ -420,7 +445,7 @@ var LayoutManager = GObject.registerClass({
 
             let haveTopLeftCorner = true;
 
-            if (i != this.primaryIndex) {
+            if (i !== this.primaryIndex) {
                 // Check if we have a top left (right for RTL) corner.
                 // I.e. if there is no monitor directly above or to the left(right)
                 let besideX = this._rtl ? monitor.x + 1 : cornerX - 1;
@@ -429,7 +454,7 @@ var LayoutManager = GObject.registerClass({
                 let aboveY = cornerY - 1;
 
                 for (let j = 0; j < this.monitors.length; j++) {
-                    if (i == j)
+                    if (i === j)
                         continue;
                     let otherMonitor = this.monitors[j];
                     if (besideX >= otherMonitor.x &&
@@ -480,7 +505,7 @@ var LayoutManager = GObject.registerClass({
 
     _showSecondaryBackgrounds() {
         for (let i = 0; i < this.monitors.length; i++) {
-            if (i != this.primaryIndex) {
+            if (i !== this.primaryIndex) {
                 let backgroundActor = this._bgManagers[i].backgroundActor;
                 backgroundActor.show();
                 backgroundActor.opacity = 0;
@@ -515,7 +540,7 @@ var LayoutManager = GObject.registerClass({
             let bgManager = this._createBackgroundManager(i);
             this._bgManagers.push(bgManager);
 
-            if (i != this.primaryIndex && this._startingUp)
+            if (i !== this.primaryIndex && this._startingUp)
                 bgManager.backgroundActor.hide();
         }
 
@@ -523,8 +548,9 @@ var LayoutManager = GObject.registerClass({
     }
 
     _updateKeyboardBox() {
-        this.keyboardBox.set_position(this.keyboardMonitor.x,
-                                      this.keyboardMonitor.y + this.keyboardMonitor.height);
+        this.keyboardBox.set_position(
+            this.keyboardMonitor.x,
+            this.keyboardMonitor.y + this.keyboardMonitor.height);
         this.keyboardBox.set_size(this.keyboardMonitor.width, -1);
     }
 
@@ -548,11 +574,15 @@ var LayoutManager = GObject.registerClass({
         });
     }
 
-    _updatePanelBarrier() {
+    _destroyPanelBarrier() {
         if (this._rightPanelBarrier) {
             this._rightPanelBarrier.destroy();
             this._rightPanelBarrier = null;
         }
+    }
+
+    _updatePanelBarrier() {
+        this._destroyPanelBarrier();
 
         if (!this.primaryMonitor)
             return;
@@ -561,7 +591,7 @@ var LayoutManager = GObject.registerClass({
             let primary = this.primaryMonitor;
 
             this._rightPanelBarrier = new Meta.Barrier({
-                display: global.display,
+                backend: global.backend,
                 x1: primary.x + primary.width, y1: primary.y,
                 x2: primary.x + primary.width, y2: primary.y + this.panelBox.height,
                 directions: Meta.BarrierDirection.NEGATIVE_X,
@@ -658,7 +688,7 @@ var LayoutManager = GObject.registerClass({
                 if (this.primaryMonitor) {
                     this._systemBackground.show();
                     global.stage.show();
-                    this._prepareStartupAnimation();
+                    this._prepareStartupAnimation().catch(logError);
                     return GLib.SOURCE_REMOVE;
                 } else {
                     return GLib.SOURCE_CONTINUE;
@@ -725,41 +755,53 @@ var LayoutManager = GObject.registerClass({
             await this._updateBackgrounds();
         }
 
-        this.emit('startup-prepared');
-
-        this._startupAnimation();
-    }
-
-    _startupAnimation() {
-        if (Meta.is_restart())
-            this._startupAnimationComplete();
-        else if (Main.sessionMode.isGreeter)
-            this._startupAnimationGreeter();
+        // Hack: Work around grab issue when testing greeter UI in nested
+        if (GLib.getenv('GDM_GREETER_TEST') === '1')
+            setTimeout(() => this.emit('startup-prepared'), 200);
         else
-            this._startupAnimationSession();
+            this.emit('startup-prepared');
+
+        try {
+            await this._startupAnimation();
+        } finally {
+            this._startupAnimationComplete();
+        }
     }
 
-    _startupAnimationGreeter() {
-        this.panelBox.ease({
-            translation_y: 0,
-            duration: STARTUP_ANIMATION_TIME,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onStopped: () => this._startupAnimationComplete(),
+    async _startupAnimation() {
+        if (Meta.is_restart())
+            return;
+
+        if (Main.sessionMode.isGreeter)
+            await this._startupAnimationGreeter();
+        else
+            await this._startupAnimationSession();
+    }
+
+    async _startupAnimationGreeter() {
+        await new Promise(resolve => {
+            this.panelBox.ease({
+                translation_y: 0,
+                duration: STARTUP_ANIMATION_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onStopped: () => resolve(),
+            });
         });
     }
 
-    _startupAnimationSession() {
-        const onStopped = () => this._startupAnimationComplete();
+    async _startupAnimationSession() {
         if (Main.sessionMode.hasOverview) {
-            Main.overview.runStartupAnimation(onStopped);
+            await Main.overview.runStartupAnimation();
         } else {
-            this.uiGroup.ease({
-                scale_x: 1,
-                scale_y: 1,
-                opacity: 255,
-                duration: STARTUP_ANIMATION_TIME,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                onStopped,
+            await new Promise(resolve => {
+                this.uiGroup.ease({
+                    scale_x: 1,
+                    scale_y: 1,
+                    opacity: 255,
+                    duration: STARTUP_ANIMATION_TIME,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onStopped: () => resolve(),
+                });
             });
         }
     }
@@ -820,7 +862,7 @@ var LayoutManager = GObject.registerClass({
     // monitor (it will be hidden whenever a fullscreen window is visible,
     // and shown otherwise)
     addChrome(actor, params) {
-        this.uiGroup.add_actor(actor);
+        this.uiGroup.add_child(actor);
         if (this.uiGroup.contains(global.top_window_group))
             this.uiGroup.set_child_below_sibling(actor, global.top_window_group);
         this._trackActor(actor, params);
@@ -832,7 +874,7 @@ var LayoutManager = GObject.registerClass({
     //
     // Like addChrome(), but adds @actor above all windows, including popups.
     addTopChrome(actor, params) {
-        this.uiGroup.add_actor(actor);
+        this.uiGroup.add_child(actor);
         this._trackActor(actor, params);
     }
 
@@ -849,7 +891,7 @@ var LayoutManager = GObject.registerClass({
     trackChrome(actor, params = {}) {
         let ancestor = actor.get_parent();
         let index = this._findActor(ancestor);
-        while (ancestor && index == -1) {
+        while (ancestor && index === -1) {
             ancestor = ancestor.get_parent();
             index = this._findActor(ancestor);
         }
@@ -880,21 +922,21 @@ var LayoutManager = GObject.registerClass({
     //
     // Removes @actor from the chrome
     removeChrome(actor) {
-        this.uiGroup.remove_actor(actor);
+        this.uiGroup.remove_child(actor);
         this._untrackActor(actor);
     }
 
     _findActor(actor) {
         for (let i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
-            if (actorData.actor == actor)
+            if (actorData.actor === actor)
                 return i;
         }
         return -1;
     }
 
     _trackActor(actor, params) {
-        if (this._findActor(actor) != -1)
+        if (this._findActor(actor) !== -1)
             throw new Error('trying to re-track existing chrome actor');
 
         let actorData = Params.parse(params, defaultParams);
@@ -914,7 +956,7 @@ var LayoutManager = GObject.registerClass({
     _untrackActor(actor) {
         let i = this._findActor(actor);
 
-        if (i == -1)
+        if (i === -1)
             return;
 
         this._trackedActors.splice(i, 1);
@@ -955,7 +997,7 @@ var LayoutManager = GObject.registerClass({
     findIndexForActor(actor) {
         let [x, y] = actor.get_transformed_position();
         let [w, h] = actor.get_transformed_size();
-        let rect = new Meta.Rectangle({ x, y, width: w, height: h });
+        const rect = new Mtk.Rectangle({x, y, width: w, height: h});
         return global.display.get_monitor_index_for_rect(rect);
     }
 
@@ -968,8 +1010,9 @@ var LayoutManager = GObject.registerClass({
 
     _queueUpdateRegions() {
         if (!this._updateRegionIdle) {
-            this._updateRegionIdle = Meta.later_add(Meta.LaterType.BEFORE_REDRAW,
-                                                    this._updateRegions.bind(this));
+            const laters = global.compositor.get_laters();
+            this._updateRegionIdle = laters.add(
+                Meta.LaterType.BEFORE_REDRAW, this._updateRegions.bind(this));
         }
     }
 
@@ -981,7 +1024,7 @@ var LayoutManager = GObject.registerClass({
     _windowsRestacked() {
         let changed = false;
 
-        if (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow))
+        if (this._isPopupWindowVisible !== global.top_window_group.get_children().some(isPopupMetaWindow))
             changed = true;
 
         if (changed) {
@@ -992,7 +1035,8 @@ var LayoutManager = GObject.registerClass({
 
     _updateRegions() {
         if (this._updateRegionIdle) {
-            Meta.later_remove(this._updateRegionIdle);
+            const laters = global.compositor.get_laters();
+            laters.remove(this._updateRegionIdle);
             delete this._updateRegionIdle;
         }
 
@@ -1017,7 +1061,7 @@ var LayoutManager = GObject.registerClass({
             h = Math.round(h);
 
             if (actorData.affectsInputRegion && wantsInputRegion && actorData.actor.get_paint_visibility())
-                rects.push(new Meta.Rectangle({ x, y, width: w, height: h }));
+                rects.push(new Mtk.Rectangle({x, y, width: w, height: h}));
 
             let monitor = null;
             if (actorData.affectsStruts)
@@ -1067,8 +1111,8 @@ var LayoutManager = GObject.registerClass({
                     continue;
                 }
 
-                let strutRect = new Meta.Rectangle({ x: x1, y: y1, width: x2 - x1, height: y2 - y1 });
-                let strut = new Meta.Strut({ rect: strutRect, side });
+                const strutRect = new Mtk.Rectangle({x: x1, y: y1, width: x2 - x1, height: y2 - y1});
+                let strut = new Meta.Strut({rect: strutRect, side});
                 struts.push(strut);
             }
         }
@@ -1099,7 +1143,7 @@ var LayoutManager = GObject.registerClass({
 //
 // This class manages a "hot corner" that can toggle switching to
 // overview.
-var HotCorner = GObject.registerClass(
+export const HotCorner = GObject.registerClass(
 class HotCorner extends Clutter.Actor {
     _init(layoutManager, monitor, x, y) {
         super._init();
@@ -1117,15 +1161,15 @@ class HotCorner extends Clutter.Actor {
 
         this._setupFallbackCornerIfNeeded(layoutManager);
 
-        this._pressureBarrier = new PressureBarrier(HOT_CORNER_PRESSURE_THRESHOLD,
-                                                    HOT_CORNER_PRESSURE_TIMEOUT,
-                                                    Shell.ActionMode.NORMAL |
-                                                    Shell.ActionMode.OVERVIEW);
+        this._pressureBarrier = new PressureBarrier(
+            HOT_CORNER_PRESSURE_THRESHOLD,
+            HOT_CORNER_PRESSURE_TIMEOUT,
+            Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW);
         this._pressureBarrier.connect('trigger', this._toggleOverview.bind(this));
 
         let px = 0.0;
         let py = 0.0;
-        if (Clutter.get_default_text_direction() == Clutter.TextDirection.RTL) {
+        if (Clutter.get_default_text_direction() === Clutter.TextDirection.RTL) {
             px = 1.0;
             py = 0.0;
         }
@@ -1150,25 +1194,25 @@ class HotCorner extends Clutter.Actor {
         }
 
         if (size > 0) {
-            if (Clutter.get_default_text_direction() == Clutter.TextDirection.RTL) {
+            if (Clutter.get_default_text_direction() === Clutter.TextDirection.RTL) {
                 this._verticalBarrier = new Meta.Barrier({
-                    display: global.display,
+                    backend: global.backend,
                     x1: this._x, x2: this._x, y1: this._y, y2: this._y + size,
                     directions: Meta.BarrierDirection.NEGATIVE_X,
                 });
                 this._horizontalBarrier = new Meta.Barrier({
-                    display: global.display,
+                    backend: global.backend,
                     x1: this._x - size, x2: this._x, y1: this._y, y2: this._y,
                     directions: Meta.BarrierDirection.POSITIVE_Y,
                 });
             } else {
                 this._verticalBarrier = new Meta.Barrier({
-                    display: global.display,
+                    backend: global.backend,
                     x1: this._x, x2: this._x, y1: this._y, y2: this._y + size,
                     directions: Meta.BarrierDirection.POSITIVE_X,
                 });
                 this._horizontalBarrier = new Meta.Barrier({
-                    display: global.display,
+                    backend: global.backend,
                     x1: this._x, x2: this._x + size, y1: this._y, y2: this._y,
                     directions: Meta.BarrierDirection.POSITIVE_Y,
                 });
@@ -1180,7 +1224,8 @@ class HotCorner extends Clutter.Actor {
     }
 
     _setupFallbackCornerIfNeeded(layoutManager) {
-        if (!global.display.supports_extended_barriers()) {
+        const {capabilities} = global.backend;
+        if ((capabilities & Meta.BackendCapabilities.BARRIERS) === 0) {
             this.set({
                 name: 'hot-corner-environs',
                 x: this._x,
@@ -1202,7 +1247,7 @@ class HotCorner extends Clutter.Actor {
             this.add_child(this._corner);
             layoutManager.addChrome(this);
 
-            if (Clutter.get_default_text_direction() == Clutter.TextDirection.RTL) {
+            if (Clutter.get_default_text_direction() === Clutter.TextDirection.RTL) {
                 this._corner.set_position(this.width - this._corner.width, 0);
                 this.set_pivot_point(1.0, 0.0);
                 this.translation_x = -this.width;
@@ -1211,9 +1256,9 @@ class HotCorner extends Clutter.Actor {
             }
 
             this._corner.connect('enter-event',
-                                 this._onCornerEntered.bind(this));
+                this._onCornerEntered.bind(this));
             this._corner.connect('leave-event',
-                                 this._onCornerLeft.bind(this));
+                this._onCornerLeft.bind(this));
         }
     }
 
@@ -1237,7 +1282,7 @@ class HotCorner extends Clutter.Actor {
     }
 
     handleDragOver(source, _actor, _x, _y, _time) {
-        if (source != Main.xdndHandler)
+        if (source !== Main.xdndHandler)
             return DND.DragMotionResult.CONTINUE;
 
         this._toggleOverview();
@@ -1254,20 +1299,20 @@ class HotCorner extends Clutter.Actor {
     }
 
     _onCornerLeft(actor, event) {
-        if (event.get_related() != this)
+        if (event.get_related() !== this)
             this._entered = false;
         // Consume event, otherwise this will confuse onEnvironsLeft
         return Clutter.EVENT_STOP;
     }
 
-    vfunc_leave_event(crossingEvent) {
-        if (crossingEvent.related != this._corner)
+    vfunc_leave_event(event) {
+        if (event.get_related() !== this._corner)
             this._entered = false;
         return Clutter.EVENT_PROPAGATE;
     }
 });
 
-var PressureBarrier = class PressureBarrier extends Signals.EventEmitter {
+export class PressureBarrier extends Signals.EventEmitter {
     constructor(threshold, timeout, actionMode) {
         super();
 
@@ -1314,7 +1359,7 @@ var PressureBarrier = class PressureBarrier extends Signals.EventEmitter {
     }
 
     _isHorizontal(barrier) {
-        return barrier.y1 == barrier.y2;
+        return barrier.y1 === barrier.y2;
     }
 
     _getDistanceAcrossBarrier(barrier, event) {
@@ -1409,12 +1454,12 @@ var PressureBarrier = class PressureBarrier extends Signals.EventEmitter {
         if (this._currentPressure >= this._threshold)
             this._trigger();
     }
-};
+}
 
-var ScreenTransition = GObject.registerClass(
+const ScreenTransition = GObject.registerClass(
 class ScreenTransition extends Clutter.Actor {
     _init() {
-        super._init({ visible: false });
+        super._init({visible: false});
     }
 
     vfunc_hide() {
@@ -1428,7 +1473,7 @@ class ScreenTransition extends Clutter.Actor {
 
         Main.uiGroup.set_child_above_sibling(this, null);
 
-        const rect = new imports.gi.cairo.RectangleInt({
+        const rect = new Mtk.Rectangle({
             x: 0,
             y: 0,
             width: global.screen_width,

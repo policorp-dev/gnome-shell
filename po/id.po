@@ -1,26 +1,26 @@
 # Copyright (C) 2010 THE gnome-shell'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the gnome-shell package.
 #
-# Andika Triwidada <andika@gmail.com>, 2010-2014, 2017, 2022.
+# Andika Triwidada <andika@gmail.com>, 2010-2014, 2017, 2022-2024.
 # Dirgita <dirgitadevina@yahoo.co.id>, 2011, 2012, 2014.
 # Wibiharto <wibinem@yahoo.com>, 2011.
-# Kukuh Syafaat <kukuhsyafaat@gnome.org>, 2017-2023.
+# Kukuh Syafaat <kukuhsyafaat@gnome.org>, 2017-2024.
 # Sucipto <sucipto@pm.me>, 2020.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-shell main\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-shell/issues\n"
-"POT-Creation-Date: 2023-02-14 17:56+0000\n"
-"PO-Revision-Date: 2023-02-15 10:44+0700\n"
-"Last-Translator: Kukuh Syafaat <kukuhsyafaat@gnome.org>\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-shell/issues/\n"
+"POT-Creation-Date: 2024-08-21 13:15+0000\n"
+"PO-Revision-Date: 2024-09-01 15:14+0700\n"
+"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian <gnome-l10n-id@googlegroups.com>\n"
 "Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.5\n"
 "X-DamnedLies-Scope: partial\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
@@ -29,67 +29,103 @@ msgid "Launchers"
 msgstr "Peluncur"
 
 #: data/50-gnome-shell-launchers.xml:10
-msgid "Activate favorite application 1"
-msgstr "Aktifkan aplikasi favorit 1"
+msgid "Activate pinned app 1"
+msgstr "Aktifkan aplikasi yang disematkan 1"
 
 #: data/50-gnome-shell-launchers.xml:14
-msgid "Activate favorite application 2"
-msgstr "Aktifkan aplikasi favorit 2"
+msgid "Activate pinned app 2"
+msgstr "Aktifkan aplikasi yang disematkan 2"
 
 #: data/50-gnome-shell-launchers.xml:18
-msgid "Activate favorite application 3"
-msgstr "Aktifkan aplikasi favorit 3"
+msgid "Activate pinned app 3"
+msgstr "Aktifkan aplikasi yang disematkan 3"
 
 #: data/50-gnome-shell-launchers.xml:22
-msgid "Activate favorite application 4"
-msgstr "Aktifkan aplikasi favorit 4"
+msgid "Activate pinned app 4"
+msgstr "Aktifkan aplikasi yang disematkan 4"
 
 #: data/50-gnome-shell-launchers.xml:26
-msgid "Activate favorite application 5"
-msgstr "Aktifkan aplikasi favorit 5"
+msgid "Activate pinned app 5"
+msgstr "Aktifkan aplikasi yang disematkan 5"
 
 #: data/50-gnome-shell-launchers.xml:30
-msgid "Activate favorite application 6"
-msgstr "Aktifkan aplikasi favorit 6"
+msgid "Activate pinned app 6"
+msgstr "Aktifkan aplikasi yang disematkan 6"
 
 #: data/50-gnome-shell-launchers.xml:34
-msgid "Activate favorite application 7"
-msgstr "Aktifkan aplikasi favorit 7"
+msgid "Activate pinned app 7"
+msgstr "Aktifkan aplikasi yang disematkan 7"
 
 #: data/50-gnome-shell-launchers.xml:38
-msgid "Activate favorite application 8"
-msgstr "Aktifkan aplikasi favorit 8"
+msgid "Activate pinned app 8"
+msgstr "Aktifkan aplikasi yang disematkan 8"
 
 #: data/50-gnome-shell-launchers.xml:42
-msgid "Activate favorite application 9"
-msgstr "Aplikasi Karakter diaktifkan"
+msgid "Activate pinned app 9"
+msgstr "Aktifkan aplikasi yang disematkan 9"
+
+#: data/50-gnome-shell-launchers.xml:46
+msgid "Open new window of pinned app 1"
+msgstr "Buka jendela baru aplikasi yang disematkan 1"
+
+#: data/50-gnome-shell-launchers.xml:50
+msgid "Open new window of pinned app 2"
+msgstr "Buka jendela baru aplikasi yang disematkan 2"
+
+#: data/50-gnome-shell-launchers.xml:54
+msgid "Open new window of pinned app 3"
+msgstr "Buka jendela baru aplikasi yang disematkan 3"
+
+#: data/50-gnome-shell-launchers.xml:58
+msgid "Open new window of pinned app 4"
+msgstr "Buka jendela baru aplikasi yang disematkan 4"
+
+#: data/50-gnome-shell-launchers.xml:62
+msgid "Open new window of pinned app 5"
+msgstr "Buka jendela baru aplikasi yang disematkan 5"
+
+#: data/50-gnome-shell-launchers.xml:66
+msgid "Open new window of pinned app 6"
+msgstr "Buka jendela baru aplikasi yang disematkan 6"
+
+#: data/50-gnome-shell-launchers.xml:70
+msgid "Open new window of pinned app 7"
+msgstr "Buka jendela baru aplikasi yang disematkan 7"
+
+#: data/50-gnome-shell-launchers.xml:74
+msgid "Open new window of pinned app 8"
+msgstr "Buka jendela baru aplikasi yang disematkan 8"
+
+#: data/50-gnome-shell-launchers.xml:78
+msgid "Open new window of pinned app 9"
+msgstr "Buka jendela baru aplikasi yang disematkan 9"
 
 #. Translators: name of the folder under ~/Pictures for screenshots.
-#: data/50-gnome-shell-screenshots.xml:6 js/ui/screenshot.js:2072
+#: data/50-gnome-shell-screenshots.xml:6 js/ui/screenshot.js:2274
 msgid "Screenshots"
 msgstr "Cuplikan Layar"
 
 #: data/50-gnome-shell-screenshots.xml:9
-#: data/org.gnome.shell.gschema.xml.in:234
+#: data/org.gnome.shell.gschema.xml.in:287
 msgid "Take a screenshot interactively"
 msgstr "Ambil cuplikan layar secara interaktif"
 
 #: data/50-gnome-shell-screenshots.xml:12
-#: data/org.gnome.shell.gschema.xml.in:246
+#: data/org.gnome.shell.gschema.xml.in:299
 msgid "Take a screenshot"
 msgstr "Ambil cuplikan layar"
 
 #: data/50-gnome-shell-screenshots.xml:15
-#: data/org.gnome.shell.gschema.xml.in:242
+#: data/org.gnome.shell.gschema.xml.in:295
 msgid "Take a screenshot of a window"
 msgstr "Ambil cuplikan layar dari suatu jendela"
 
 #: data/50-gnome-shell-screenshots.xml:18
-#: data/org.gnome.shell.gschema.xml.in:238
+#: data/org.gnome.shell.gschema.xml.in:291
 msgid "Record a screencast interactively"
 msgstr "Rekam screencast secara interaktif"
 
-#: data/50-gnome-shell-system.xml:6
+#: data/50-gnome-shell-system.xml:6 js/ui/messageTray.js:1298
 msgid "System"
 msgstr "Sistem"
 
@@ -98,20 +134,20 @@ msgid "Show the notification list"
 msgstr "Tampilkan daftar pemberitahuan"
 
 #: data/50-gnome-shell-system.xml:12
+msgid "Open the quick settings menu"
+msgstr "Buka menu pengaturan cepat"
+
+#: data/50-gnome-shell-system.xml:15
 msgid "Focus the active notification"
 msgstr "Fokuskan pemberitahuan yang aktif"
 
-#: data/50-gnome-shell-system.xml:15
+#: data/50-gnome-shell-system.xml:18
 msgid "Show the overview"
 msgstr "Tampilkan ikhtisar"
 
-#: data/50-gnome-shell-system.xml:18
-msgid "Show all applications"
-msgstr "Tampilkan semua aplikasi"
-
 #: data/50-gnome-shell-system.xml:21
-msgid "Open the application menu"
-msgstr "Buka menu aplikasi"
+msgid "Show all apps"
+msgstr "Tampilkan semua aplikasi"
 
 #: data/org.gnome.Shell.desktop.in.in:4
 msgid "GNOME Shell"
@@ -181,10 +217,28 @@ msgstr ""
 "pengaturan \"ekstensi-diaktifkan\"."
 
 #: data/org.gnome.shell.gschema.xml.in:45
+msgid "Allow extension installation"
+msgstr "Izinkan pemasangan ekstensi"
+
+#: data/org.gnome.shell.gschema.xml.in:46
+msgid ""
+"Allow users to install extensions in their home folder. If disabled, the "
+"InstallRemoteExtension D-Bus method will fail, and extensions are only "
+"loaded from system directories on startup. It does not affect extensions "
+"that are already loaded, so a change only takes full effect on the next "
+"login."
+msgstr ""
+"Izinkan pengguna memasang ekstensi di folder utama mereka. Jika "
+"dinonaktifkan, metode D-Bus InstallRemoteExtension akan gagal, dan ekstensi "
+"hanya dimuat dari direktori sistem saat awal mula. Ini tidak mempengaruhi "
+"ekstensi yang sudah dimuat, jadi perubahan hanya berlaku penuh pada log "
+"masuk berikutnya."
+
+#: data/org.gnome.shell.gschema.xml.in:56
 msgid "Disables the validation of extension version compatibility"
 msgstr "Menonaktifkan validasi kompatibilitas versi ekstensi"
 
-#: data/org.gnome.shell.gschema.xml.in:46
+#: data/org.gnome.shell.gschema.xml.in:57
 msgid ""
 "GNOME Shell will only load extensions that claim to support the current "
 "running version. Enabling this option will disable this check and try to "
@@ -195,11 +249,11 @@ msgstr ""
 "dan mencoba memuat semua ekstensi tanpa peduli versi yang mereka klaim "
 "didukung."
 
-#: data/org.gnome.shell.gschema.xml.in:54
+#: data/org.gnome.shell.gschema.xml.in:65
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Daftar ID berkas desktop untuk aplikasi favorit"
 
-#: data/org.gnome.shell.gschema.xml.in:55
+#: data/org.gnome.shell.gschema.xml.in:66
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
@@ -207,35 +261,37 @@ msgstr ""
 "Aplikasi yang terkait dengan identifier-identifier ini akan ditampilkan pada "
 "area favorit."
 
-#: data/org.gnome.shell.gschema.xml.in:62
+#: data/org.gnome.shell.gschema.xml.in:73
 msgid "History for command (Alt-F2) dialog"
 msgstr "Riwayat dialog perintah (Alt-F2)"
 
-#. Translators: looking glass is a debugger and inspector tool, see https://wiki.gnome.org/Projects/GnomeShell/LookingGlass
-#: data/org.gnome.shell.gschema.xml.in:67
+#. Translators: looking glass is a debugger and inspector tool, see https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/docs/looking-glass.md
+#: data/org.gnome.shell.gschema.xml.in:78
 msgid "History for the looking glass dialog"
 msgstr "Riwayat untuk dialog yang berpenampilan gelas kaca"
 
-#: data/org.gnome.shell.gschema.xml.in:71
-msgid "Always show the “Log out” menu item in the user menu."
-msgstr "Selalu tampilkan butir menu 'Log keluar' dalam menu pengguna."
+#: data/org.gnome.shell.gschema.xml.in:82
+msgid "Always show the “Log Out” action in the system menu"
+msgstr "Selalu tampilkan aksi \"Log Keluar\" dalam menu sistem"
 
-#: data/org.gnome.shell.gschema.xml.in:72
+#: data/org.gnome.shell.gschema.xml.in:83
 msgid ""
-"This key overrides the automatic hiding of the “Log out” menu item in single-"
-"user, single-session situations."
+"This key overrides the automatic hiding of the “Log out” action in the "
+"system menu for logged-in situations where there is a single, local, non-"
+"system user and only a single available session type (e.g. GNOME on Wayland)."
 msgstr ""
-"Kunci ini menimpa penyembunyian otomatis butir menu 'Log keluar' dalam "
-"situasi pengguna-tunggal, sesi-tunggal."
+"Kunci ini menimpa penyembunyian otomatis tindakan \"Log Keluar\" dalam menu "
+"sistem untuk situasi masuk di mana terdapat satu pengguna lokal, non-sistem "
+"dan hanya satu jenis sesi yang tersedia (misalnya GNOME di Wayland)."
 
-#: data/org.gnome.shell.gschema.xml.in:79
+#: data/org.gnome.shell.gschema.xml.in:92
 msgid ""
 "Whether to remember password for mounting encrypted or remote filesystems"
 msgstr ""
 "Apakah mengingat kata sandi untuk mengait sistem berkas terenkripsi atau "
 "jarak jauh"
 
-#: data/org.gnome.shell.gschema.xml.in:80
+#: data/org.gnome.shell.gschema.xml.in:93
 msgid ""
 "The shell will request a password when an encrypted device or a remote "
 "filesystem is mounted. If the password can be saved for future use a "
@@ -247,11 +303,11 @@ msgstr ""
 "dimasa depan, suatu kotak contreng 'Ingat Sandi' akan tampil. Kunci ini "
 "menata keadaan baku dari kotak contreng."
 
-#: data/org.gnome.shell.gschema.xml.in:89
+#: data/org.gnome.shell.gschema.xml.in:102
 msgid "The last selected non-default power profile"
 msgstr "Profil daya non-bawaan terakhir yang dipilih"
 
-#: data/org.gnome.shell.gschema.xml.in:90
+#: data/org.gnome.shell.gschema.xml.in:103
 msgid ""
 "Some systems support more than two power profiles. In order to still support "
 "toggling between two profiles, this key records the last selected non-"
@@ -261,11 +317,11 @@ msgstr ""
 "pengalihan antara dua profil, kunci ini merekam profil non-bawaan yang "
 "terakhir dipilih."
 
-#: data/org.gnome.shell.gschema.xml.in:98
+#: data/org.gnome.shell.gschema.xml.in:111
 msgid "The last version the “Welcome to GNOME” dialog was shown for"
 msgstr "Versi terakhir dialog \"Selamat Datang di GNOME\" ditampilkan untuk"
 
-#: data/org.gnome.shell.gschema.xml.in:99
+#: data/org.gnome.shell.gschema.xml.in:112
 msgid ""
 "This key determines for which version the “Welcome to GNOME” dialog was last "
 "shown. An empty string represents the oldest possible version, and a huge "
@@ -277,11 +333,11 @@ msgstr ""
 "sejumlah besar akan mewakili versi yang belum ada. Jumlah besar ini dapat "
 "digunakan untuk secara efektif menonaktifkan dialog."
 
-#: data/org.gnome.shell.gschema.xml.in:132
+#: data/org.gnome.shell.gschema.xml.in:145
 msgid "Layout of the app picker"
 msgstr "Tata letak pemilih aplikasi"
 
-#: data/org.gnome.shell.gschema.xml.in:133
+#: data/org.gnome.shell.gschema.xml.in:146
 msgid ""
 "Layout of the app picker. Each entry in the array is a page. Pages are "
 "stored in the order they appear in GNOME Shell. Each page contains an "
@@ -293,108 +349,144 @@ msgstr ""
 "berisi pasangan “application id” → 'data'. Saat ini, nilai berikut disimpan "
 "sebagai 'data': • \"position\": posisi ikon aplikasi di halaman"
 
-#: data/org.gnome.shell.gschema.xml.in:148
-msgid "Keybinding to open the application menu"
-msgstr "Kombinasi tombol untuk membuka menu aplikasi"
-
-#: data/org.gnome.shell.gschema.xml.in:149
-msgid "Keybinding to open the application menu."
-msgstr "Kombinasi tombol untuk membuka menu aplikasi."
-
-#: data/org.gnome.shell.gschema.xml.in:155
-#: data/org.gnome.shell.gschema.xml.in:162
+#: data/org.gnome.shell.gschema.xml.in:165
+#: data/org.gnome.shell.gschema.xml.in:172
 msgid "Keybinding to shift between overview states"
 msgstr "Kombinasi tombol untuk beralih antara status ringkasan"
 
-#: data/org.gnome.shell.gschema.xml.in:156
+#: data/org.gnome.shell.gschema.xml.in:166
 msgid "Keybinding to shift between session, window picker and app grid"
 msgstr ""
 "Kombinasi tombol untuk beralih antara sesi, pemilih jendela, dan kisi "
 "aplikasi"
 
-#: data/org.gnome.shell.gschema.xml.in:163
+#: data/org.gnome.shell.gschema.xml.in:173
 msgid "Keybinding to shift between app grid, window picker and session"
 msgstr ""
 "Kombinasi tombol untuk beralih antara kisi aplikasi, pemilih jendela, dan "
 "sesi"
 
-#: data/org.gnome.shell.gschema.xml.in:169
+#: data/org.gnome.shell.gschema.xml.in:179
 msgid "Keybinding to open the “Show Applications” view"
 msgstr "Kombinasi tombol untuk membuka tilikan \"Tampilkan Aplikasi\""
 
-#: data/org.gnome.shell.gschema.xml.in:170
+#: data/org.gnome.shell.gschema.xml.in:180
 msgid ""
 "Keybinding to open the “Show Applications” view of the Activities Overview."
 msgstr ""
 "Kombinasi tombol untuk membuka tilikan Ringkasan Aktivitas \"Tampilkan "
 "Aplikasi\"."
 
-#: data/org.gnome.shell.gschema.xml.in:177
+#: data/org.gnome.shell.gschema.xml.in:187
 msgid "Keybinding to open the overview"
 msgstr "Kombinasi tombol untuk membuka ringkasan"
 
-#: data/org.gnome.shell.gschema.xml.in:178
+#: data/org.gnome.shell.gschema.xml.in:188
 msgid "Keybinding to open the Activities Overview."
 msgstr "Kombinasi tombol untuk membuka Ringkasan Aktivitas."
 
-#: data/org.gnome.shell.gschema.xml.in:184
+#: data/org.gnome.shell.gschema.xml.in:194
 msgid "Keybinding to toggle the visibility of the notification list"
 msgstr "Kombinasi tombol untuk kenampakan daftar pemberitahuan"
 
-#: data/org.gnome.shell.gschema.xml.in:185
+#: data/org.gnome.shell.gschema.xml.in:195
 msgid "Keybinding to toggle the visibility of the notification list."
 msgstr "Kombinasi tombol untuk kenampakan daftar pemberitahuan."
 
-#: data/org.gnome.shell.gschema.xml.in:191
+#: data/org.gnome.shell.gschema.xml.in:201
+msgid "Keybinding to toggle the quick settings menu"
+msgstr "Kombinasi tombol untuk mengaktifkan menu pengaturan cepat"
+
+#: data/org.gnome.shell.gschema.xml.in:202
+msgid "Keybinding to toggle the quick settings menu."
+msgstr "Kombinasi tombol untuk mengaktifkan menu pengaturan cepat."
+
+#: data/org.gnome.shell.gschema.xml.in:208
 msgid "Keybinding to focus the active notification"
 msgstr "Kombinasi tombol untuk fokus pada pemberitahuan yang aktif"
 
-#: data/org.gnome.shell.gschema.xml.in:192
+#: data/org.gnome.shell.gschema.xml.in:209
 msgid "Keybinding to focus the active notification."
 msgstr "Kombinasi tombol untuk fokus pada pemberitahuan yang aktif."
 
-#: data/org.gnome.shell.gschema.xml.in:198
+#: data/org.gnome.shell.gschema.xml.in:215
 msgid "Switch to application 1"
 msgstr "Beralih ke aplikasi 1"
 
-#: data/org.gnome.shell.gschema.xml.in:202
+#: data/org.gnome.shell.gschema.xml.in:219
 msgid "Switch to application 2"
 msgstr "Beralih ke aplikasi 2"
 
-#: data/org.gnome.shell.gschema.xml.in:206
+#: data/org.gnome.shell.gschema.xml.in:223
 msgid "Switch to application 3"
 msgstr "Beralih ke aplikasi 3"
 
-#: data/org.gnome.shell.gschema.xml.in:210
+#: data/org.gnome.shell.gschema.xml.in:227
 msgid "Switch to application 4"
 msgstr "Beralih ke aplikasi 4"
 
-#: data/org.gnome.shell.gschema.xml.in:214
+#: data/org.gnome.shell.gschema.xml.in:231
 msgid "Switch to application 5"
 msgstr "Beralih ke aplikasi 5"
 
-#: data/org.gnome.shell.gschema.xml.in:218
+#: data/org.gnome.shell.gschema.xml.in:235
 msgid "Switch to application 6"
 msgstr "Beralih ke aplikasi 6"
 
-#: data/org.gnome.shell.gschema.xml.in:222
+#: data/org.gnome.shell.gschema.xml.in:239
 msgid "Switch to application 7"
 msgstr "Beralih ke aplikasi 7"
 
-#: data/org.gnome.shell.gschema.xml.in:226
+#: data/org.gnome.shell.gschema.xml.in:243
 msgid "Switch to application 8"
 msgstr "Beralih ke aplikasi 8"
 
-#: data/org.gnome.shell.gschema.xml.in:230
+#: data/org.gnome.shell.gschema.xml.in:247
 msgid "Switch to application 9"
 msgstr "Beralih ke aplikasi 9"
 
+#: data/org.gnome.shell.gschema.xml.in:251
+msgid "Open a new instance of application 1"
+msgstr "Buka instansi baru aplikasi 1"
+
 #: data/org.gnome.shell.gschema.xml.in:255
-#: data/org.gnome.shell.gschema.xml.in:282
+msgid "Open a new instance of application 2"
+msgstr "Buka instansi baru aplikasi 2"
+
+#: data/org.gnome.shell.gschema.xml.in:259
+msgid "Open a new instance of application 3"
+msgstr "Buka instansi baru aplikasi 3"
+
+#: data/org.gnome.shell.gschema.xml.in:263
+msgid "Open a new instance of application 4"
+msgstr "Buka instansi baru aplikasi 4"
+
+#: data/org.gnome.shell.gschema.xml.in:267
+msgid "Open a new instance of application 5"
+msgstr "Buka instansi baru aplikasi 5"
+
+#: data/org.gnome.shell.gschema.xml.in:271
+msgid "Open a new instance of application 6"
+msgstr "Buka instansi baru aplikasi 6"
+
+#: data/org.gnome.shell.gschema.xml.in:275
+msgid "Open a new instance of application 7"
+msgstr "Buka instansi baru aplikasi 7"
+
+#: data/org.gnome.shell.gschema.xml.in:279
+msgid "Open a new instance of application 8"
+msgstr "Buka instansi baru aplikasi 8"
+
+#: data/org.gnome.shell.gschema.xml.in:283
+msgid "Open a new instance of application 9"
+msgstr "Buka instansi baru aplikasi 9"
+
+#: data/org.gnome.shell.gschema.xml.in:308
+#: data/org.gnome.shell.gschema.xml.in:335
 msgid "Limit switcher to current workspace."
 msgstr "Batasi pengalih ke ruang kerja saat ini."
 
-#: data/org.gnome.shell.gschema.xml.in:256
+#: data/org.gnome.shell.gschema.xml.in:309
 msgid ""
 "If true, only applications that have windows on the current workspace are "
 "shown in the switcher. Otherwise, all applications are included."
@@ -402,21 +494,21 @@ msgstr ""
 "Bila berisi true, hanya aplikasi yang punya jendela pada ruang kerja saat "
 "ini ditampilkan pada penukar. Bila tidak, semua aplikasi disertakan."
 
-#: data/org.gnome.shell.gschema.xml.in:273
+#: data/org.gnome.shell.gschema.xml.in:326
 msgid "The application icon mode."
 msgstr "Mode ikon aplikasi."
 
-#: data/org.gnome.shell.gschema.xml.in:274
+#: data/org.gnome.shell.gschema.xml.in:327
 msgid ""
 "Configures how the windows are shown in the switcher. Valid possibilities "
-"are “thumbnail-only” (shows a thumbnail of the window), “app-icon-"
-"only” (shows only the application icon) or “both”."
+"are “thumbnail-only” (shows a thumbnail of the window), “app-icon-only” "
+"(shows only the application icon) or “both”."
 msgstr ""
 "Mengatur bagaimana jendela ditampilkan dalam penukar. Kemungkinan yang valid "
 "adalah \"thumbnail-only\" (menampilkan gambar mini dari jendela), \"app-icon-"
 "only\" (hanya menampilkan ikon aplikasi), atau \"both\" (keduanya)."
 
-#: data/org.gnome.shell.gschema.xml.in:283
+#: data/org.gnome.shell.gschema.xml.in:336
 msgid ""
 "If true, only windows from the current workspace are shown in the switcher. "
 "Otherwise, all windows are included."
@@ -424,69 +516,44 @@ msgstr ""
 "Bila berisi true, hanya jendela dari ruang kerja saat ini ditampilkan pada "
 "penukar. Bila tidak, semua jendela disertakan."
 
-#: data/org.gnome.shell.gschema.xml.in:293
+#: data/org.gnome.shell.gschema.xml.in:346
 msgid "Locations"
 msgstr "Lokasi"
 
-#: data/org.gnome.shell.gschema.xml.in:294
+#: data/org.gnome.shell.gschema.xml.in:347
 msgid "The locations to show in world clocks"
 msgstr "Lokasi untuk ditampilkan di jam dunia"
 
-#: data/org.gnome.shell.gschema.xml.in:304
+#: data/org.gnome.shell.gschema.xml.in:357
 msgid "Automatic location"
 msgstr "Lokasi otomatis"
 
-#: data/org.gnome.shell.gschema.xml.in:305
+#: data/org.gnome.shell.gschema.xml.in:358
 msgid "Whether to fetch the current location or not"
 msgstr "Apakah akan mengambil lokasi saat ini atau tidak"
 
-#: data/org.gnome.shell.gschema.xml.in:312
+#: data/org.gnome.shell.gschema.xml.in:365
 msgid "Location"
 msgstr "Lokasi"
 
-#: data/org.gnome.shell.gschema.xml.in:313
+#: data/org.gnome.shell.gschema.xml.in:366
 msgid "The location for which to show a forecast"
 msgstr "Lokasi yang menunjukkan perkiraan"
 
-#: data/org.gnome.shell.gschema.xml.in:325
-msgid "Attach modal dialog to the parent window"
-msgstr "Mencantolkan dialog modal ke jendela induk"
-
-#: data/org.gnome.shell.gschema.xml.in:326
-#: data/org.gnome.shell.gschema.xml.in:335
-#: data/org.gnome.shell.gschema.xml.in:343
-#: data/org.gnome.shell.gschema.xml.in:351
-#: data/org.gnome.shell.gschema.xml.in:359
-msgid ""
-"This key overrides the key in org.gnome.mutter when running GNOME Shell."
-msgstr ""
-"Kunci ini menimpa kunci dalam org.gnome.mutter ketika menjalankan GNOME "
-"Shell."
-
-#: data/org.gnome.shell.gschema.xml.in:334
-msgid "Enable edge tiling when dropping windows on screen edges"
-msgstr ""
-"Memfungsikan pengubinan tepi ketika menjatuhkan jendela pada tepi layar"
-
-#: data/org.gnome.shell.gschema.xml.in:342
-msgid "Workspaces are managed dynamically"
-msgstr "Ruang kerja dikelola secara dinamis"
-
-#: data/org.gnome.shell.gschema.xml.in:350
-msgid "Workspaces only on primary monitor"
-msgstr "Ruang kerja hanya pada monitor primer"
-
-#: data/org.gnome.shell.gschema.xml.in:358
-msgid "Delay focus changes in mouse mode until the pointer stops moving"
-msgstr ""
-"Tunda perubahan fokus dalam mode tetikus sampai penunjuk berhenti bergerak"
+#. Keep in sync with subprojects/extensions-app
+#: data/org.gnome.Shell.Extensions.desktop.in.in:5
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:5
+#: subprojects/extensions-app/data/org.gnome.Extensions.desktop.in.in:4
+#: subprojects/extensions-app/data/ui/extensions-window.ui:57
+msgid "Extensions"
+msgstr "Ekstensi"
 
 #: data/org.gnome.Shell.PortalHelper.desktop.in.in:3
 msgid "Network Login"
 msgstr "Log Masuk Jaringan"
 
 #: js/dbusServices/extensions/ui/extension-error-page.ui:15
-#: subprojects/extensions-app/data/ui/extensions-window.ui:144
+#: subprojects/extensions-app/data/ui/extensions-window.ui:275
 msgid "Something’s gone wrong"
 msgstr "Ada yang tidak beres"
 
@@ -512,228 +579,297 @@ msgstr "Halaman Web"
 msgid "Visit extension homepage"
 msgstr "Kunjungi halaman web ekstensi"
 
-#: js/gdm/authPrompt.js:146 js/ui/audioDeviceSelection.js:61
-#: js/ui/components/networkAgent.js:109 js/ui/components/polkitAgent.js:141
-#: js/ui/endSessionDialog.js:440 js/ui/extensionDownloader.js:223
-#: js/ui/shellMountOperation.js:377 js/ui/shellMountOperation.js:387
-#: subprojects/extensions-app/js/main.js:173
+#: js/gdm/authPrompt.js:151 js/gdm/loginDialog.js:466
+#: js/ui/audioDeviceSelection.js:66 js/ui/components/networkAgent.js:113
+#: js/ui/components/polkitAgent.js:144 js/ui/endSessionDialog.js:437
+#: js/ui/extensionDownloader.js:276 js/ui/shellMountOperation.js:382
+#: js/ui/shellMountOperation.js:392
 msgid "Cancel"
 msgstr "Batal"
 
-#: js/gdm/authPrompt.js:312 js/ui/components/networkAgent.js:209
-#: js/ui/components/networkAgent.js:229 js/ui/components/networkAgent.js:261
-#: js/ui/components/networkAgent.js:294 js/ui/components/networkAgent.js:333
-#: js/ui/components/networkAgent.js:346 js/ui/components/polkitAgent.js:283
-#: js/ui/shellMountOperation.js:327
+#: js/gdm/authPrompt.js:317 js/ui/components/networkAgent.js:213
+#: js/ui/components/networkAgent.js:233 js/ui/components/networkAgent.js:265
+#: js/ui/components/networkAgent.js:298 js/ui/components/networkAgent.js:337
+#: js/ui/components/networkAgent.js:350 js/ui/components/polkitAgent.js:286
+#: js/ui/shellMountOperation.js:332
 msgid "Password"
 msgstr "Kata Sandi"
 
-#: js/gdm/loginDialog.js:317
+#: js/gdm/loginDialog.js:326
 msgid "Choose Session"
 msgstr "Pilih Sesi"
 
-#: js/gdm/loginDialog.js:462
+#. Translators: is running for <username>
+#: js/gdm/loginDialog.js:424
+#, javascript-format
+msgid ""
+"Remote login is not possible because a remote session is already running for "
+"%s. To login remotely, you must log out from the remote session or force "
+"stop it."
+msgstr ""
+"Log masuk jarak jauh tidak dimungkinkan karena sesi jarak jauh sudah "
+"berjalan bagi %s. Untuk masuk dari jarak jauh, Anda harus keluar dari sesi "
+"jarak jauh atau memaksa menghentikannya."
+
+#. Translators: is running for <username>
+#: js/gdm/loginDialog.js:427
+#, javascript-format
+msgid ""
+"Login is not possible because a remote session is already running for %s. To "
+"login, you must log out from the remote session or force stop it."
+msgstr ""
+"Log masuk tidak dimungkinkan karena sesi jarak jauh sudah berjalan bagi %s. "
+"Untuk masuk, Anda harus keluar dari sesi jarak jauh atau memaksa "
+"menghentikannya."
+
+#. Translators: is running for <username>
+#: js/gdm/loginDialog.js:430
+#, javascript-format
+msgid ""
+"Remote login is not possible because a local session is already running for "
+"%s. To login remotely, you must log out from the local session or force stop "
+"it."
+msgstr ""
+"Log masuk jarak jauh tidak dimungkinkan karena sesi lokal sudah berjalan "
+"bagi %s. Untuk masuk dari jarak jauh, Anda harus keluar dari sesi lokal atau "
+"memaksa menghentikannya."
+
+#. Translators: is running for <username>
+#: js/gdm/loginDialog.js:433
+#, javascript-format
+msgid ""
+"Login is not possible because a session is already running for %s. To login, "
+"you must log out from the session or force stop it."
+msgstr ""
+"Log masuk tidak dimungkinkan karena sesi sudah berjalan bagi %s. Untuk "
+"masuk, Anda harus keluar dari sesi atau memaksa menghentikannya."
+
+#: js/gdm/loginDialog.js:442
+msgid "Session Already Running"
+msgstr "Sesi Sudah Berjalan"
+
+#: js/gdm/loginDialog.js:454
+msgid ""
+"Force stopping will quit any running apps and processes, and could result in "
+"data loss"
+msgstr ""
+"Penghentian paksa akan menghentikan aplikasi dan proses yang sedang "
+"berjalan, dan dapat mengakibatkan hilangnya data"
+
+#: js/gdm/loginDialog.js:474
+msgid "Force Stop"
+msgstr "Paksa Berhenti"
+
+#: js/gdm/loginDialog.js:542
 msgid "Not listed?"
 msgstr "Tak masuk daftar?"
 
 #. Translators: this message is shown below the username entry field
 #. to clue the user in on how to login to the local network realm
-#: js/gdm/loginDialog.js:930
+#: js/gdm/loginDialog.js:1010
 #, javascript-format
 msgid "(e.g., user or %s)"
 msgstr "(cth., pengguna dari %s)"
 
-#: js/gdm/loginDialog.js:935 js/ui/components/networkAgent.js:253
-#: js/ui/components/networkAgent.js:288 js/ui/components/networkAgent.js:322
+#: js/gdm/loginDialog.js:1015 js/ui/components/networkAgent.js:257
+#: js/ui/components/networkAgent.js:292 js/ui/components/networkAgent.js:326
 msgid "Username"
 msgstr "Nama pengguna"
 
-#: js/gdm/loginDialog.js:1258
+#: js/gdm/loginDialog.js:1081
+msgid "Login Attempt Timed Out"
+msgstr "Upaya Log Masuk Habis Waktu"
+
+#: js/gdm/loginDialog.js:1082
+msgid "Login took too long, please try again"
+msgstr "Log masuk terlalu lama, silakan coba lagi"
+
+#: js/gdm/loginDialog.js:1431
 msgid "Login Window"
 msgstr "Jendela Log Masuk"
 
-#: js/gdm/util.js:431
+#: js/gdm/util.js:496
 msgid "Authentication error"
 msgstr "Galat autentikasi"
 
 #. Translators: this message is shown below the password entry field
 #. to indicate the user can swipe their finger on the fingerprint reader
-#: js/gdm/util.js:604
+#: js/gdm/util.js:727
 msgid "(or swipe finger across reader)"
 msgstr "(atau usap jari melintasi pembaca)"
 
 #. Translators: this message is shown below the password entry field
 #. to indicate the user can place their finger on the fingerprint reader instead
-#: js/gdm/util.js:609
+#: js/gdm/util.js:732
 msgid "(or place finger on reader)"
 msgstr "(atau letakkan jari pada pembaca)"
 
 #. Translators: The name of the power-off action in search
-#: js/misc/systemActions.js:84
+#: js/misc/systemActions.js:91
 msgctxt "search-result"
 msgid "Power Off"
 msgstr "Matikan"
 
 #. Translators: A list of keywords that match the power-off action, separated by semicolons
-#: js/misc/systemActions.js:87
-msgid "power off;shutdown;halt;stop"
-msgstr "matikan;halt;berhenti"
+#: js/misc/systemActions.js:94
+msgid "power off;poweroff;shutdown;halt;stop"
+msgstr "matikan;halt;berhenti;matikan;hentikan;berhenti"
 
 #. Translators: The name of the restart action in search
-#: js/misc/systemActions.js:92
+#: js/misc/systemActions.js:99
 msgctxt "search-result"
 msgid "Restart"
 msgstr "Mulai Ulang"
 
 #. Translators: A list of keywords that match the restart action, separated by semicolons
-#: js/misc/systemActions.js:95
+#: js/misc/systemActions.js:102
 msgid "reboot;restart;"
 msgstr "mulai ulang;"
 
 #. Translators: The name of the lock screen action in search
-#: js/misc/systemActions.js:100
+#: js/misc/systemActions.js:107
 msgctxt "search-result"
 msgid "Lock Screen"
 msgstr "Kunci Layar"
 
 #. Translators: A list of keywords that match the lock screen action, separated by semicolons
-#: js/misc/systemActions.js:103
+#: js/misc/systemActions.js:110
 msgid "lock screen"
 msgstr "kunci layar"
 
 #. Translators: The name of the logout action in search
-#: js/misc/systemActions.js:108
+#: js/misc/systemActions.js:115
 msgctxt "search-result"
 msgid "Log Out"
 msgstr "Keluar"
 
 #. Translators: A list of keywords that match the logout action, separated by semicolons
-#: js/misc/systemActions.js:111
+#: js/misc/systemActions.js:118
 msgid "logout;log out;sign off"
 msgstr "keluar;logout;log out;sign off"
 
 #. Translators: The name of the suspend action in search
-#: js/misc/systemActions.js:116
+#: js/misc/systemActions.js:123
 msgctxt "search-result"
 msgid "Suspend"
 msgstr "Suspensi"
 
 #. Translators: A list of keywords that match the suspend action, separated by semicolons
-#: js/misc/systemActions.js:119
+#: js/misc/systemActions.js:126
 msgid "suspend;sleep"
 msgstr "suspensi;tidur"
 
 #. Translators: The name of the switch user action in search
-#: js/misc/systemActions.js:124
+#: js/misc/systemActions.js:131
 msgctxt "search-result"
 msgid "Switch User"
 msgstr "Ganti Pengguna"
 
 #. Translators: A list of keywords that match the switch user action, separated by semicolons
-#: js/misc/systemActions.js:127
+#: js/misc/systemActions.js:134
 msgid "switch user"
 msgstr "ganti pengguna"
 
 #. Translators: A list of keywords that match the lock orientation action, separated by semicolons
-#: js/misc/systemActions.js:134
+#: js/misc/systemActions.js:141
 msgid "lock orientation;unlock orientation;screen;rotation"
 msgstr "kunci orientasi;buka kunci orientasi;layar;rotasi"
 
 #. Translators: The name of the screenshot UI action in search
-#: js/misc/systemActions.js:139
+#: js/misc/systemActions.js:146
 msgctxt "search-result"
 msgid "Take a Screenshot"
 msgstr "Ambil Cuplikan Layar"
 
 #. Translators: A list of keywords that match the screenshot UI action, separated by semicolons
-#: js/misc/systemActions.js:142
+#: js/misc/systemActions.js:149
 msgid "screenshot;screencast;snip;capture;record"
 msgstr "cuplikan layar;screencast;snip;tangkap;rekam"
 
-#: js/misc/systemActions.js:242
+#: js/misc/systemActions.js:249
 msgctxt "search-result"
 msgid "Unlock Screen Rotation"
 msgstr "Buka Kunci Rotasi Layar"
 
-#: js/misc/systemActions.js:243
+#: js/misc/systemActions.js:250
 msgctxt "search-result"
 msgid "Lock Screen Rotation"
 msgstr "Kunci Rotasi Layar"
 
-#: js/misc/util.js:129
+#: js/misc/util.js:130
 msgid "Command not found"
 msgstr "Perintah tidak ditemukan"
 
 #. Replace "Error invoking GLib.shell_parse_argv: " with
 #. something nicer
-#: js/misc/util.js:166
+#: js/misc/util.js:170
 msgid "Could not parse command:"
 msgstr "Tak dapat mengurai perintah:"
 
-#: js/misc/util.js:174
+#: js/misc/util.js:178
 #, javascript-format
 msgid "Execution of “%s” failed:"
 msgstr "Eksekusi \"%s\" gagal:"
 
-#: js/misc/util.js:191
+#: js/misc/dateUtils.js:69
 msgid "Just now"
 msgstr "Baru saja"
 
-#: js/misc/util.js:193
+#: js/misc/dateUtils.js:72
 #, javascript-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
 msgstr[0] "%d menit yang lalu"
 
-#: js/misc/util.js:197
+#: js/misc/dateUtils.js:79
 #, javascript-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "%d jam yang lalu"
 
-#: js/misc/util.js:201 js/ui/dateMenu.js:167
+#: js/misc/dateUtils.js:85 js/ui/dateMenu.js:183
 msgid "Yesterday"
 msgstr "Kemarin"
 
-#: js/misc/util.js:203
+#: js/misc/dateUtils.js:88
 #, javascript-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
 msgstr[0] "%d hari yang lalu"
 
-#: js/misc/util.js:207
+#: js/misc/dateUtils.js:95
 #, javascript-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
 msgstr[0] "%d minggu yang lalu"
 
-#: js/misc/util.js:211
+#: js/misc/dateUtils.js:102
 #, javascript-format
 msgid "%d month ago"
 msgid_plural "%d months ago"
 msgstr[0] "%d bulan yang lalu"
 
-#: js/misc/util.js:214
+#: js/misc/dateUtils.js:108
 #, javascript-format
 msgid "%d year ago"
 msgid_plural "%d years ago"
 msgstr[0] "%d tahun yang lalu"
 
 #. Translators: Time in 24h format
-#: js/misc/util.js:247
+#: js/misc/dateUtils.js:155
 msgid "%H∶%M"
 msgstr "%H∶%M"
 
 #. Translators: this is the word "Yesterday" followed by a
 #. time string in 24h format. i.e. "Yesterday, 14:30"
-#: js/misc/util.js:253
+#: js/misc/dateUtils.js:161
 #, no-c-format
 msgid "Yesterday, %H∶%M"
 msgstr "Kemarin, %H:%M"
 
 #. Translators: this is the week day name followed by a time
 #. string in 24h format. i.e. "Monday, 14:30"
-#: js/misc/util.js:259
+#: js/misc/dateUtils.js:167
 #, no-c-format
 msgid "%A, %H∶%M"
 msgstr "%A, %H∶%M"
@@ -741,7 +877,7 @@ msgstr "%A, %H∶%M"
 #. Translators: this is the month name and day number
 #. followed by a time string in 24h format.
 #. i.e. "May 25, 14:30"
-#: js/misc/util.js:265
+#: js/misc/dateUtils.js:173
 #, no-c-format
 msgid "%B %-d, %H∶%M"
 msgstr "%d %B, %H∶%M"
@@ -749,7 +885,7 @@ msgstr "%d %B, %H∶%M"
 #. Translators: this is the month name, day number, year
 #. number followed by a time string in 24h format.
 #. i.e. "May 25 2012, 14:30"
-#: js/misc/util.js:271
+#: js/misc/dateUtils.js:179
 #, no-c-format
 msgid "%B %-d %Y, %H∶%M"
 msgstr "%d %B %Y, %H∶%M"
@@ -757,20 +893,20 @@ msgstr "%d %B %Y, %H∶%M"
 #. Show only the time if date is on today
 #. eslint-disable-line no-lonely-if
 #. Translators: Time in 12h format
-#: js/misc/util.js:276
+#: js/misc/dateUtils.js:184
 msgid "%l∶%M %p"
 msgstr "%H∶%M"
 
 #. Translators: this is the word "Yesterday" followed by a
 #. time string in 12h format. i.e. "Yesterday, 2:30 pm"
-#: js/misc/util.js:282
+#: js/misc/dateUtils.js:190
 #, no-c-format
 msgid "Yesterday, %l∶%M %p"
 msgstr "Kemarin, %l∶%M %p"
 
 #. Translators: this is the week day name followed by a time
 #. string in 12h format. i.e. "Monday, 2:30 pm"
-#: js/misc/util.js:288
+#: js/misc/dateUtils.js:196
 #, no-c-format
 msgid "%A, %l∶%M %p"
 msgstr "%A, %l∶%M %p"
@@ -778,7 +914,7 @@ msgstr "%A, %l∶%M %p"
 #. Translators: this is the month name and day number
 #. followed by a time string in 12h format.
 #. i.e. "May 25, 2:30 pm"
-#: js/misc/util.js:294
+#: js/misc/dateUtils.js:202
 #, no-c-format
 msgid "%B %-d, %l∶%M %p"
 msgstr "%d %B, %l∶%M %p"
@@ -786,16 +922,16 @@ msgstr "%d %B, %l∶%M %p"
 #. Translators: this is the month name, day number, year
 #. number followed by a time string in 12h format.
 #. i.e. "May 25 2012, 2:30 pm"
-#: js/misc/util.js:300
+#: js/misc/dateUtils.js:208
 #, no-c-format
 msgid "%B %-d %Y, %l∶%M %p"
 msgstr "%d %B %Y, %l∶%M %p"
 
-#: js/portalHelper/main.js:55
-msgid "Hotspot Login"
-msgstr "Log Masuk Area Bersinyal (hotspot)"
+#: js/portalHelper/main.js:98
+msgid "Your connection seems to be secure"
+msgstr "Sambungan Anda tampaknya aman"
 
-#: js/portalHelper/main.js:108
+#: js/portalHelper/main.js:104
 msgid ""
 "Your connection to this hotspot login is not secure. Passwords or other "
 "information you enter on this page can be viewed by people nearby."
@@ -804,98 +940,105 @@ msgstr ""
 "sandi atau informasi lain yang Anda masukkan pada halaman ini dapat dilihat "
 "oleh orang-orang di sekitar."
 
+#: js/portalHelper/main.js:115
+msgid "Hotspot Login"
+msgstr "Log Masuk Area Bersinyal (hotspot)"
+
 #. No support for non-modal system dialogs, so ignore the option
 #. let modal = options['modal'] || true;
-#: js/ui/accessDialog.js:39 js/ui/status/location.js:350
-msgid "Deny Access"
-msgstr "Tolak Akses"
+#: js/ui/accessDialog.js:51 js/ui/inhibitShortcutsDialog.js:92
+msgid "Deny"
+msgstr "Tolak"
 
-#: js/ui/accessDialog.js:40 js/ui/status/location.js:355
-msgid "Grant Access"
-msgstr "Beri Akses"
+#: js/ui/accessDialog.js:52 js/ui/inhibitShortcutsDialog.js:101
+msgid "Allow"
+msgstr "Izinkan"
 
-#: js/ui/appDisplay.js:1731
+#: js/ui/appDisplay.js:1769
 msgid "Unnamed Folder"
 msgstr "Folder Tanpa Nama"
 
-#: js/ui/appFavorites.js:166
+#: js/ui/appFavorites.js:163
 #, javascript-format
 msgid "%s has been pinned to the dash."
 msgstr "%s telah disematkan ke dash."
 
-#: js/ui/appFavorites.js:199
+#: js/ui/appFavorites.js:194
 #, javascript-format
 msgid "%s has been unpinned from the dash."
-msgstr "%s telah di-unpin dari dash."
+msgstr "%s telah lepas sematkan dari dash."
+
+#: js/ui/appFavorites.js:208 js/ui/main.js:281
+msgid "Undo"
+msgstr "Batal"
 
 #. Translators: This is the heading of a list of open windows
-#: js/ui/appMenu.js:46
+#: js/ui/appMenu.js:49
 msgid "Open Windows"
 msgstr "Buka Jendela"
 
-#: js/ui/appMenu.js:54
+#: js/ui/appMenu.js:57
 msgid "New Window"
 msgstr "Jendela Baru"
 
-#: js/ui/appMenu.js:81
-msgid "Show Details"
-msgstr "Tampilkan Rincian"
+#: js/ui/appMenu.js:84
+msgid "App Details"
+msgstr "Detail Aplikasi"
 
-#: js/ui/appMenu.js:97
+#: js/ui/appMenu.js:100
 msgid "Quit"
 msgstr "Keluar"
 
-#: js/ui/appMenu.js:157 js/ui/dash.js:249
+#: js/ui/appMenu.js:160 js/ui/dash.js:248
 msgid "Unpin"
-msgstr "Unpin"
+msgstr "Lepas sematkan"
 
-#: js/ui/appMenu.js:158
+#: js/ui/appMenu.js:161
 msgid "Pin to Dash"
 msgstr "Sematkan ke Dash"
 
-#: js/ui/appMenu.js:175
+#: js/ui/appMenu.js:178
 msgid "Launch using Integrated Graphics Card"
 msgstr "Luncurkan menggunakan Kartu Grafis Terintegrasi"
 
-#: js/ui/appMenu.js:176
+#: js/ui/appMenu.js:179
 msgid "Launch using Discrete Graphics Card"
 msgstr "Luncurkan menggunakan Kartu Grafis Diskrit"
 
-#: js/ui/audioDeviceSelection.js:41
+#: js/ui/audioDeviceSelection.js:46
 msgid "Select Audio Device"
 msgstr "Pilih Perangkat Audio"
 
-#: js/ui/audioDeviceSelection.js:56 js/ui/status/volume.js:63
+#: js/ui/audioDeviceSelection.js:61 js/ui/status/volume.js:81
 msgid "Sound Settings"
 msgstr "Pengaturan Suara"
 
-#: js/ui/audioDeviceSelection.js:69
+#: js/ui/audioDeviceSelection.js:74
 msgid "Headphones"
 msgstr "Headphone"
 
-#: js/ui/audioDeviceSelection.js:71
+#: js/ui/audioDeviceSelection.js:76
 msgid "Headset"
 msgstr "Headset"
 
-#: js/ui/audioDeviceSelection.js:73 js/ui/status/volume.js:322
+#: js/ui/audioDeviceSelection.js:78 js/ui/status/volume.js:356
 msgid "Microphone"
 msgstr "Mikrofon"
 
-#: js/ui/backgroundMenu.js:14
+#: js/ui/backgroundMenu.js:13
 msgid "Change Background…"
 msgstr "Ubah Latar…"
 
-#: js/ui/backgroundMenu.js:16
+#: js/ui/backgroundMenu.js:15
 msgid "Display Settings"
 msgstr "Pengaturan Tampilan"
 
-#: js/ui/backgroundMenu.js:17
-#: subprojects/extensions-app/data/ui/extension-row.ui:122
+#: js/ui/backgroundMenu.js:16
 msgid "Settings"
 msgstr "Pengaturan"
 
 #. Translators: Enter 0-6 (Sunday-Saturday) for non-work days. Examples: "0" (Sunday) "6" (Saturday) "06" (Sunday and Saturday).
-#: js/ui/calendar.js:35
+#: js/ui/calendar.js:37
 msgctxt "calendar-no-work"
 msgid "06"
 msgstr "06"
@@ -905,43 +1048,43 @@ msgstr "06"
 #. * NOTE: These grid abbreviations are always shown together
 #. * and in order, e.g. "S M T W T F S".
 #.
-#: js/ui/calendar.js:61
+#: js/ui/calendar.js:63
 msgctxt "grid sunday"
 msgid "S"
 msgstr "M"
 
 #. Translators: Calendar grid abbreviation for Monday
-#: js/ui/calendar.js:63
+#: js/ui/calendar.js:65
 msgctxt "grid monday"
 msgid "M"
 msgstr "S"
 
 #. Translators: Calendar grid abbreviation for Tuesday
-#: js/ui/calendar.js:65
+#: js/ui/calendar.js:67
 msgctxt "grid tuesday"
 msgid "T"
 msgstr "S"
 
 #. Translators: Calendar grid abbreviation for Wednesday
-#: js/ui/calendar.js:67
+#: js/ui/calendar.js:69
 msgctxt "grid wednesday"
 msgid "W"
 msgstr "R"
 
 #. Translators: Calendar grid abbreviation for Thursday
-#: js/ui/calendar.js:69
+#: js/ui/calendar.js:71
 msgctxt "grid thursday"
 msgid "T"
 msgstr "K"
 
 #. Translators: Calendar grid abbreviation for Friday
-#: js/ui/calendar.js:71
+#: js/ui/calendar.js:73
 msgctxt "grid friday"
 msgid "F"
 msgstr "J"
 
 #. Translators: Calendar grid abbreviation for Saturday
-#: js/ui/calendar.js:73
+#: js/ui/calendar.js:75
 msgctxt "grid saturday"
 msgid "S"
 msgstr "S"
@@ -952,7 +1095,7 @@ msgstr "S"
 #. * "%OB" is the new format specifier introduced in glibc 2.27,
 #. * in most cases you should not change it.
 #.
-#: js/ui/calendar.js:414
+#: js/ui/calendar.js:426
 msgid "%OB"
 msgstr "%OB"
 
@@ -965,172 +1108,182 @@ msgstr "%OB"
 #. * in most cases you should not use the old "%B" here unless you
 #. * absolutely know what you are doing.
 #.
-#: js/ui/calendar.js:424
+#: js/ui/calendar.js:436
 msgid "%OB %Y"
 msgstr "%OB %Y"
 
-#: js/ui/calendar.js:485
+#: js/ui/calendar.js:498
 msgid "Previous month"
 msgstr "Bulan sebelumnya"
 
-#: js/ui/calendar.js:503
+#: js/ui/calendar.js:516
 msgid "Next month"
 msgstr "Bulan selanjutnya"
 
-#: js/ui/calendar.js:654
+#: js/ui/calendar.js:667
 #, no-javascript-format
 msgctxt "date day number format"
 msgid "%d"
 msgstr "%d"
 
-#: js/ui/calendar.js:713
+#: js/ui/calendar.js:726
 msgid "Week %V"
 msgstr "Minggu %V"
 
-#: js/ui/calendar.js:892
+#: js/ui/calendar.js:918
 msgid "No Notifications"
 msgstr "Tak Ada Pemberitahuan"
 
-#: js/ui/calendar.js:949
+#: js/ui/calendar.js:974
 msgid "Do Not Disturb"
 msgstr "Jangan Ganggu"
 
-#: js/ui/calendar.js:970
+#: js/ui/calendar.js:995
 msgid "Clear"
 msgstr "Bersihkan"
 
-#. Translators: %s is an application name
-#: js/ui/closeDialog.js:40
-#, javascript-format
-msgid "“%s” is not responding."
-msgstr "\"%s\" tidak merespon."
+#: js/ui/calendar.js:999
+msgctxt "action"
+msgid "Clear all notifications"
+msgstr "Bersihkan semua notifikasi"
 
-#: js/ui/closeDialog.js:41
+#. Translators: %s is an application name
+#: js/ui/closeDialog.js:42
+#, javascript-format
+msgid "“%s” Is Not Responding"
+msgstr "\"%s\" Tidak Merespon"
+
+#: js/ui/closeDialog.js:43
 msgid ""
-"You may choose to wait a short while for it to continue or force the "
-"application to quit entirely."
+"You may choose to wait a short while for it to continue or force the app to "
+"quit entirely"
 msgstr ""
 "Anda dapat memilih untuk menunggu sebentar untuk melanjutkan atau memaksa "
-"aplikasi keluar."
+"aplikasi keluar"
 
-#: js/ui/closeDialog.js:69
+#: js/ui/closeDialog.js:71
 msgid "Force Quit"
 msgstr "Tutup Paksa"
 
-#: js/ui/closeDialog.js:74
+#: js/ui/closeDialog.js:76
 msgid "Wait"
 msgstr "Tunggu"
 
-#: js/ui/components/automountManager.js:84
+#: js/ui/components/automountManager.js:82
 msgid "External drive connected"
 msgstr "Drive eksternal tersambung"
 
-#: js/ui/components/automountManager.js:96
+#: js/ui/components/automountManager.js:94
 msgid "External drive disconnected"
 msgstr "Drive eksternal terputus"
 
-#: js/ui/components/automountManager.js:207
+#: js/ui/components/automountManager.js:208
 msgid "Unable to unlock volume"
 msgstr "Tak bisa membuka kunci volume"
 
-#: js/ui/components/automountManager.js:208
+#: js/ui/components/automountManager.js:209
 msgid "The installed udisks version does not support the PIM setting"
 msgstr "Versi udisks yang dipasang tidak mendukung pengaturan PIM"
 
-#: js/ui/components/autorunManager.js:316
+#. Translators: %s is the name of a partition on a external drive
+#: js/ui/components/autorunManager.js:189
+#, javascript-format
+msgid "“%s” connected"
+msgstr "\"%s\" tersambung"
+
+#: js/ui/components/autorunManager.js:190
+msgid "Disk can now be used"
+msgstr "Diska sekarang dapat dipakai"
+
+#: js/ui/components/autorunManager.js:202
 #, javascript-format
 msgid "Open with %s"
 msgstr "Buka dengan %s"
 
-#: js/ui/components/networkAgent.js:91
+#: js/ui/components/networkAgent.js:95
 msgid ""
-"Alternatively you can connect by pushing the “WPS” button on your router."
+"Alternatively you can connect by pushing the “WPS” button on your router"
 msgstr ""
-"Sebagai alternatif Anda dapat terhubung dengan menekan tombol \"WPS\" pada "
-"router Anda."
+"Atau Anda dapat menyambung dengan menekan tombol \"WPS\" pada router Anda"
 
-#: js/ui/components/networkAgent.js:103 js/ui/status/network.js:436
+#: js/ui/components/networkAgent.js:107 js/ui/status/bluetooth.js:245
+#: js/ui/status/network.js:360 js/ui/status/network.js:444
 msgid "Connect"
 msgstr "Sambung"
 
-#: js/ui/components/networkAgent.js:218
+#: js/ui/components/networkAgent.js:222
 msgid "Key"
 msgstr "Kunci"
 
-#: js/ui/components/networkAgent.js:269 js/ui/components/networkAgent.js:308
+#: js/ui/components/networkAgent.js:273 js/ui/components/networkAgent.js:312
 msgid "Private key password"
 msgstr "Kata sandi kunci privat"
 
-#: js/ui/components/networkAgent.js:302
+#: js/ui/components/networkAgent.js:306
 msgid "Identity"
 msgstr "Identitas"
 
-#: js/ui/components/networkAgent.js:328
+#: js/ui/components/networkAgent.js:332
 msgid "Service"
 msgstr "Layanan"
 
-#: js/ui/components/networkAgent.js:366 js/ui/components/networkAgent.js:402
-#: js/ui/components/networkAgent.js:747 js/ui/components/networkAgent.js:768
+#: js/ui/components/networkAgent.js:370 js/ui/components/networkAgent.js:406
+#: js/ui/components/networkAgent.js:743 js/ui/components/networkAgent.js:764
 msgid "Authentication required"
 msgstr "Diperlukan autentikasi"
 
-#: js/ui/components/networkAgent.js:367 js/ui/components/networkAgent.js:748
+#: js/ui/components/networkAgent.js:371 js/ui/components/networkAgent.js:744
 #, javascript-format
 msgid ""
-"Passwords or encryption keys are required to access the wireless network "
-"“%s”."
+"Passwords or encryption keys are required to access the wireless network “%s”"
 msgstr ""
 "Kata sandi atau kunci enkripsi diperlukan untuk mengakses jaringan nirkabel "
-"\"%s\"."
+"\"%s\""
 
-#: js/ui/components/networkAgent.js:371 js/ui/components/networkAgent.js:752
+#: js/ui/components/networkAgent.js:375 js/ui/components/networkAgent.js:748
 msgid "Wired 802.1X authentication"
 msgstr "Autentikasi 802.1X kabel"
 
-#: js/ui/components/networkAgent.js:374
+#: js/ui/components/networkAgent.js:378
 msgid "Network name"
 msgstr "Nama jaringan"
 
-#: js/ui/components/networkAgent.js:382 js/ui/components/networkAgent.js:756
+#: js/ui/components/networkAgent.js:386 js/ui/components/networkAgent.js:752
 msgid "DSL authentication"
 msgstr "Autentikasi DSL"
 
-#: js/ui/components/networkAgent.js:389 js/ui/components/networkAgent.js:761
+#: js/ui/components/networkAgent.js:393 js/ui/components/networkAgent.js:757
 msgid "PIN code required"
 msgstr "Perlu kode PIN"
 
-#: js/ui/components/networkAgent.js:390 js/ui/components/networkAgent.js:762
+#: js/ui/components/networkAgent.js:394 js/ui/components/networkAgent.js:758
 msgid "PIN code is needed for the mobile broadband device"
 msgstr "Kode PIN diperlukan untuk perangkat data seluler"
 
-#: js/ui/components/networkAgent.js:392
+#: js/ui/components/networkAgent.js:396
 msgid "PIN"
 msgstr "PIN"
 
-#: js/ui/components/networkAgent.js:403 js/ui/components/networkAgent.js:753
-#: js/ui/components/networkAgent.js:757 js/ui/components/networkAgent.js:769
-#: js/ui/components/networkAgent.js:773
+#: js/ui/components/networkAgent.js:407 js/ui/components/networkAgent.js:749
+#: js/ui/components/networkAgent.js:753 js/ui/components/networkAgent.js:765
+#: js/ui/components/networkAgent.js:769
 #, javascript-format
-msgid "A password is required to connect to “%s”."
-msgstr "Perlu suatu kata sandi untuk menyambung ke \"%s\"."
+msgid "A password is required to connect to “%s”"
+msgstr "Perlu suatu kata sandi untuk menyambung ke \"%s\""
 
-#: js/ui/components/networkAgent.js:736 js/ui/status/network.js:1954
-msgid "Network Manager"
-msgstr "Manajer Jaringan"
-
-#: js/ui/components/networkAgent.js:772
+#: js/ui/components/networkAgent.js:768
 msgid "VPN password"
 msgstr "Kata Sandi VPN"
 
-#: js/ui/components/polkitAgent.js:41
+#: js/ui/components/polkitAgent.js:44
 msgid "Authentication Required"
 msgstr "Diperlukan Autentikasi"
 
-#: js/ui/components/polkitAgent.js:81
+#: js/ui/components/polkitAgent.js:84
 msgid "Administrator"
 msgstr "Administrator"
 
-#: js/ui/components/polkitAgent.js:146
+#: js/ui/components/polkitAgent.js:149
 msgid "Authenticate"
 msgstr "Autentikasi"
 
@@ -1138,26 +1291,21 @@ msgstr "Autentikasi"
 #. * requested authentication was not gained; this can happen
 #. * because of an authentication error (like invalid password),
 #. * for instance.
-#: js/ui/components/polkitAgent.js:260 js/ui/shellMountOperation.js:403
+#: js/ui/components/polkitAgent.js:263 js/ui/shellMountOperation.js:415
 msgid "Sorry, that didn’t work. Please try again."
 msgstr "Maaf, tidak berhasil. Silakan coba lagi."
 
-#: js/ui/components/telepathyClient.js:828
-#, javascript-format
-msgid "%s is now known as %s"
-msgstr "%s sekarang dikenal sebagai %s"
-
-#: js/ui/ctrlAltTab.js:22 js/ui/overviewControls.js:417
+#: js/ui/ctrlAltTab.js:23 js/ui/overviewControls.js:404
 msgid "Windows"
 msgstr "Jendela"
 
-#: js/ui/dash.js:205 js/ui/dash.js:251
-msgid "Show Applications"
+#: js/ui/dash.js:204 js/ui/dash.js:250
+msgid "Show Apps"
 msgstr "Tampilkan Aplikasi"
 
 #. Translators: this is the name of the dock/favorites area on
-#. the left of the overview
-#: js/ui/dash.js:398
+#. the bottom of the overview
+#: js/ui/dash.js:408
 msgid "Dash"
 msgstr "Dash"
 
@@ -1166,7 +1314,7 @@ msgstr "Dash"
 #. * "Tue 9:29 AM").  The string itself should become a full date, e.g.,
 #. * "February 17 2015".
 #.
-#: js/ui/dateMenu.js:83
+#: js/ui/dateMenu.js:99
 msgid "%B %-d %Y"
 msgstr "%e %B %Y"
 
@@ -1174,34 +1322,34 @@ msgstr "%e %B %Y"
 #. * below the time in the shell; it should combine the weekday and the
 #. * date, e.g. "Tuesday February 17 2015".
 #.
-#: js/ui/dateMenu.js:90
+#: js/ui/dateMenu.js:106
 msgid "%A %B %e %Y"
 msgstr "%A %e %B %Y"
 
 #. Translators: Shown on calendar heading when selected day occurs on current year
-#: js/ui/dateMenu.js:156
+#: js/ui/dateMenu.js:172
 msgctxt "calendar heading"
 msgid "%B %-d"
 msgstr "%e %B"
 
 #. Translators: Shown on calendar heading when selected day occurs on different year
-#: js/ui/dateMenu.js:159
+#: js/ui/dateMenu.js:175
 msgctxt "calendar heading"
 msgid "%B %-d %Y"
 msgstr "%e %B"
 
-#: js/ui/dateMenu.js:165
+#: js/ui/dateMenu.js:181
 msgid "Today"
 msgstr "Hari Ini"
 
-#: js/ui/dateMenu.js:169
+#: js/ui/dateMenu.js:185
 msgid "Tomorrow"
 msgstr "Besok"
 
 #. Translators: Shown in calendar event list for all day events
 #. * Keep it short, best if you can use less then 10 characters
 #.
-#: js/ui/dateMenu.js:200
+#: js/ui/dateMenu.js:216
 msgctxt "event list time"
 msgid "All Day"
 msgstr "Sepanjang Hari"
@@ -1209,147 +1357,147 @@ msgstr "Sepanjang Hari"
 #. Translators: Shown in calendar event list as the start/end of events
 #. * that only show day and month
 #.
-#: js/ui/dateMenu.js:222
+#: js/ui/dateMenu.js:238
 msgid "%m/%d"
 msgstr "%d/%m"
 
-#: js/ui/dateMenu.js:273
+#: js/ui/dateMenu.js:289
 msgid "No Events"
 msgstr "Tak Ada Acara"
 
-#: js/ui/dateMenu.js:396
-msgid "Add world clocks…"
-msgstr "Tambah jam dunia…"
+#: js/ui/dateMenu.js:411
+msgid "Add World Clocks…"
+msgstr "Tambahkan Jam Dunia…"
 
-#: js/ui/dateMenu.js:397
+#: js/ui/dateMenu.js:412
 msgid "World Clocks"
 msgstr "Jam Dunia"
 
-#: js/ui/dateMenu.js:681
+#: js/ui/dateMenu.js:702
 msgid "Loading…"
 msgstr "Memuat…"
 
-#: js/ui/dateMenu.js:691
-msgid "Go online for weather information"
-msgstr "Pergi daring untuk informasi cuaca"
+#: js/ui/dateMenu.js:712
+msgid "Go Online for Weather Information"
+msgstr "Pergi Daring untuk Informasi Cuaca"
 
-#: js/ui/dateMenu.js:693
-msgid "Weather information is currently unavailable"
-msgstr "Informasi cuaca saat ini tidak tersedia"
+#: js/ui/dateMenu.js:714
+msgid "Weather Information Unavailable"
+msgstr "Informasi Cuaca Tidak Tersedia"
 
-#: js/ui/dateMenu.js:703
+#: js/ui/dateMenu.js:724
 msgid "Weather"
 msgstr "Cuaca"
 
-#: js/ui/dateMenu.js:705
-msgid "Select weather location…"
-msgstr "Pilih lokasi cuaca…"
+#: js/ui/dateMenu.js:726
+msgid "Select Weather Location…"
+msgstr "Pilih Lokasi Cuaca…"
 
-#: js/ui/endSessionDialog.js:41
+#: js/ui/endSessionDialog.js:47
 #, javascript-format
 msgctxt "title"
 msgid "Log Out %s"
 msgstr "Keluar %s"
 
-#: js/ui/endSessionDialog.js:42
+#: js/ui/endSessionDialog.js:48
 msgctxt "title"
 msgid "Log Out"
 msgstr "Keluar"
 
-#: js/ui/endSessionDialog.js:45
-#, javascript-format
-msgid "%s will be logged out automatically in %d second."
-msgid_plural "%s will be logged out automatically in %d seconds."
-msgstr[0] "%s akan log keluar otomatis dalam %d detik."
-
 #: js/ui/endSessionDialog.js:51
 #, javascript-format
-msgid "You will be logged out automatically in %d second."
-msgid_plural "You will be logged out automatically in %d seconds."
-msgstr[0] "Anda akan log keluar otomatis dalam %d detik."
+msgid "%s will be logged out automatically in %d second"
+msgid_plural "%s will be logged out automatically in %d seconds"
+msgstr[0] "%s akan log keluar otomatis dalam %d detik"
 
-#: js/ui/endSessionDialog.js:58
+#: js/ui/endSessionDialog.js:57
+#, javascript-format
+msgid "You will be logged out automatically in %d second"
+msgid_plural "You will be logged out automatically in %d seconds"
+msgstr[0] "Anda akan log keluar otomatis dalam %d detik"
+
+#: js/ui/endSessionDialog.js:64
 msgctxt "button"
 msgid "Log Out"
 msgstr "Keluar"
 
-#: js/ui/endSessionDialog.js:64 js/ui/status/system.js:167
+#: js/ui/endSessionDialog.js:70 js/ui/status/system.js:174
 msgctxt "title"
 msgid "Power Off"
 msgstr "Matikan"
 
-#: js/ui/endSessionDialog.js:65
+#: js/ui/endSessionDialog.js:71
 msgctxt "title"
 msgid "Install Updates & Power Off"
 msgstr "Pasang Pemutakhiran & Matikan"
 
-#: js/ui/endSessionDialog.js:68
+#: js/ui/endSessionDialog.js:74
 #, javascript-format
-msgid "The system will power off automatically in %d second."
-msgid_plural "The system will power off automatically in %d seconds."
-msgstr[0] "Sistem ini akan otomatis dimatikan dalam %d detik."
+msgid "The system will power off automatically in %d second"
+msgid_plural "The system will power off automatically in %d seconds"
+msgstr[0] "Sistem ini akan otomatis dimatikan dalam %d detik"
 
-#: js/ui/endSessionDialog.js:72 js/ui/endSessionDialog.js:91
+#: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:97
 msgctxt "checkbox"
 msgid "Install pending software updates"
 msgstr "Pasang pemutakhiran perangkat lunak yang tertunda"
 
-#: js/ui/endSessionDialog.js:76
+#: js/ui/endSessionDialog.js:82
 msgctxt "button"
 msgid "Power Off"
 msgstr "Matikan"
 
-#: js/ui/endSessionDialog.js:83
+#: js/ui/endSessionDialog.js:89
 msgctxt "title"
 msgid "Restart"
 msgstr "Mulai Ulang"
 
-#: js/ui/endSessionDialog.js:84
+#: js/ui/endSessionDialog.js:90
 msgctxt "title"
 msgid "Install Updates & Restart"
 msgstr "Pasang Pemutakhiran & Mulai Ulang"
 
-#: js/ui/endSessionDialog.js:87
+#: js/ui/endSessionDialog.js:93
 #, javascript-format
-msgid "The system will restart automatically in %d second."
-msgid_plural "The system will restart automatically in %d seconds."
-msgstr[0] "Sistem ini akan otomatis dimulai ulang dalam %d detik."
+msgid "The system will restart automatically in %d second"
+msgid_plural "The system will restart automatically in %d seconds"
+msgstr[0] "Sistem ini akan otomatis dimulai ulang dalam %d detik"
 
-#: js/ui/endSessionDialog.js:95
+#: js/ui/endSessionDialog.js:101
 msgctxt "button"
 msgid "Restart"
 msgstr "Mulai Ulang"
 
-#: js/ui/endSessionDialog.js:103
+#: js/ui/endSessionDialog.js:109
 msgctxt "title"
 msgid "Restart & Install Updates"
 msgstr "Mulai Ulang & Pasang Pemutakhiran"
 
-#: js/ui/endSessionDialog.js:106
+#: js/ui/endSessionDialog.js:112
 #, javascript-format
-msgid "The system will automatically restart and install updates in %d second."
+msgid "The system will automatically restart and install updates in %d second"
 msgid_plural ""
-"The system will automatically restart and install updates in %d seconds."
+"The system will automatically restart and install updates in %d seconds"
 msgstr[0] ""
 "Sistem ini akan otomatis dimulai ulang dan memasang pemutakhiran dalam %d "
-"detik."
+"detik"
 
-#: js/ui/endSessionDialog.js:113 js/ui/endSessionDialog.js:134
+#: js/ui/endSessionDialog.js:119 js/ui/endSessionDialog.js:140
 msgctxt "button"
-msgid "Restart &amp; Install"
-msgstr "Mulai Ulang &amp; Pasang"
+msgid "Restart & Install"
+msgstr "Mulai Ulang & Pasang"
 
-#: js/ui/endSessionDialog.js:115
+#: js/ui/endSessionDialog.js:121
 msgctxt "button"
-msgid "Install &amp; Power Off"
-msgstr "Pasang &amp; Matikan"
+msgid "Install & Power Off"
+msgstr "Pasang & Matikan"
 
-#: js/ui/endSessionDialog.js:116
+#: js/ui/endSessionDialog.js:122
 msgctxt "checkbox"
 msgid "Power off after updates are installed"
 msgstr "Matikan daya setelah pemutakhiran dipasang"
 
-#: js/ui/endSessionDialog.js:123
+#: js/ui/endSessionDialog.js:129
 msgctxt "title"
 msgid "Restart & Install Upgrade"
 msgstr "Mulai Ulang & Pasang Peningkatan"
@@ -1357,7 +1505,7 @@ msgstr "Mulai Ulang & Pasang Peningkatan"
 #. Translators: This is the text displayed for system upgrades in the
 #. shut down dialog. First %s gets replaced with the distro name and
 #. second %s with the distro version to upgrade to
-#: js/ui/endSessionDialog.js:128
+#: js/ui/endSessionDialog.js:134
 #, javascript-format
 msgid ""
 "%s %s will be installed after restart. Upgrade installation can take a long "
@@ -1367,93 +1515,85 @@ msgstr ""
 "waktu lama: pastikan bahwa Anda telah melakukan back up dan komputer "
 "tersambung ke listrik."
 
-#: js/ui/endSessionDialog.js:285
-msgid "Low battery power: please plug in before installing updates."
-msgstr "Daya baterai rendah: harap tancapkan sebelum memasang pemutakhiran."
+#: js/ui/endSessionDialog.js:283
+msgid "Low battery power: please plug in before installing updates"
+msgstr "Daya baterai rendah: harap tancapkan sebelum memasang pemutakhiran"
 
-#: js/ui/endSessionDialog.js:294
+#: js/ui/endSessionDialog.js:292
 msgid "Some applications are busy or have unsaved work"
 msgstr "Beberapa aplikasi sedang sibuk atau belum disimpan perubahannya"
 
-#: js/ui/endSessionDialog.js:299
+#: js/ui/endSessionDialog.js:297
 msgid "Other users are logged in"
 msgstr "Pengguna lain sedang log masuk"
 
-#: js/ui/endSessionDialog.js:470
+#: js/ui/endSessionDialog.js:467
 msgctxt "button"
 msgid "Boot Options"
 msgstr "Opsi Boot"
 
 #. Translators: Remote here refers to a remote session, like a ssh login
-#: js/ui/endSessionDialog.js:675
+#: js/ui/endSessionDialog.js:672
 #, javascript-format
 msgid "%s (remote)"
 msgstr "%s (jarak jauh)"
 
 #. Translators: Console here refers to a tty like a VT console
-#: js/ui/endSessionDialog.js:678
+#: js/ui/endSessionDialog.js:675
 #, javascript-format
 msgid "%s (console)"
 msgstr "%s (konsol)"
 
-#: js/ui/extensionDownloader.js:227
+#: js/ui/extensionDownloader.js:280
 msgid "Install"
 msgstr "Pasang"
 
-#: js/ui/extensionDownloader.js:233
+#: js/ui/extensionDownloader.js:286
 msgid "Install Extension"
 msgstr "Pasang Ekstensi"
 
-#: js/ui/extensionDownloader.js:234
+#: js/ui/extensionDownloader.js:287
 #, javascript-format
 msgid "Download and install “%s” from extensions.gnome.org?"
 msgstr "Unduh dan pasang \"%s\" dari extensions.gnome.org?"
 
-#: js/ui/extensionSystem.js:270
+#: js/ui/extensionSystem.js:352
 msgid "Extension Updates Available"
 msgstr "Pemutakhiran Ekstensi Tersedia"
 
-#: js/ui/extensionSystem.js:271
-msgid "Extension updates are ready to be installed."
-msgstr "Pemutakhiran ekstensi siap dipasang."
+#: js/ui/extensionSystem.js:353
+msgid "Extension updates are ready to be installed"
+msgstr "Pemutakhiran ekstensi siap dipasang"
 
-#: js/ui/inhibitShortcutsDialog.js:75
+#: js/ui/inhibitShortcutsDialog.js:70
 msgid "Allow inhibiting shortcuts"
 msgstr "Izinkan menghalangi pintasan"
 
 #. Translators: %s is an application name like "Settings"
-#: js/ui/inhibitShortcutsDialog.js:78
+#: js/ui/inhibitShortcutsDialog.js:73
 #, javascript-format
-msgid "The application %s wants to inhibit shortcuts"
+msgid "The app %s wants to inhibit shortcuts"
 msgstr "Aplikasi %s ingin menghalangi pintasan"
 
-#: js/ui/inhibitShortcutsDialog.js:79
-msgid "An application wants to inhibit shortcuts"
+#: js/ui/inhibitShortcutsDialog.js:74
+msgid "An app wants to inhibit shortcuts"
 msgstr "Aplikasi ingin menghalangi pintasan"
 
 #. Translators: %s is a keyboard shortcut like "Super+x"
-#: js/ui/inhibitShortcutsDialog.js:86
+#: js/ui/inhibitShortcutsDialog.js:81
 #, javascript-format
-msgid "You can restore shortcuts by pressing %s."
-msgstr "Anda dapat memulihkan pintasan dengan menekan %s."
+msgid "You can restore shortcuts by pressing %s"
+msgstr "Anda dapat memulihkan pintasan dengan menekan %s"
 
-#: js/ui/inhibitShortcutsDialog.js:97
-msgid "Deny"
-msgstr "Tolak"
-
-#: js/ui/inhibitShortcutsDialog.js:106
-msgid "Allow"
-msgstr "Izinkan"
-
-#: js/ui/kbdA11yDialog.js:32
+#: js/ui/kbdA11yDialog.js:34
 msgid "Slow Keys Turned On"
 msgstr "Tombol Lambat Dinyalakan"
 
-#: js/ui/kbdA11yDialog.js:33
+#: js/ui/kbdA11yDialog.js:35
 msgid "Slow Keys Turned Off"
 msgstr "Tombol Lambat Dimatikan"
 
-#: js/ui/kbdA11yDialog.js:34
+#: js/ui/kbdA11yDialog.js:36
 msgid ""
 "You just held down the Shift key for 8 seconds. This is the shortcut for the "
 "Slow Keys feature, which affects the way your keyboard works."
@@ -1461,15 +1601,15 @@ msgstr ""
 "Anda hanya menahan tombol Shift selama 8 detik. Ini adalah pintasan untuk "
 "fitur Tombol Lambat, yang mempengaruhi cara kerja papan tik Anda."
 
-#: js/ui/kbdA11yDialog.js:40
+#: js/ui/kbdA11yDialog.js:42
 msgid "Sticky Keys Turned On"
 msgstr "Tombol Lengket Dinyalakan"
 
-#: js/ui/kbdA11yDialog.js:41
+#: js/ui/kbdA11yDialog.js:43
 msgid "Sticky Keys Turned Off"
 msgstr "Tombol Lengket Dimatikan"
 
-#: js/ui/kbdA11yDialog.js:43
+#: js/ui/kbdA11yDialog.js:45
 msgid ""
 "You just pressed the Shift key 5 times in a row. This is the shortcut for "
 "the Sticky Keys feature, which affects the way your keyboard works."
@@ -1477,7 +1617,7 @@ msgstr ""
 "Anda hanya menekan tombol Shift 5 kali berturut-turut. Ini adalah pintasan "
 "untuk fitur Tombol Lengket, yang mempengaruhi cara kerja papan tik Anda."
 
-#: js/ui/kbdA11yDialog.js:45
+#: js/ui/kbdA11yDialog.js:47
 msgid ""
 "You just pressed two keys at once, or pressed the Shift key 5 times in a "
 "row. This turns off the Sticky Keys feature, which affects the way your "
@@ -1487,91 +1627,93 @@ msgstr ""
 "berturut-turut. Ini mematikan fitur Tombol Lengket, yang mempengaruhi cara "
 "kerja papan tik Anda."
 
-#: js/ui/kbdA11yDialog.js:55
+#: js/ui/kbdA11yDialog.js:57
 msgid "Leave On"
 msgstr "Biarkan Menyala"
 
-#: js/ui/kbdA11yDialog.js:55
+#: js/ui/kbdA11yDialog.js:57
 msgid "Turn On"
 msgstr "Nyalakan"
 
-#: js/ui/kbdA11yDialog.js:65 js/ui/status/network.js:447
+#: js/ui/kbdA11yDialog.js:67 js/ui/status/network.js:455
 msgid "Turn Off"
 msgstr "Matikan"
 
-#: js/ui/kbdA11yDialog.js:65
+#: js/ui/kbdA11yDialog.js:67
 msgid "Leave Off"
 msgstr "Biarkan Mati"
 
-#: js/ui/keyboard.js:219
-msgid "Region & Language Settings"
-msgstr "Pengaturan Wilayah & Bahasa"
+#: js/ui/keyboard.js:180 js/ui/status/keyboard.js:897
+msgid "Keyboard Settings"
+msgstr "Pengaturan Papan Tik"
 
-#: js/ui/lookingGlass.js:713
+#: js/ui/lookingGlass.js:727
 msgid "No extensions installed"
 msgstr "Tak ada ekstensi terpasang"
 
 #. Translators: argument is an extension UUID.
-#: js/ui/lookingGlass.js:774
+#: js/ui/lookingGlass.js:788
 #, javascript-format
-msgid "%s has not emitted any errors."
-msgstr "%s tidak menampilkan galat apa pun."
+msgid "%s has not emitted any errors"
+msgstr "%s tidak menghasilkan galat apa pun"
 
-#: js/ui/lookingGlass.js:780
+#: js/ui/lookingGlass.js:794
 msgid "Hide Errors"
 msgstr "Sembunyikan Galat"
 
-#: js/ui/lookingGlass.js:784 js/ui/lookingGlass.js:857
+#: js/ui/lookingGlass.js:798 js/ui/lookingGlass.js:875
 msgid "Show Errors"
 msgstr "Tampilkan Galat"
 
-#: js/ui/lookingGlass.js:793
-msgid "Enabled"
-msgstr "Diaktifkan"
+#: js/ui/lookingGlass.js:807
+msgid "Active"
+msgstr "Aktif"
 
-#. translators:
-#. * The device has been disabled
-#: js/ui/lookingGlass.js:796 subprojects/gvc/gvc-mixer-control.c:1908
-msgid "Disabled"
-msgstr "Dinonaktifkan"
+#: js/ui/lookingGlass.js:810
+msgid "Inactive"
+msgstr "Tak Aktif"
 
-#: js/ui/lookingGlass.js:798
+#: js/ui/lookingGlass.js:812
 msgid "Error"
 msgstr "Galat"
 
-#: js/ui/lookingGlass.js:800
+#: js/ui/lookingGlass.js:814
 msgid "Out of date"
 msgstr "Kadaluarsa"
 
-#: js/ui/lookingGlass.js:802
+#: js/ui/lookingGlass.js:816
 msgid "Downloading"
 msgstr "Mengunduh"
 
-#: js/ui/lookingGlass.js:835
+#: js/ui/lookingGlass.js:818
+msgid "Deactivating"
+msgstr "Menonaktifkan"
+
+#: js/ui/lookingGlass.js:820
+msgid "Activating"
+msgstr "Mengaktifkan"
+
+#: js/ui/lookingGlass.js:853
 msgid "View Source"
 msgstr "Tilik Sumber"
 
-#: js/ui/lookingGlass.js:846
+#: js/ui/lookingGlass.js:864
 msgid "Web Page"
 msgstr "Halaman Web"
 
-#: js/ui/main.js:286
+#: js/ui/main.js:277
 msgid "System was put in unsafe mode"
 msgstr "Sistem dimasukkan ke dalam mode yang tidak aman"
 
-#: js/ui/main.js:287
-msgid "Applications now have unrestricted access"
+#: js/ui/main.js:278
+msgid "Apps now have unrestricted access"
 msgstr "Aplikasi sekarang memiliki akses tak terbatas"
 
-#: js/ui/main.js:288 js/ui/overview.js:58
-msgid "Undo"
-msgstr "Batal"
-
-#: js/ui/main.js:334
+#: js/ui/main.js:338
 msgid "Logged in as a privileged user"
 msgstr "Masuk sebagai pengguna istimewa"
 
-#: js/ui/main.js:335
+#: js/ui/main.js:339
 msgid ""
 "Running a session as a privileged user should be avoided for security "
 "reasons. If possible, you should log in as a normal user."
@@ -1579,23 +1721,29 @@ msgstr ""
 "Menjalankan sesi sebagai pengguna istimewa harus dihindari untuk alasan "
 "keamanan. Jika memungkinkan, Anda harus masuk sebagai pengguna biasa."
 
-#: js/ui/main.js:384
+#: js/ui/main.js:387
 msgid "Screen Lock disabled"
 msgstr "Kunci Layar dinonaktifkan"
 
-#: js/ui/main.js:385
-msgid "Screen Locking requires the GNOME display manager."
-msgstr "Penguncian Layar memerlukan manajer tampilan GNOME."
+#: js/ui/main.js:388
+msgid "Screen Locking requires the GNOME display manager"
+msgstr "Penguncian Layar memerlukan manajer tampilan GNOME"
 
-#: js/ui/messageTray.js:1418
-msgid "System Information"
-msgstr "Informasi Sistem"
+#. Translators: this is the string displayed in the header when a message
+#. source doesn't have a name
+#: js/ui/messageList.js:374
+msgid "Unknown App"
+msgstr "Aplikasi Tak Dikenal"
 
-#: js/ui/mpris.js:202
+#: js/ui/messageTray.js:326 js/ui/messageTray.js:328
+msgid "Notification sound"
+msgstr "Suara Pemberitahuan"
+
+#: js/ui/mpris.js:198
 msgid "Unknown artist"
 msgstr "Artis tak dikenal"
 
-#: js/ui/mpris.js:212
+#: js/ui/mpris.js:208
 msgid "Unknown title"
 msgstr "Judul tak dikenal"
 
@@ -1603,237 +1751,270 @@ msgstr "Judul tak dikenal"
 #. in the search entry when no search is
 #. active; it should not exceed ~30
 #. characters.
-#: js/ui/overviewControls.js:327
+#: js/ui/overviewControls.js:328
 msgid "Type to search"
 msgstr "Ketik untuk mencari"
 
-#: js/ui/overviewControls.js:405
-msgid "Applications"
+#: js/ui/overviewControls.js:392
+msgid "Apps"
 msgstr "Aplikasi"
 
 #. Translators: This is the main view to select
 #. activities. See also note for "Activities" string.
-#: js/ui/overview.js:71
+#: js/ui/overview.js:33
 msgid "Overview"
 msgstr "Gambaran"
 
-#: js/ui/padOsd.js:100
+#: js/ui/padOsd.js:98
 msgid "New shortcut…"
 msgstr "Pintasan baru…"
 
-#: js/ui/padOsd.js:154
-msgid "Application defined"
+#: js/ui/padOsd.js:151
+msgid "App defined"
 msgstr "Aplikasi yang didefinisikan"
 
-#: js/ui/padOsd.js:155
+#: js/ui/padOsd.js:152
 msgid "Show on-screen help"
 msgstr "Tampilkan bantuan di layar"
 
-#: js/ui/padOsd.js:156
+#: js/ui/padOsd.js:153
 msgid "Switch monitor"
 msgstr "Ganti monitor"
 
-#: js/ui/padOsd.js:157
+#: js/ui/padOsd.js:154
 msgid "Assign keystroke"
 msgstr "Tetapkan keystroke"
 
-#: js/ui/padOsd.js:226
+#: js/ui/padOsd.js:223
 msgid "Done"
 msgstr "Selesai"
 
-#: js/ui/padOsd.js:743
+#: js/ui/padOsd.js:726
 msgid "Edit…"
 msgstr "Sunting…"
 
-#: js/ui/padOsd.js:785 js/ui/padOsd.js:902
+#: js/ui/padOsd.js:773
 msgid "None"
 msgstr "Nihil"
 
-#: js/ui/padOsd.js:856
+#: js/ui/padOsd.js:844
 msgid "Press a button to configure"
 msgstr "Tekan tombol untuk mengkonfigurasi"
 
-#: js/ui/padOsd.js:857
+#: js/ui/padOsd.js:845
 msgid "Press Esc to exit"
 msgstr "Tekan Esc untuk keluar"
 
-#: js/ui/padOsd.js:860
+#: js/ui/padOsd.js:848
 msgid "Press any key to exit"
 msgstr "Tekan tombol apa saja untuk keluar"
 
-#: js/ui/panel.js:244
+#. Translators: If there is no suitable word for "Activities"
+#. in your language, you can use the word for "Overview".
+#: js/ui/panel.js:423
 msgid "Activities"
 msgstr "Aktivitas"
 
-#: js/ui/panel.js:338
+#: js/ui/panel.js:504
 msgctxt "System menu in the top bar"
 msgid "System"
 msgstr "Sistem"
 
-#: js/ui/panel.js:457
+#: js/ui/panel.js:678
 msgid "Top Bar"
 msgstr "Bar Atas"
 
-#: js/ui/runDialog.js:58
+#: js/ui/quickSettings.js:188
+msgid "Open menu"
+msgstr "Buka menu"
+
+#: js/ui/runDialog.js:61
 msgid "Run a Command"
 msgstr "Jalankan Perintah"
 
-#: js/ui/runDialog.js:73
+#: js/ui/runDialog.js:76
 msgid "Press ESC to close"
 msgstr "Tekan Esc untuk menutup"
 
-#: js/ui/runDialog.js:238
+#: js/ui/runDialog.js:241
 msgid "Restart is not available on Wayland"
 msgstr "Memulai ulang tidak tersedia di Wayland"
 
-#: js/ui/runDialog.js:243
+#: js/ui/runDialog.js:246
 msgid "Restarting…"
 msgstr "Memulai ulang…"
 
-#: js/ui/screenShield.js:235
+#: js/ui/screenShield.js:233
 msgid "GNOME needs to lock the screen"
 msgstr "GNOME perlu mengunci layar"
 
-#. We could not become modal, so we can't activate the
-#. screenshield. The user is probably very upset at this
-#. point, but any application using global grabs is broken
-#. Just tell them to stop using this app
-#.
-#. XXX: another option is to kick the user into the gdm login
-#. screen, where we're not affected by grabs
-#: js/ui/screenShield.js:275 js/ui/screenShield.js:652
+#: js/ui/screenShield.js:274 js/ui/screenShield.js:667
 msgid "Unable to lock"
 msgstr "Tak bisa mengunci"
 
-#: js/ui/screenShield.js:276 js/ui/screenShield.js:653
-msgid "Lock was blocked by an application"
+#: js/ui/screenShield.js:275 js/ui/screenShield.js:668
+msgid "Lock was blocked by an app"
 msgstr "Kunci diblokir oleh suatu aplikasi"
 
-#: js/ui/screenshot.js:1161
+#: js/ui/screenshot.js:1252
 msgid "Selection"
 msgstr "Pilihan"
 
-#: js/ui/screenshot.js:1171
+#: js/ui/screenshot.js:1262
 msgid "Area Selection"
 msgstr "Pemilihan Area"
 
-#: js/ui/screenshot.js:1176
+#: js/ui/screenshot.js:1267
 msgid "Screen"
 msgstr "Layar"
 
-#: js/ui/screenshot.js:1186
+#: js/ui/screenshot.js:1277
 msgid "Screen Selection"
 msgstr "Pemilihan Layar"
 
-#: js/ui/screenshot.js:1191
+#: js/ui/screenshot.js:1282
 msgid "Window"
 msgstr "Jendela"
 
-#: js/ui/screenshot.js:1201
+#: js/ui/screenshot.js:1292
 msgid "Window Selection"
 msgstr "Pemilihan Jendela"
 
-#: js/ui/screenshot.js:1239
-msgid "Screenshot / Screencast"
-msgstr "Cuplikan layar / Screencast"
+#. Translators: entry in the window right click menu.
+#: js/ui/screenshot.js:1317 js/ui/status/system.js:111 js/ui/windowMenu.js:28
+msgid "Take Screenshot"
+msgstr "Ambil Cuplikan"
 
-#: js/ui/screenshot.js:1275
+#: js/ui/screenshot.js:1333
+msgid "Record Screen"
+msgstr "Rekam Layar"
+
+#. Translators: since this string refers to an action,
+#. it needs to be phrased as a verb.
+#: js/ui/screenshot.js:1350
+msgid "Capture"
+msgstr "Tangkap"
+
+#: js/ui/screenshot.js:1372
 msgid "Show Pointer"
 msgstr "Tampilkan Penunjuk"
 
 #. Translators: this is the folder where recorded
 #. screencasts are stored.
-#: js/ui/screenshot.js:1866
+#: js/ui/screenshot.js:1996
 msgid "Screencasts"
 msgstr "Screencast"
 
 #. Translators: this is a filename used for screencast
 #. * recording, where "%d" and "%t" date and time, e.g.
-#. * "Screencast from 07-17-2013 10:00:46 PM.webm"
-#: js/ui/screenshot.js:1871
+#. * "Screencast From 07-17-2013 10:00:46 PM"
+#: js/ui/screenshot.js:2001
 #, no-c-format
-msgid "Screencast from %d %t.webm"
-msgstr "Screencast dari %d %t.webm"
-
-#. Translators: notification source name.
-#: js/ui/screenshot.js:1913 js/ui/screenshot.js:2125
-msgid "Screenshot"
-msgstr "Cuplikan layar"
+msgid "Screencast From %d %t"
+msgstr "Screencast Dari %d %t"
 
 #. Translators: notification title.
-#: js/ui/screenshot.js:1919
+#: js/ui/screenshot.js:2047
 msgid "Screencast recorded"
 msgstr "Screencast direkam"
 
+#. Translators: notification title.
+#: js/ui/screenshot.js:2060
+msgid "Screencast failed to start"
+msgstr "Screencast gagal dimulai"
+
+#. Translators: notification title.
+#: js/ui/screenshot.js:2066
+msgid "Screencast ended: Out of disk space"
+msgstr "Screencast berakhir: Ruang diska habis"
+
+#. We can encourage user to try again on service crashes since the
+#. recorder will auto-blocklist the pipeline that crashed.
+#. Translators: notification title.
+#: js/ui/screenshot.js:2072
+msgid "Screencast ended unexpectedly, please try again"
+msgstr "Screencast berakhir secara tak terduga, mohon coba lagi"
+
+#. Translators: notification title.
+#: js/ui/screenshot.js:2075
+msgid "Screencast ended unexpectedly"
+msgstr "Screencast berakhir secara tak terduga"
+
+#. Translators: notification source name.
+#: js/ui/screenshot.js:2085 js/ui/screenshot.js:2327
+msgid "Screenshot"
+msgstr "Cuplikan layar"
+
 #. Translators: notification body when a screencast was recorded.
-#: js/ui/screenshot.js:1921
+#: js/ui/screenshot.js:2092
 msgid "Click here to view the video."
 msgstr "Klik di sini untuk melihat video."
 
 #. Translators: button on the screencast notification.
 #. Translators: button on the screenshot notification.
-#: js/ui/screenshot.js:1924 js/ui/screenshot.js:2139
+#: js/ui/screenshot.js:2100 js/ui/screenshot.js:2343
 msgid "Show in Files"
 msgstr "Tampilkan pada Berkas"
 
 #. Translators: this is the name of the file that the screenshot is
 #. saved to. The placeholder is a timestamp, e.g. "2017-05-21 12-24-03".
-#: js/ui/screenshot.js:2085
+#: js/ui/screenshot.js:2287
 #, javascript-format
-msgid "Screenshot from %s"
-msgstr "Cuplikan layar dari %s"
+msgid "Screenshot From %s"
+msgstr "Cuplikan Layar Dari %s"
 
 #. Translators: notification title.
-#: js/ui/screenshot.js:2131
+#: js/ui/screenshot.js:2333
 msgid "Screenshot captured"
 msgstr "Cuplikan layar yang diambil"
 
 #. Translators: notification body when a screenshot was captured.
-#: js/ui/screenshot.js:2133
+#: js/ui/screenshot.js:2335
 msgid "You can paste the image from the clipboard."
 msgstr "Anda dapat menempelkan gambar dari papan klip."
 
-#: js/ui/screenshot.js:2186 js/ui/screenshot.js:2351
+#: js/ui/screenshot.js:2391 js/ui/screenshot.js:2555
 msgid "Screenshot taken"
 msgstr "Cuplikan layar telah diambil"
 
-#: js/ui/search.js:804
+#: js/ui/search.js:829
 msgid "Searching…"
 msgstr "Mencari…"
 
-#: js/ui/search.js:806
-msgid "No results."
-msgstr "Tak ada yang cocok."
+#: js/ui/search.js:831
+msgid "No results"
+msgstr "Tidak ada hasil"
 
-#: js/ui/search.js:937
+#: js/ui/search.js:962
 #, javascript-format
 msgid "%d more"
 msgid_plural "%d more"
 msgstr[0] "%d lagi"
 
 #: js/ui/searchController.js:87
+#: subprojects/extensions-app/data/ui/extensions-window.ui:73
 msgid "Search"
 msgstr "Cari"
 
-#: js/ui/shellEntry.js:20
+#: js/ui/shellEntry.js:21
 msgid "Copy"
 msgstr "Salin"
 
-#: js/ui/shellEntry.js:25
+#: js/ui/shellEntry.js:26
 msgid "Paste"
 msgstr "Tempel"
 
-#: js/ui/shellEntry.js:77
+#: js/ui/shellEntry.js:78
 msgid "Show Text"
 msgstr "Tampilkan Teks"
 
-#: js/ui/shellEntry.js:79
+#: js/ui/shellEntry.js:80
 msgid "Hide Text"
 msgstr "Sembunyikan Teks"
 
-#: js/ui/shellEntry.js:166
-msgid "Caps lock is on."
-msgstr "Caps lock menyala."
+#: js/ui/shellEntry.js:174
+msgid "Caps lock is on"
+msgstr "Caps lock menyala"
 
 #: js/ui/shellMountOperation.js:286
 msgid "Hidden Volume"
@@ -1848,47 +2029,43 @@ msgid "Uses Keyfiles"
 msgstr "Gunakan Berkas Kunci"
 
 #. Translators: %s is the Disks application
-#: js/ui/shellMountOperation.js:299
+#: js/ui/shellMountOperation.js:300
 #, javascript-format
 msgid ""
-"To unlock a volume that uses keyfiles, use the <i>%s</i> utility instead."
+"To unlock a volume that uses keyfiles, use the <i>%s</i> utility instead"
 msgstr ""
-"Untuk membuka kunci volume yang menggunakan berkas kunci, gunakan utilitas "
-"<i>%s</i>."
+"Untuk membuka kunci volume yang menggunakan berkas kunci, pakai utilitas "
+"<i>%s</i> sebagai pengganti"
 
-#: js/ui/shellMountOperation.js:307
+#: js/ui/shellMountOperation.js:304
+msgid ""
+"You need an external utility like <i>Disks</i> to unlock a volume that uses "
+"keyfiles"
+msgstr ""
+"Anda memerlukan utilitas eksternal seperti <i>Diska</i> untuk membuka kunci "
+"volume yang menggunakan berkas kunci"
+
+#: js/ui/shellMountOperation.js:312
 msgid "PIM Number"
 msgstr "Nomor PIM"
 
-#: js/ui/shellMountOperation.js:366
+#: js/ui/shellMountOperation.js:371
 msgid "Remember Password"
 msgstr "Ingat Kata Sandi"
 
-#: js/ui/shellMountOperation.js:381
+#: js/ui/shellMountOperation.js:386
 msgid "Unlock"
 msgstr "Buka Kunci"
 
 #. Translators: %s is the Disks application
-#: js/ui/shellMountOperation.js:392
+#: js/ui/shellMountOperation.js:400
 #, javascript-format
 msgid "Open %s"
 msgstr "Buka %s"
 
-#: js/ui/shellMountOperation.js:424
-msgid "The PIM must be a number or empty."
-msgstr "PIM harus berupa angka atau kosong."
-
-#. Translators: %s is the Disks application
-#: js/ui/shellMountOperation.js:466
-#, javascript-format
-msgid "Unable to start %s"
-msgstr "Tak bisa memulai %s"
-
-#. Translators: %s is the Disks application
-#: js/ui/shellMountOperation.js:468
-#, javascript-format
-msgid "Couldn’t find the %s application"
-msgstr "Tak bisa menemukan aplikasi %s"
+#: js/ui/shellMountOperation.js:436
+msgid "The PIM must be a number or empty"
+msgstr "PIM harus berupa angka atau kosong"
 
 #: js/ui/status/accessibility.js:34
 msgid "Accessibility"
@@ -1914,23 +2091,27 @@ msgstr "Papan Tik di Layar"
 msgid "Visual Alerts"
 msgstr "Peringatan Visual"
 
-#: js/ui/status/accessibility.js:65
+#: js/ui/status/accessibility.js:66
 msgid "Sticky Keys"
 msgstr "Tombol Lengket"
 
-#: js/ui/status/accessibility.js:68
+#: js/ui/status/accessibility.js:70
 msgid "Slow Keys"
 msgstr "Tombol Lambat"
 
-#: js/ui/status/accessibility.js:71
+#: js/ui/status/accessibility.js:74
 msgid "Bounce Keys"
 msgstr "Tombol Pantul"
 
-#: js/ui/status/accessibility.js:74
+#: js/ui/status/accessibility.js:78
 msgid "Mouse Keys"
 msgstr "Tombol Tetikus"
 
-#: js/ui/status/accessibility.js:131
+#: js/ui/status/accessibility.js:83
+msgid "Accessibility Settings"
+msgstr "Pengaturan Aksesibilitas"
+
+#: js/ui/status/accessibility.js:140
 msgid "Large Text"
 msgstr "Teks Besar"
 
@@ -1938,214 +2119,309 @@ msgstr "Teks Besar"
 msgid "Auto Rotate"
 msgstr "Putar Otomatis"
 
-#: js/ui/status/bluetooth.js:151
-msgid "Bluetooth"
-msgstr "Bluetooth"
+#: js/ui/status/backgroundApps.js:156
+msgctxt "title"
+msgid "Background Apps"
+msgstr "Aplikasi Latar Belakang"
 
-#: js/ui/status/brightness.js:34
-msgid "Brightness"
-msgstr "Kecerahan"
+#: js/ui/status/backgroundApps.js:171
+msgid "Apps known to be running without a window"
+msgstr "Aplikasi yang diketahui berjalan tanpa suatu jendela"
 
-#: js/ui/status/darkMode.js:11
-msgid "Dark Mode"
-msgstr "Mode Gelap"
+#: js/ui/status/backgroundApps.js:182
+msgid "App Settings"
+msgstr "Pengaturan Aplikasi"
 
-#: js/ui/status/dwellClick.js:12
-msgid "Single Click"
-msgstr "Klik Tunggal"
+#: js/ui/status/backgroundApps.js:239
+msgid "No Background Apps"
+msgstr "Tidak Ada Aplikasi Latar Belakang"
 
-#: js/ui/status/dwellClick.js:17
-msgid "Double Click"
-msgstr "Klik Ganda"
+#: js/ui/status/backgroundApps.js:241
+#, javascript-format
+msgid "%d Background App"
+msgid_plural "%d Background Apps"
+msgstr[0] "%d Aplikasi Latar Belakang"
 
-#: js/ui/status/dwellClick.js:22
-msgid "Drag"
-msgstr "Seret"
+#: js/ui/status/backlight.js:39
+msgid "Keyboard Brightness"
+msgstr "Kecerahan Papan Tik"
 
-#: js/ui/status/dwellClick.js:27
-msgid "Secondary Click"
-msgstr "Klik Sekunder"
+#: js/ui/status/backlight.js:79
+msgid "Off"
+msgstr "Mati"
 
-#: js/ui/status/dwellClick.js:36
-msgid "Dwell Click"
-msgstr "Klik Menetap"
+#: js/ui/status/backlight.js:80
+msgid "Low"
+msgstr "Rendah"
 
-#: js/ui/status/keyboard.js:842
+#: js/ui/status/backlight.js:81
+msgid "High"
+msgstr "Tinggi"
+
+#: js/ui/status/backlight.js:147 js/ui/status/keyboard.js:879
 msgid "Keyboard"
 msgstr "Papan Ketik"
 
-#: js/ui/status/keyboard.js:859
+#: js/ui/status/bluetooth.js:245 js/ui/status/network.js:360
+msgid "Disconnect"
+msgstr "Putuskan"
+
+#: js/ui/status/bluetooth.js:262 js/ui/status/bluetooth.js:264
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+#: js/ui/status/bluetooth.js:287 js/ui/status/network.js:1900
+msgid "Bluetooth Settings"
+msgstr "Pengaturan Bluetooth"
+
+#: js/ui/status/bluetooth.js:334
+msgid "No available or connected devices"
+msgstr "Tidak ada perangkat yang tersedia atau tersambung"
+
+#: js/ui/status/bluetooth.js:335
+msgid "Turn on Bluetooth to connect to devices"
+msgstr "Nyalakan Bluetooth untuk tersambung ke perangkat"
+
+#. Translators: This is the number of connected bluetooth devices
+#: js/ui/status/bluetooth.js:389
+#, javascript-format
+msgid "%d Connected"
+msgid_plural "%d Connected"
+msgstr[0] "%d Tersambung"
+
+#: js/ui/status/brightness.js:32
+msgid "Brightness"
+msgstr "Kecerahan"
+
+#: js/ui/status/darkMode.js:12
+msgid "Dark Style"
+msgstr "Gaya Gelap"
+
+#: js/ui/status/dwellClick.js:15
+msgid "Single Click"
+msgstr "Klik Tunggal"
+
+#: js/ui/status/dwellClick.js:20
+msgid "Double Click"
+msgstr "Klik Ganda"
+
+#: js/ui/status/dwellClick.js:25
+msgid "Drag"
+msgstr "Seret"
+
+#: js/ui/status/dwellClick.js:30
+msgid "Secondary Click"
+msgstr "Klik Sekunder"
+
+#: js/ui/status/dwellClick.js:39
+msgid "Dwell Click"
+msgstr "Klik Menetap"
+
+#: js/ui/status/keyboard.js:896
 msgid "Show Keyboard Layout"
 msgstr "Tampilkan Tata Letak Papan Tik"
 
-#: js/ui/status/location.js:330
+#: js/ui/status/location.js:337
 msgid "Allow location access"
 msgstr "Izinkan akses lokasi"
 
 #. Translators: %s is an application name
-#: js/ui/status/location.js:332
+#: js/ui/status/location.js:339
 #, javascript-format
 msgid "The app %s wants to access your location"
 msgstr "Aplikasi %s ingin mengakses lokasi Anda"
 
-#: js/ui/status/location.js:342
-msgid "Location access can be changed at any time from the privacy settings."
-msgstr "Akses lokasi dapat diubah setiap saat dari pengaturan privasi."
+#: js/ui/status/location.js:349
+msgid "Location access can be changed at any time from the privacy settings"
+msgstr "Akses lokasi dapat diubah setiap saat dari pengaturan privasi"
 
-#: js/ui/status/network.js:53
+#: js/ui/status/location.js:357
+msgid "Deny Access"
+msgstr "Tolak Akses"
+
+#: js/ui/status/location.js:362
+msgid "Grant Access"
+msgstr "Beri Akses"
+
+#: js/ui/status/network.js:62
 msgid "<unknown>"
 msgstr "<tak dikenal>"
 
 #. Translators: %s is a device name like "MyPhone"
-#: js/ui/status/network.js:356
+#: js/ui/status/network.js:354
 #, javascript-format
 msgid "Disconnect %s"
 msgstr "Memutus %s"
 
 #. Translators: %s is a device name like "MyPhone"
-#: js/ui/status/network.js:358
+#: js/ui/status/network.js:356
 #, javascript-format
 msgid "Connect to %s"
 msgstr "Sambung ke %s"
 
+#: js/ui/status/network.js:1050
+msgid "Secure"
+msgstr "Aman"
+
+#: js/ui/status/network.js:1050
+msgid "Not secure"
+msgstr "Tidak aman"
+
+#: js/ui/status/network.js:1051
+#, javascript-format
+msgid "Signal strength %s%%"
+msgstr "Kekuatan sinyal %s%%"
+
+#. translators: The first placeholder is the network name, the second and indication whether it is secure, and the last the signal strength indication
+#: js/ui/status/network.js:1053
+#, javascript-format
+msgid "%s, %s, %s"
+msgstr "%s, %s, %s"
+
 #. Translators: %s is a network identifier
-#: js/ui/status/network.js:1107
+#: js/ui/status/network.js:1155
 #, javascript-format
 msgid "%s Hotspot"
 msgstr "%s Hotspot"
 
-#: js/ui/status/network.js:1466 js/ui/status/network.js:1482
+#: js/ui/status/network.js:1426
+#, javascript-format
+msgid "%d connected"
+msgid_plural "%d connected"
+msgstr[0] "%d tersambung"
+
+#: js/ui/status/network.js:1524 js/ui/status/network.js:1540
 msgid "VPN"
 msgstr "VPN"
 
-#: js/ui/status/network.js:1467
+#: js/ui/status/network.js:1525
 msgid "VPN Settings"
 msgstr "Pengaturan VPN"
 
-#: js/ui/status/network.js:1716
+#: js/ui/status/network.js:1785
 msgid "Wi–Fi"
 msgstr "Wi-Fi"
 
-#: js/ui/status/network.js:1718
+#: js/ui/status/network.js:1787
 msgid "All Networks"
 msgstr "Semua Jaringan"
 
-#: js/ui/status/network.js:1815
+#: js/ui/status/network.js:1884
 msgid "Wired Connections"
 msgstr "Koneksi Kabel"
 
-#: js/ui/status/network.js:1816
+#: js/ui/status/network.js:1885
 msgid "Wired Settings"
 msgstr "Pengaturan Kabel"
 
-#: js/ui/status/network.js:1830
+#: js/ui/status/network.js:1899
 msgid "Bluetooth Tethers"
 msgstr "Tether Bluetooth"
 
-#: js/ui/status/network.js:1831
-msgid "Bluetooth Settings"
-msgstr "Pengaturan Bluetooth"
+#. Translators: "Tether" from "Bluetooth Tether"
+#: js/ui/status/network.js:1906
+msgid "Tether"
+msgstr "Tambatkan"
 
-#: js/ui/status/network.js:1845
+#: js/ui/status/network.js:1919
 msgid "Mobile Connections"
 msgstr "Koneksi Seluler"
 
-#: js/ui/status/network.js:1847
+#: js/ui/status/network.js:1921
 msgid "Mobile Broadband Settings"
 msgstr "Pengaturan Data Seluler"
 
-#: js/ui/status/network.js:1959
+#. Translators: "Mobile" from "Mobile Broadband"
+#: js/ui/status/network.js:1930
+msgid "Mobile"
+msgstr "Seluler"
+
+#: js/ui/status/network.js:1964
+msgid "Sign Into Wi–Fi Network"
+msgstr "Masuk Ke Jaringan Wi-Fi"
+
+#: js/ui/status/network.js:2151
 msgid "Connection failed"
 msgstr "Koneksi gagal"
 
-#: js/ui/status/network.js:1960
+#: js/ui/status/network.js:2152
 msgid "Activation of network connection failed"
 msgstr "Aktivasi koneksi jaringan gagal"
 
-#: js/ui/status/nightLight.js:20
+#: js/ui/status/nightLight.js:19
 msgid "Night Light"
 msgstr "Cahaya Malam"
 
-#: js/ui/status/powerProfiles.js:20
+#: js/ui/status/powerProfiles.js:19
 msgctxt "Power profile"
 msgid "Performance"
 msgstr "Performa"
 
-#: js/ui/status/powerProfiles.js:25
+#: js/ui/status/powerProfiles.js:24
 msgctxt "Power profile"
 msgid "Balanced"
 msgstr "Seimbang"
 
-#: js/ui/status/powerProfiles.js:30
+#: js/ui/status/powerProfiles.js:29
 msgctxt "Power profile"
 msgid "Power Saver"
 msgstr "Penghemat Daya"
 
-#: js/ui/status/powerProfiles.js:70
-msgid "Power Profiles"
-msgstr "Profil Daya"
+#: js/ui/status/powerProfiles.js:39 js/ui/status/powerProfiles.js:69
+msgid "Power Mode"
+msgstr "Mode Daya"
 
-#: js/ui/status/remoteAccess.js:72
+#: js/ui/status/powerProfiles.js:71
+msgid "Power Settings"
+msgstr "Pengaturan Daya"
+
+#: js/ui/status/remoteAccess.js:74
 msgid "Stop Screencast"
 msgstr "Hentikan Screencast"
 
-#: js/ui/status/remoteAccess.js:142
+#: js/ui/status/remoteAccess.js:144
 msgid "Stop Screen Sharing"
 msgstr "Hentikan Berbagi Layar"
 
-#: js/ui/status/rfkill.js:96
+#: js/ui/status/rfkill.js:99
 msgid "Airplane Mode"
 msgstr "Mode Pesawat Terbang"
 
-#: js/ui/status/system.js:90
-#, javascript-format
-msgid "%d %%"
-msgstr "%d %%"
-
-#. Translators: entry in the window right click menu.
-#: js/ui/status/system.js:105 js/ui/windowMenu.js:29
-msgid "Take Screenshot"
-msgstr "Ambil Cuplikan"
-
-#: js/ui/status/system.js:161
+#: js/ui/status/system.js:168
 msgid "Power Off Menu"
 msgstr "Menu Matikan"
 
-#: js/ui/status/system.js:169
+#: js/ui/status/system.js:176
 msgid "Suspend"
 msgstr "Suspensi"
 
-#: js/ui/status/system.js:174
+#: js/ui/status/system.js:181
 msgid "Restart…"
 msgstr "Mulai ulang…"
 
-#: js/ui/status/system.js:179
+#: js/ui/status/system.js:186
 msgid "Power Off…"
 msgstr "Matikan…"
 
-#: js/ui/status/system.js:186
-#: subprojects/extensions-app/data/ui/extensions-window.ui:190
+#: js/ui/status/system.js:193
+#: subprojects/extensions-app/data/ui/extensions-window.ui:124
 msgid "Log Out…"
 msgstr "Keluar…"
 
-#: js/ui/status/system.js:191
+#: js/ui/status/system.js:198
 msgid "Switch User…"
 msgstr "Beralih Pengguna…"
 
-#: js/ui/status/system.js:235
+#: js/ui/status/system.js:242
 msgctxt "action"
 msgid "Lock Screen"
 msgstr "Kunci Layar"
 
-#: js/ui/status/thunderbolt.js:256
-msgid "Thunderbolt"
-msgstr "Thunderbolt"
-
-#: js/ui/status/thunderbolt.js:317
+#: js/ui/status/thunderbolt.js:308
 msgid "Unknown Thunderbolt device"
 msgstr "Perangkat Thunderbolt tak dikenal"
 
-#: js/ui/status/thunderbolt.js:318
+#: js/ui/status/thunderbolt.js:309
 msgid ""
 "New device has been detected while you were away. Please disconnect and "
 "reconnect the device to start using it."
@@ -2153,38 +2429,46 @@ msgstr ""
 "Perangkat baru telah terdeteksi saat Anda pergi. Harap lepaskan dan "
 "sambungkan kembali perangkat untuk mulai menggunakannya."
 
-#: js/ui/status/thunderbolt.js:321
+#: js/ui/status/thunderbolt.js:312
 msgid "Unauthorized Thunderbolt device"
 msgstr "Perangkat Thunderbolt tak dikenal"
 
-#: js/ui/status/thunderbolt.js:322
+#: js/ui/status/thunderbolt.js:313
 msgid ""
-"New device has been detected and needs to be authorized by an administrator."
+"New device has been detected and needs to be authorized by an administrator"
 msgstr ""
-"Perangkat baru telah terdeteksi dan perlu diautorisasi oleh administrator."
+"Perangkat baru telah terdeteksi dan perlu diotorisasi oleh administrator"
 
-#: js/ui/status/thunderbolt.js:328
+#: js/ui/status/thunderbolt.js:319
 msgid "Thunderbolt authorization error"
 msgstr "Autorisasi Thunderbolt galat"
 
-#: js/ui/status/thunderbolt.js:329
+#: js/ui/status/thunderbolt.js:320
 #, javascript-format
 msgid "Could not authorize the Thunderbolt device: %s"
-msgstr "Tidak dapat mengautorisasi perangkat Thunderbolt: %s"
+msgstr "Tidak dapat mengotorisasi perangkat Thunderbolt: %s"
 
-#: js/ui/status/volume.js:194
+#: js/ui/status/volume.js:218
 msgid "Volume changed"
 msgstr "Volume diubah"
 
-#: js/ui/status/volume.js:256
+#: js/ui/status/volume.js:231
+msgid "Unmute"
+msgstr "Bunyikan"
+
+#: js/ui/status/volume.js:231
+msgid "Mute"
+msgstr "Senyapkan"
+
+#: js/ui/status/volume.js:286
 msgid "Volume"
 msgstr "Volume"
 
-#: js/ui/status/volume.js:272
+#: js/ui/status/volume.js:302
 msgid "Sound Output"
 msgstr "Keluaran Suara"
 
-#: js/ui/status/volume.js:340
+#: js/ui/status/volume.js:374
 msgid "Sound Input"
 msgstr "Masukan Suara"
 
@@ -2202,7 +2486,7 @@ msgstr "Kembar"
 msgid "Join Displays"
 msgstr "Gabung Layar"
 
-#. Translators: this is for using only an external display.
+#. Translators: this is for using only external displays.
 #. * Try to keep it under around 15 characters.
 #.
 #: js/ui/switchMonitor.js:39
@@ -2218,62 +2502,67 @@ msgstr "Hanya Bawaan"
 
 #. Translators: This is a time format for a date in
 #. long format
-#: js/ui/unlockDialog.js:364
+#: js/ui/unlockDialog.js:378
 msgid "%A %B %-d"
 msgstr "%A, %d %B"
 
-#: js/ui/unlockDialog.js:370
+#: js/ui/unlockDialog.js:384
 msgid "Swipe up to unlock"
 msgstr "Gesek ke atas untuk membuka kunci"
 
-#: js/ui/unlockDialog.js:371
+#: js/ui/unlockDialog.js:385
 msgid "Click or press a key to unlock"
 msgstr "Klik atau tekan tombol untuk membuka kunci"
 
-#: js/ui/unlockDialog.js:554
+#: js/ui/unlockDialog.js:568
 msgid "Unlock Window"
 msgstr "Buka Kunci Jendela"
 
-#: js/ui/unlockDialog.js:563
+#: js/ui/unlockDialog.js:577
 msgid "Log in as another user"
 msgstr "Masuk sebagai pengguna lain"
 
-#: js/ui/welcomeDialog.js:36
+#: js/ui/welcomeDialog.js:47
 #, javascript-format
-msgid "Welcome to GNOME %s"
-msgstr "Selamat datang di GNOME %s"
-
-#: js/ui/welcomeDialog.js:37
-msgid "If you want to learn your way around, check out the tour."
-msgstr "Jika Anda ingin mempelajarinya, lihat turnya."
-
-#: js/ui/welcomeDialog.js:46
-msgid "No Thanks"
-msgstr "Tidak, Terima Kasih"
+msgid "GNOME %s"
+msgstr "GNOME %s"
 
 #: js/ui/welcomeDialog.js:51
+#, javascript-format
+msgid "Welcome to %s"
+msgstr "Selamat datang di %s"
+
+#: js/ui/welcomeDialog.js:52
+msgid "If you want to learn your way around, check out the tour"
+msgstr "Jika Anda ingin mempelajarinya, lihat turnya"
+
+#: js/ui/welcomeDialog.js:61
+msgid "Skip"
+msgstr "Lewati"
+
+#: js/ui/welcomeDialog.js:66
 msgid "Take Tour"
 msgstr "Ikuti Tur"
 
-#: js/ui/windowAttentionHandler.js:20
+#: js/ui/windowAttentionHandler.js:18
 #, javascript-format
 msgid "“%s” is ready"
 msgstr "“%s” siap"
 
 #. Translators: This string should be shorter than 30 characters
-#: js/ui/windowManager.js:62
+#: js/ui/windowManager.js:68
 msgid "Keep these display settings?"
 msgstr "Simpan pengaturan tampilan ini?"
 
-#: js/ui/windowManager.js:72
+#: js/ui/windowManager.js:78
 msgid "Revert Settings"
 msgstr "Balikkan Tatanan"
 
-#: js/ui/windowManager.js:77
+#: js/ui/windowManager.js:83
 msgid "Keep Changes"
 msgstr "Simpan Perubahan"
 
-#: js/ui/windowManager.js:97
+#: js/ui/windowManager.js:103
 #, javascript-format
 msgid "Settings changes will revert in %d second"
 msgid_plural "Settings changes will revert in %d seconds"
@@ -2281,112 +2570,108 @@ msgstr[0] "Perubahan tatanan akan dikembalikan dalam %d detik"
 
 #. Translators: This represents the size of a window. The first number is
 #. * the width of the window and the second is the height.
-#: js/ui/windowManager.js:544
+#: js/ui/windowManager.js:500
 #, javascript-format
 msgid "%d × %d"
 msgstr "%d × %d"
 
-#: js/ui/windowMenu.js:41
+#: js/ui/windowMenu.js:40
 msgid "Hide"
 msgstr "Sembunyikan"
 
-#: js/ui/windowMenu.js:48
+#: js/ui/windowMenu.js:47
 msgid "Restore"
 msgstr "Pulihkan"
 
-#: js/ui/windowMenu.js:52
+#: js/ui/windowMenu.js:51
 msgid "Maximize"
 msgstr "Maksimalkan"
 
-#: js/ui/windowMenu.js:59
+#: js/ui/windowMenu.js:58
 msgid "Move"
 msgstr "Pindah"
 
-#: js/ui/windowMenu.js:65
+#: js/ui/windowMenu.js:78
 msgid "Resize"
 msgstr "Ubah Ukuran"
 
-#: js/ui/windowMenu.js:72
-msgid "Move Titlebar Onscreen"
-msgstr "Pindahkan Bilah Judul Pada Layar"
-
-#: js/ui/windowMenu.js:77
+#: js/ui/windowMenu.js:98
 msgid "Always on Top"
 msgstr "Selalu di Puncak"
 
-#: js/ui/windowMenu.js:96
+#: js/ui/windowMenu.js:117
 msgid "Always on Visible Workspace"
 msgstr "Selalu pada Ruang Kerja yang Tampak"
 
-#: js/ui/windowMenu.js:110
+#: js/ui/windowMenu.js:131
 msgid "Move to Workspace Left"
 msgstr "Pindah ke Ruang Kerja Kiri"
 
-#: js/ui/windowMenu.js:116
+#: js/ui/windowMenu.js:137
 msgid "Move to Workspace Right"
 msgstr "Pindah ke Ruang Kerja Kanan"
 
-#: js/ui/windowMenu.js:122
+#: js/ui/windowMenu.js:143
 msgid "Move to Workspace Up"
 msgstr "Pindah ke Ruang Kerja Atas"
 
-#: js/ui/windowMenu.js:128
+#: js/ui/windowMenu.js:149
 msgid "Move to Workspace Down"
 msgstr "Pindah ke Ruang Kerja Bawah"
 
-#: js/ui/windowMenu.js:146
+#: js/ui/windowMenu.js:167
 msgid "Move to Monitor Up"
 msgstr "Pindah ke Ruang Kerja Atas"
 
-#: js/ui/windowMenu.js:155
+#: js/ui/windowMenu.js:176
 msgid "Move to Monitor Down"
 msgstr "Pindah ke Ruang Kerja Bawah"
 
-#: js/ui/windowMenu.js:164
+#: js/ui/windowMenu.js:185
 msgid "Move to Monitor Left"
 msgstr "Pindahkan ke Monitor Kiri"
 
-#: js/ui/windowMenu.js:173
+#: js/ui/windowMenu.js:194
 msgid "Move to Monitor Right"
 msgstr "Pindahkan ke Monitor Kanan"
 
-#: js/ui/windowMenu.js:181
+#: js/ui/windowMenu.js:202
 msgid "Close"
 msgstr "Tutup"
 
-#: src/calendar-server/evolution-calendar.desktop.in:3
-msgid "Evolution Calendar"
-msgstr "Evolution Kalender"
-
-#: src/main.c:435 subprojects/extensions-tool/src/main.c:321
+#: src/main.c:527 subprojects/extensions-tool/src/main.c:336
 msgid "Print version"
 msgstr "Versi Cetak"
 
-#: src/main.c:441
+#: src/main.c:533
 msgid "Mode used by GDM for login screen"
 msgstr "Mode yang dipakai oleh layar log masuk GDM"
 
-#: src/main.c:447
+#: src/main.c:539
 msgid "Use a specific mode, e.g. “gdm” for login screen"
 msgstr "Menggunakan mode tertentu, mis. \"gdm\" untuk layar masuk"
 
-#: src/main.c:453
+#: src/main.c:545
 msgid "List possible modes"
 msgstr "Menampilkan mode yang mungkin"
 
-#: src/shell-app.c:305
+#: src/main.c:551
+msgid "Force animations to be enabled"
+msgstr "Memaksa animasi untuk diaktifkan"
+
+#: src/shell-app.c:252
 msgctxt "program"
 msgid "Unknown"
 msgstr "Tak dikenal"
 
-#: src/shell-app.c:556
+#: src/shell-app.c:503
 #, c-format
 msgid "Failed to launch “%s”"
 msgstr "Gagal meluncurkan \"%s\""
 
 #: src/shell-keyring-prompt.c:764
-msgid "Passwords do not match."
-msgstr "Kata sandi tidak cocok."
+msgid "Passwords do not match"
+msgstr "Kata sandi tidak cocok"
 
 #: src/shell-keyring-prompt.c:772
 msgid "Password cannot be blank"
@@ -2396,24 +2681,25 @@ msgstr "Kata sandi tidak boleh kosong"
 msgid "Authentication dialog was dismissed by the user"
 msgstr "Dialog autentikasi ditolak oleh pengguna"
 
-#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:5
-#: subprojects/extensions-app/data/org.gnome.Extensions.desktop.in.in:4
-#: subprojects/extensions-app/js/main.js:212
-#: subprojects/extensions-app/data/ui/extensions-window.ui:18
-#: subprojects/extensions-app/data/ui/extensions-window.ui:83
-msgid "Extensions"
-msgstr "Ekstensi"
+#: src/st/st-icon-theme.c:1865
+#, c-format
+msgid "Icon '%s' not present in theme %s"
+msgstr "Ikon '%s' tidak ada pada tema %s"
+
+#: src/st/st-icon-theme.c:3454 src/st/st-icon-theme.c:3757
+msgid "Failed to load icon"
+msgstr "Gagal memuat ikon"
 
 #: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:6
 msgid "Manage your GNOME Extensions"
 msgstr "Kelola Ekstensi GNOME Anda"
 
-#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:17
-#: subprojects/extensions-app/js/main.js:216
+#. developer_name tag deprecated with Appstream 1.0
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:19
 msgid "The GNOME Project"
 msgstr "Proyek GNOME"
 
-#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:36
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:51
 msgid ""
 "GNOME Extensions handles updating extensions, configuring extension "
 "preferences and removing or disabling unwanted extensions."
@@ -2421,21 +2707,66 @@ msgstr ""
 "Ekstensi GNOME menangani pemutakhiran ekstensi, mengkonfigurasi preferensi "
 "ekstensi, dan menghapus atau menonaktifkan ekstensi yang tidak diinginkan."
 
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:64
+msgid "Main Window"
+msgstr "Jendela Utama"
+
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:68
+msgid "Available Updates"
+msgstr "Pemutakhiran yang Tersedia"
+
+#: subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in:72
+msgid "Search View"
+msgstr "Tampilan Pencarian"
+
 #: subprojects/extensions-app/data/org.gnome.Extensions.desktop.in.in:7
 msgid "Configure GNOME Shell Extensions"
 msgstr "Konfigurasi Ekstensi GNOME Shell"
 
-#: subprojects/extensions-app/js/main.js:130
-#: subprojects/extensions-app/js/main.js:141
-msgid "No Matches"
-msgstr "Tidak Ada Kecocokan"
+#: subprojects/extensions-app/js/extensionManager.js:237
+#, javascript-format
+msgid ""
+"The installed version of this extension (%s) is incompatible with the "
+"current version of GNOME (%s). The extension has been disabled."
+msgstr ""
+"Versi terpasang ekstensi ini (%s) tidak kompatibel dengan versi GNOME (%s) "
+"saat ini. Ekstensi telah dinonaktifkan."
 
-#: subprojects/extensions-app/js/main.js:169
+#: subprojects/extensions-app/js/extensionManager.js:238
+#, javascript-format
+msgid ""
+"The installed version of this extension is incompatible with the current "
+"version of GNOME (%s). The extension has been disabled."
+msgstr ""
+"Versi terpasang ekstensi ini tidak kompatibel dengan versi GNOME (%s) saat "
+"ini. Ekstensi telah dinonaktifkan."
+
+#: subprojects/extensions-app/js/extensionManager.js:242
+msgid ""
+"An error has occurred in this extension. This could cause issues elsewhere "
+"in the system. It is recommended to turn the extension off until the error "
+"is resolved."
+msgstr ""
+"Terjadi kesalahan pada ekstensi ini. Hal ini dapat menyebabkan masalah di "
+"bagian lain sistem. Disarankan untuk mematikan ekstensi hingga galat "
+"teratasi."
+
+#. translators: Details for an extension error
+#: subprojects/extensions-app/js/extensionManager.js:248
+msgid "Error details:"
+msgstr "Detail galat:"
+
+#: subprojects/extensions-app/js/extensionRow.js:82
+#, javascript-format
+msgid "Version %s"
+msgstr "Versi %s"
+
+#: subprojects/extensions-app/js/extensionsWindow.js:113
 #, javascript-format
 msgid "Remove “%s”?"
 msgstr "Hapus \"%s\"?"
 
-#: subprojects/extensions-app/js/main.js:170
+#: subprojects/extensions-app/js/extensionsWindow.js:114
 msgid ""
 "If you remove the extension, you need to return to download it if you want "
 "to enable it again"
@@ -2443,84 +2774,125 @@ msgstr ""
 "Jika Anda menghapus ekstensi, Anda harus kembali untuk mengunduhnya jika "
 "Anda ingin mengaktifkannya lagi"
 
-#: subprojects/extensions-app/js/main.js:174
-msgid "Remove"
-msgstr "Hapus"
+#: subprojects/extensions-app/js/extensionsWindow.js:117
+msgid "_Cancel"
+msgstr "Bata_l"
 
-#: subprojects/extensions-app/js/main.js:211
+#: subprojects/extensions-app/js/extensionsWindow.js:118
+msgid "_Remove"
+msgstr "_Hapus"
+
+#: subprojects/extensions-app/js/extensionsWindow.js:158
 msgid "translator-credits"
 msgstr ""
-"Andika Triwidada <andika@gmail.com>, 2010-2014, 2017, 2022.\n"
+"Andika Triwidada <andika@gmail.com>, 2010-2014, 2017, 2022-2024.\n"
 "Dirgita <dirgitadevina@yahoo.co.id>, 2011, 2012, 2014.\n"
 "Wibiharto <wibinem@yahoo.com>, 2011.\n"
-"Kukuh Syafaat <kukuhsyafaat@gnome.org>, 2017-2023.\n"
-"Sucipto <sucipto@pm.me>, 2020."
+"Kukuh Syafaat <kukuhsyafaat@gnome.org>, 2017-2024.\n"
+"Sucipto <sucipto@pm.me>, 2020"
 
-#: subprojects/extensions-app/js/main.js:339
+#: subprojects/extensions-app/js/extensionsWindow.js:203
 #, javascript-format
 msgid "%d extension will be updated on next login."
 msgid_plural "%d extensions will be updated on next login."
 msgstr[0] "%d ekstensi akan diperbarui pada log masuk berikutnya."
 
-#: subprojects/extensions-app/js/main.js:481
-msgid "The extension is incompatible with the current GNOME version"
-msgstr "Ekstensi tidak kompatibel dengan versi GNOME saat ini"
-
-#: subprojects/extensions-app/js/main.js:484
-#: subprojects/extensions-app/data/ui/extension-row.ui:52
-msgid "The extension had an error"
-msgstr "Ekstensi mengalami kesalahan"
+#: subprojects/extensions-app/data/ui/extension-row.ui:22
+msgid "Error Details"
+msgstr "Detail Galat"
 
 #: subprojects/extensions-app/data/ui/extension-row.ui:62
-msgid "The extension can be updated"
-msgstr "Ekstensi dapat dimutakhirkan"
+msgid "Updates Details"
+msgstr "Detail Pemutakhiran"
 
-#: subprojects/extensions-app/data/ui/extension-row.ui:112
-msgid "Website"
-msgstr "Situs Web"
+#: subprojects/extensions-app/data/ui/extension-row.ui:72
+msgid ""
+"A new version of this extension is ready and will be loaded on next login."
+msgstr ""
+"Versi baru dari ekstensi ini telah siap dan akan dimuat pada log masuk "
+"berikutnya."
 
-#: subprojects/extensions-app/data/ui/extension-row.ui:134
-msgid "Remove…"
-msgstr "Hapus…"
+#: subprojects/extensions-app/data/ui/extension-row.ui:104
+msgid "Extension Details"
+msgstr "Detail Ekstensi"
+
+#: subprojects/extensions-app/data/ui/extension-row.ui:192
+msgid "_Website"
+msgstr "Situs _Web"
+
+#: subprojects/extensions-app/data/ui/extension-row.ui:219
+msgid "_Settings"
+msgstr "_Pengaturan"
+
+#: subprojects/extensions-app/data/ui/extension-row.ui:246
+msgid "_Remove…"
+msgstr "_Hapus…"
 
 #: subprojects/extensions-app/data/ui/extensions-window.ui:6
-msgid "Help"
-msgstr "Bantuan"
+msgid "Keyboard Shortcuts"
+msgstr "Pintasan Papan Tik"
 
 #: subprojects/extensions-app/data/ui/extensions-window.ui:10
 msgid "About Extensions"
 msgstr "Tentang Ekstensi"
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:84
-msgid ""
-"Extensions can cause performance and stability issues. Disable extensions if "
-"you encounter problems with your system."
-msgstr ""
-"Ekstensi dapat menyebabkan masalah kinerja dan stabilitas. Nonaktifkan "
-"ekstensi jika Anda mengalami masalah dengan sistem Anda."
+#: subprojects/extensions-app/data/ui/extensions-window.ui:64
+msgid "Main Menu"
+msgstr "Menu Utama"
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:98
-msgid "Manually Installed"
-msgstr "Dipasang Secara Manual"
+#: subprojects/extensions-app/data/ui/extensions-window.ui:106
+msgid "Search extensions"
+msgstr "Cari ekstensi"
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:99
 #: subprojects/extensions-app/data/ui/extensions-window.ui:134
+msgid "_Extensions"
+msgstr "_Ekstensi"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:139
+msgid "More Information"
+msgstr "Informasi Lebih Lanjut"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:151
 msgid ""
-"To find and add extensions, visit <a href=\"https://extensions.gnome.org"
-"\">extensions.gnome.org</a>."
+"Extensions can cause performance and stability issues. It is recommended to "
+"disable all extensions if you experience problems with your system."
+msgstr ""
+"Ekstensi dapat menyebabkan masalah kinerja dan stabilitas. Disarankan untuk "
+"menonaktifkan semua ekstensi jika Anda mengalami masalah dengan sistem Anda."
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:178
+msgid "User Extensions"
+msgstr "Ekstensi Pengguna"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:198
+msgid "System Extensions"
+msgstr "Ekstensi Sistem"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:233
+msgid "Search Results"
+msgstr "Hasil Pencarian"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:252
+msgid "No Results Found"
+msgstr "Tak Ada Hasil yang Ditemukan"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:253
+msgid "Try a different search"
+msgstr "Cobalah pencarian lain"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:264
+msgid "No Installed Extensions"
+msgstr "Tidak Ada Ekstensi Terpasang"
+
+#: subprojects/extensions-app/data/ui/extensions-window.ui:265
+msgid ""
+"To find and add extensions, visit <a href=\"https://extensions.gnome."
+"org\">extensions.gnome.org</a>."
 msgstr ""
 "Untuk menemukan dan menambahkan ekstensi, kunjungi <a href=\"https://"
 "extensions.gnome.org\">extensions.gnome.org</a>."
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:112
-msgid "Built-In"
-msgstr "Bawaan"
-
-#: subprojects/extensions-app/data/ui/extensions-window.ui:133
-msgid "No Installed Extensions"
-msgstr "Tidak Ada Ekstensi Terpasang"
-
-#: subprojects/extensions-app/data/ui/extensions-window.ui:145
+#: subprojects/extensions-app/data/ui/extensions-window.ui:276
 msgid ""
 "We’re very sorry, but it was not possible to get the list of installed "
 "extensions. Make sure you are logged into GNOME and try again."
@@ -2528,17 +2900,38 @@ msgstr ""
 "Kami sangat menyesal, tetapi tidak mungkin mendapatkan daftar ekstensi yang "
 "dipasang. Pastikan Anda masuk ke GNOME dan coba lagi."
 
-#: subprojects/extensions-app/data/ui/extensions-window.ui:175
-msgid "Extension Updates Ready"
-msgstr "Pemutakhiran Ekstensi Siap"
+#: subprojects/extensions-app/data/ui/help-overlay.ui:9
+msgctxt "shortcut window"
+msgid "General"
+msgstr "Umum"
+
+#: subprojects/extensions-app/data/ui/help-overlay.ui:12
+msgctxt "shortcut window"
+msgid "Open Menu"
+msgstr "Buka Menu"
+
+#: subprojects/extensions-app/data/ui/help-overlay.ui:18
+msgctxt "shortcut window"
+msgid "Toggle Search"
+msgstr "Jungkitkan Pencarian"
+
+#: subprojects/extensions-app/data/ui/help-overlay.ui:24
+msgctxt "shortcut window"
+msgid "Show Shortcuts"
+msgstr "Tampilkan Pintasan"
+
+#: subprojects/extensions-app/data/ui/help-overlay.ui:30
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr "Keluar"
 
 #. Translators: a file path to an extension directory
-#: subprojects/extensions-tool/src/command-create.c:222
+#: subprojects/extensions-tool/src/command-create.c:284
 #, c-format
 msgid "The new extension was successfully created in %s.\n"
 msgstr "Ekstensi baru berhasil dibuat di %s.\n"
 
-#: subprojects/extensions-tool/src/command-create.c:296
+#: subprojects/extensions-tool/src/command-create.c:376
 #, c-format
 msgid ""
 "Name should be a very short (ideally descriptive) string.\n"
@@ -2547,12 +2940,12 @@ msgstr ""
 "Nama harus berupa string yang sangat pendek (idealnya deskriptif).\n"
 "Contohnya adalah: %s"
 
-#: subprojects/extensions-tool/src/command-create.c:302
-#: subprojects/extensions-tool/src/main.c:238
+#: subprojects/extensions-tool/src/command-create.c:382
+#: subprojects/extensions-tool/src/main.c:243
 msgid "Name"
 msgstr "Nama"
 
-#: subprojects/extensions-tool/src/command-create.c:316
+#: subprojects/extensions-tool/src/command-create.c:396
 #, c-format
 msgid ""
 "Description is a single-sentence explanation of what your extension does.\n"
@@ -2562,12 +2955,12 @@ msgstr ""
 "Anda.\n"
 "Contohnya adalah: %s"
 
-#: subprojects/extensions-tool/src/command-create.c:322
-#: subprojects/extensions-tool/src/main.c:241
+#: subprojects/extensions-tool/src/command-create.c:402
+#: subprojects/extensions-tool/src/main.c:246
 msgid "Description"
 msgstr "Deskripsi"
 
-#: subprojects/extensions-tool/src/command-create.c:336
+#: subprojects/extensions-tool/src/command-create.c:416
 msgid ""
 "UUID is a globally-unique identifier for your extension.\n"
 "This should be in the format of an email address (clicktofocus@janedoe."
@@ -2576,56 +2969,78 @@ msgstr ""
 "UUID adalah pengidentifikasi unik secara global untuk ekstensi Anda.\n"
 "Ini harus dalam format alamat surel (clicktofocus@janedoe.example.com)\n"
 
-#: subprojects/extensions-tool/src/command-create.c:363
+#: subprojects/extensions-tool/src/command-create.c:443
 msgid "Choose one of the available templates:\n"
 msgstr "Pilih salah satu templat yang tersedia:\n"
 
-#: subprojects/extensions-tool/src/command-create.c:377
+#: subprojects/extensions-tool/src/command-create.c:457
 msgid "Template"
 msgstr "Templat"
 
-#: subprojects/extensions-tool/src/command-create.c:432
+#: subprojects/extensions-tool/src/command-create.c:515
 msgid "The unique identifier of the new extension"
 msgstr "Pengidentifikasi unik ekstensi baru"
 
-#: subprojects/extensions-tool/src/command-create.c:435
+#: subprojects/extensions-tool/src/command-create.c:518
 msgid "NAME"
 msgstr "NAMA"
 
-#: subprojects/extensions-tool/src/command-create.c:436
+#: subprojects/extensions-tool/src/command-create.c:519
 msgid "The user-visible name of the new extension"
 msgstr "Nama ekstensi baru yang dapat dilihat pengguna"
 
-#: subprojects/extensions-tool/src/command-create.c:438
+#: subprojects/extensions-tool/src/command-create.c:521
 msgid "DESCRIPTION"
 msgstr "DESKRIPSI"
 
-#: subprojects/extensions-tool/src/command-create.c:440
+#: subprojects/extensions-tool/src/command-create.c:523
 msgid "A short description of what the extension does"
 msgstr "Deskripsi singkat tentang apa yang dilakukan ekstensi"
 
-#: subprojects/extensions-tool/src/command-create.c:443
+#: subprojects/extensions-tool/src/command-create.c:525
+#: subprojects/extensions-tool/src/command-pack.c:455
+msgid "DOMAIN"
+msgstr "DOMAIN"
+
+#: subprojects/extensions-tool/src/command-create.c:527
+msgid "The gettext domain used by the extension"
+msgstr "Domain gettext yang digunakan oleh ekstensi"
+
+#: subprojects/extensions-tool/src/command-create.c:529
+#: subprojects/extensions-tool/src/command-pack.c:448
+msgid "SCHEMA"
+msgstr "SKEMA"
+
+#: subprojects/extensions-tool/src/command-create.c:531
+msgid "The GSettings schema used by the extension"
+msgstr "Skema GSettings yang digunakan oleh ekstensi"
+
+#: subprojects/extensions-tool/src/command-create.c:534
 msgid "TEMPLATE"
 msgstr "TEMPLAT"
 
-#: subprojects/extensions-tool/src/command-create.c:444
+#: subprojects/extensions-tool/src/command-create.c:535
 msgid "The template to use for the new extension"
 msgstr "Templat yang akan digunakan untuk ekstensi baru"
 
-#: subprojects/extensions-tool/src/command-create.c:450
+#: subprojects/extensions-tool/src/command-create.c:538
+msgid "Include prefs.js template"
+msgstr "Sertakan templat prefs.js"
+
+#: subprojects/extensions-tool/src/command-create.c:544
 msgid "Enter extension information interactively"
 msgstr "Masukkan informasi ekstensi secara interaktif"
 
-#: subprojects/extensions-tool/src/command-create.c:458
+#: subprojects/extensions-tool/src/command-create.c:552
 msgid "Create a new extension"
 msgstr "Buat ekstensi baru"
 
-#: subprojects/extensions-tool/src/command-create.c:476
-#: subprojects/extensions-tool/src/command-list.c:172
+#: subprojects/extensions-tool/src/command-create.c:570
+#: subprojects/extensions-tool/src/command-list.c:190
 msgid "Unknown arguments"
 msgstr "Argumen tak dikenal"
 
-#: subprojects/extensions-tool/src/command-create.c:501
+#: subprojects/extensions-tool/src/command-create.c:595
 msgid "UUID, name and description are required"
 msgstr "Diperlukan UUID, nama, dan deskripsi"
 
@@ -2662,13 +3077,13 @@ msgid "Enable an extension"
 msgstr "Aktifkan ekstensi"
 
 #: subprojects/extensions-tool/src/command-info.c:50
-#: subprojects/extensions-tool/src/command-list.c:64
-#: subprojects/extensions-tool/src/main.c:146
+#: subprojects/extensions-tool/src/command-list.c:66
+#: subprojects/extensions-tool/src/main.c:150
 msgid "Failed to connect to GNOME Shell\n"
-msgstr "Gagal terhubung ke GNOME Shell\n"
+msgstr "Gagal tersambung ke GNOME Shell\n"
 
 #: subprojects/extensions-tool/src/command-info.c:59
-#: subprojects/extensions-tool/src/main.c:155
+#: subprojects/extensions-tool/src/main.c:159
 #, c-format
 msgid "Extension “%s” doesn't exist\n"
 msgstr "Ekstensi \"%s\" tidak ada\n"
@@ -2677,108 +3092,108 @@ msgstr "Ekstensi \"%s\" tidak ada\n"
 msgid "Show extensions info"
 msgstr "Tampilkan info ekstensi"
 
-#: subprojects/extensions-tool/src/command-install.c:173
+#: subprojects/extensions-tool/src/command-install.c:190
 msgid "Overwrite an existing extension"
 msgstr "Timpa ekstensi yang ada"
 
-#: subprojects/extensions-tool/src/command-install.c:175
+#: subprojects/extensions-tool/src/command-install.c:192
 msgid "EXTENSION_BUNDLE"
 msgstr "BUNDEL_EKSTENSI"
 
-#: subprojects/extensions-tool/src/command-install.c:184
+#: subprojects/extensions-tool/src/command-install.c:201
 msgid "Install an extension bundle"
 msgstr "Pasang bundel ekstensi"
 
-#: subprojects/extensions-tool/src/command-install.c:202
+#: subprojects/extensions-tool/src/command-install.c:219
 msgid "No extension bundle specified"
 msgstr "Tidak ada bundel ekstensi yang ditentukan"
 
-#: subprojects/extensions-tool/src/command-install.c:208
+#: subprojects/extensions-tool/src/command-install.c:225
 msgid "More than one extension bundle specified"
 msgstr "Lebih dari satu bundel ekstensi ditentukan"
 
-#: subprojects/extensions-tool/src/command-list.c:128
+#: subprojects/extensions-tool/src/command-list.c:140
 msgid "Show user-installed extensions"
 msgstr "Tampilkan ekstensi yang dipasang pengguna"
 
-#: subprojects/extensions-tool/src/command-list.c:131
+#: subprojects/extensions-tool/src/command-list.c:143
 msgid "Show system-installed extensions"
 msgstr "Tampilkan ekstensi yang dipasang sistem"
 
-#: subprojects/extensions-tool/src/command-list.c:134
+#: subprojects/extensions-tool/src/command-list.c:146
 msgid "Show enabled extensions"
 msgstr "Tampilkan ekstensi yang diaktifkan"
 
-#: subprojects/extensions-tool/src/command-list.c:137
+#: subprojects/extensions-tool/src/command-list.c:149
 msgid "Show disabled extensions"
 msgstr "Tampilkan ekstensi yang dinonaktifkan"
 
-#: subprojects/extensions-tool/src/command-list.c:140
+#: subprojects/extensions-tool/src/command-list.c:152
+msgid "Show extensions in active state"
+msgstr "Tampilkan ekstensi dalam keadaan aktif"
+
+#: subprojects/extensions-tool/src/command-list.c:155
+msgid "Show extensions in inactive state"
+msgstr "Tampilkan ekstensi dalam keadaan tidak aktif"
+
+#: subprojects/extensions-tool/src/command-list.c:158
 msgid "Show extensions with preferences"
 msgstr "Tampilkan ekstensi dengan preferensi"
 
-#: subprojects/extensions-tool/src/command-list.c:143
+#: subprojects/extensions-tool/src/command-list.c:161
 msgid "Show extensions with updates"
 msgstr "Tampilkan ekstensi dengan pemutakhiran"
 
-#: subprojects/extensions-tool/src/command-list.c:146
+#: subprojects/extensions-tool/src/command-list.c:164
 msgid "Print extension details"
 msgstr "Cetak detail ekstensi"
 
-#: subprojects/extensions-tool/src/command-list.c:154
+#: subprojects/extensions-tool/src/command-list.c:172
 msgid "List installed extensions"
 msgstr "Daftar ekstensi yang dipasang"
 
-#: subprojects/extensions-tool/src/command-pack.c:450
+#: subprojects/extensions-tool/src/command-pack.c:444
 msgid "FILE"
 msgstr "BERKAS"
 
-#: subprojects/extensions-tool/src/command-pack.c:451
+#: subprojects/extensions-tool/src/command-pack.c:445
 msgid "Additional source to include in the bundle"
 msgstr "Sumber tambahan untuk disertakan dalam bundel"
 
-#: subprojects/extensions-tool/src/command-pack.c:454
-msgid "SCHEMA"
-msgstr "SKEMA"
-
-#: subprojects/extensions-tool/src/command-pack.c:455
+#: subprojects/extensions-tool/src/command-pack.c:449
 msgid "A GSettings schema that should be included"
 msgstr "Skema GSettings yang harus dimasukkan"
 
-#: subprojects/extensions-tool/src/command-pack.c:457
-#: subprojects/extensions-tool/src/command-pack.c:468
+#: subprojects/extensions-tool/src/command-pack.c:451
+#: subprojects/extensions-tool/src/command-pack.c:462
 msgid "DIRECTORY"
 msgstr "DIREKTORI"
 
-#: subprojects/extensions-tool/src/command-pack.c:459
+#: subprojects/extensions-tool/src/command-pack.c:453
 msgid "The directory where translations are found"
 msgstr "Direktori tempat terjemahan ditemukan"
 
-#: subprojects/extensions-tool/src/command-pack.c:461
-msgid "DOMAIN"
-msgstr "DOMAIN"
-
-#: subprojects/extensions-tool/src/command-pack.c:463
+#: subprojects/extensions-tool/src/command-pack.c:457
 msgid "The gettext domain to use for translations"
 msgstr "Domain gettext yang digunakan untuk terjemahan"
 
-#: subprojects/extensions-tool/src/command-pack.c:466
+#: subprojects/extensions-tool/src/command-pack.c:460
 msgid "Overwrite an existing pack"
 msgstr "Timpa paket yang ada"
 
-#: subprojects/extensions-tool/src/command-pack.c:470
+#: subprojects/extensions-tool/src/command-pack.c:464
 msgid "The directory where the pack should be created"
 msgstr "Direktori tempat paket harus dibuat"
 
-#: subprojects/extensions-tool/src/command-pack.c:472
+#: subprojects/extensions-tool/src/command-pack.c:466
 msgid "SOURCE_DIRECTORY"
 msgstr "DIREKTORI_SUMBER"
 
-#: subprojects/extensions-tool/src/command-pack.c:481
+#: subprojects/extensions-tool/src/command-pack.c:475
 msgid "Create an extension bundle"
 msgstr "Buat bundel ekstensi"
 
-#: subprojects/extensions-tool/src/command-pack.c:501
+#: subprojects/extensions-tool/src/command-pack.c:495
 msgid "More than one source directory specified"
 msgstr "Lebih dari satu direktori sumber ditentukan"
 
@@ -2813,102 +3228,116 @@ msgstr "Gagal menghapus pemasangan \"%s\"\n"
 msgid "Uninstall an extension"
 msgstr "Hapus ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:72
+#: subprojects/extensions-tool/src/main.c:76
 msgid "Do not print error messages"
 msgstr "Jangan cetak pesan kesalahan"
 
-#: subprojects/extensions-tool/src/main.c:244
+#: subprojects/extensions-tool/src/main.c:249
 msgid "Path"
 msgstr "Path"
 
-#: subprojects/extensions-tool/src/main.c:247
+#: subprojects/extensions-tool/src/main.c:252
 msgid "URL"
 msgstr "URL"
 
-#: subprojects/extensions-tool/src/main.c:250
+#: subprojects/extensions-tool/src/main.c:255
 msgid "Original author"
 msgstr "Penulis asli"
 
-#: subprojects/extensions-tool/src/main.c:253
+#: subprojects/extensions-tool/src/main.c:261
+#: subprojects/extensions-tool/src/main.c:263
+#: subprojects/extensions-tool/src/main.c:265
 msgid "Version"
 msgstr "Versi"
 
-#: subprojects/extensions-tool/src/main.c:256
+#: subprojects/extensions-tool/src/main.c:268
+msgid "Enabled"
+msgstr "Diaktifkan"
+
+#: subprojects/extensions-tool/src/main.c:268
+msgid "Yes"
+msgstr "Ya"
+
+#: subprojects/extensions-tool/src/main.c:268
+msgid "No"
+msgstr "Tidak"
+
+#: subprojects/extensions-tool/src/main.c:271
 msgid "State"
 msgstr "Kondisi"
 
-#: subprojects/extensions-tool/src/main.c:294
+#: subprojects/extensions-tool/src/main.c:309
 msgid "“version” takes no arguments"
 msgstr "\"version\" tak menerima argumen"
 
-#: subprojects/extensions-tool/src/main.c:296
-#: subprojects/extensions-tool/src/main.c:316
+#: subprojects/extensions-tool/src/main.c:311
+#: subprojects/extensions-tool/src/main.c:331
 msgid "Usage:"
 msgstr "Pemakaian:"
 
-#: subprojects/extensions-tool/src/main.c:299
+#: subprojects/extensions-tool/src/main.c:314
 msgid "Print version information and exit."
 msgstr "Cetak informasi versi dan keluar."
 
-#: subprojects/extensions-tool/src/main.c:314
-#: subprojects/extensions-tool/src/main.c:317
+#: subprojects/extensions-tool/src/main.c:329
+#: subprojects/extensions-tool/src/main.c:332
 msgid "COMMAND"
 msgstr "PERINTAH"
 
-#: subprojects/extensions-tool/src/main.c:317
+#: subprojects/extensions-tool/src/main.c:332
 msgid "[ARGS…]"
 msgstr "[ARG...]"
 
-#: subprojects/extensions-tool/src/main.c:319
+#: subprojects/extensions-tool/src/main.c:334
 msgid "Commands:"
 msgstr "Perintah:"
 
-#: subprojects/extensions-tool/src/main.c:320
+#: subprojects/extensions-tool/src/main.c:335
 msgid "Print help"
 msgstr "Cetak bantuan"
 
-#: subprojects/extensions-tool/src/main.c:322
+#: subprojects/extensions-tool/src/main.c:337
 msgid "Enable extension"
 msgstr "Aktifkan ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:323
+#: subprojects/extensions-tool/src/main.c:338
 msgid "Disable extension"
 msgstr "Nonaktifkan ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:324
+#: subprojects/extensions-tool/src/main.c:339
 msgid "Reset extension"
 msgstr "Atur ulang ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:325
+#: subprojects/extensions-tool/src/main.c:340
 msgid "Uninstall extension"
 msgstr "Hapus ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:326
+#: subprojects/extensions-tool/src/main.c:341
 msgid "List extensions"
 msgstr "Daftar ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:327
-#: subprojects/extensions-tool/src/main.c:328
+#: subprojects/extensions-tool/src/main.c:342
+#: subprojects/extensions-tool/src/main.c:343
 msgid "Show extension info"
 msgstr "Tampilkan info ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:329
+#: subprojects/extensions-tool/src/main.c:344
 msgid "Open extension preferences"
 msgstr "Buka preferensi ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:330
+#: subprojects/extensions-tool/src/main.c:345
 msgid "Create extension"
 msgstr "Buat ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:331
+#: subprojects/extensions-tool/src/main.c:346
 msgid "Package extension"
 msgstr "Ekstensi Paket"
 
-#: subprojects/extensions-tool/src/main.c:332
+#: subprojects/extensions-tool/src/main.c:347
 msgid "Install extension bundle"
 msgstr "Pasang bundel ekstensi"
 
-#: subprojects/extensions-tool/src/main.c:334
+#: subprojects/extensions-tool/src/main.c:349
 #, c-format
 msgid "Use “%s” to get detailed help.\n"
 msgstr "Gunakan \"%s\" untuk mendapatkan bantuan terperinci.\n"
@@ -2929,9 +3358,23 @@ msgstr "Indikator"
 msgid "Add an icon to the top bar"
 msgstr "Tambahkan ikon ke bilah atas"
 
+#: subprojects/extensions-tool/src/templates/quick-settings.desktop.in:4
+msgid "Quick Settings Item"
+msgstr "Butir Pengaturan Cepat"
+
+#: subprojects/extensions-tool/src/templates/quick-settings.desktop.in:5
+msgid "Add an item to quick settings"
+msgstr "Tambah butir ke pengaturan cepat"
+
+#. translators:
+#. * The device has been disabled
+#: subprojects/gvc/gvc-mixer-control.c:1872
+msgid "Disabled"
+msgstr "Dinonaktifkan"
+
 #. translators:
 #. * The number of sound outputs on a particular device
-#: subprojects/gvc/gvc-mixer-control.c:1915
+#: subprojects/gvc/gvc-mixer-control.c:1879
 #, c-format
 msgid "%u Output"
 msgid_plural "%u Outputs"
@@ -2939,199 +3382,12 @@ msgstr[0] "%u Keluaran"
 
 #. translators:
 #. * The number of sound inputs on a particular device
-#: subprojects/gvc/gvc-mixer-control.c:1925
+#: subprojects/gvc/gvc-mixer-control.c:1889
 #, c-format
 msgid "%u Input"
 msgid_plural "%u Inputs"
 msgstr[0] "%u Masukan"
 
-#: subprojects/gvc/gvc-mixer-control.c:2876
+#: subprojects/gvc/gvc-mixer-control.c:2872
 msgid "System Sounds"
 msgstr "Suara Sistem"
-
-#~ msgid ""
-#~ "Whether the default Bluetooth adapter had set up devices associated to it"
-#~ msgstr ""
-#~ "Apakah adapter Bluetooth baku telah menyiapkan perangkat yang terasosiasi "
-#~ "dengannya"
-
-#~ msgid ""
-#~ "The shell will only show a Bluetooth menu item if a Bluetooth adapter is "
-#~ "powered, or if there were devices set up associated with the default "
-#~ "adapter. This will be reset if the default adapter is ever seen not to "
-#~ "have devices associated to it."
-#~ msgstr ""
-#~ "Shell hanya akan menampilkan butir menu Bluetooth bila sebuah adapter "
-#~ "Bluetooth dinyalakan, atau ada perangkat yang telah disiapkan terasosiasi "
-#~ "dengan adapter baku. Ini akan di-reset bila adapter baku pernah terlihat "
-#~ "tidak punya perangkat yang terasosiasi dengannya."
-
-#~ msgid "Log Out"
-#~ msgstr "Keluar"
-
-#~ msgid "%s Off"
-#~ msgstr "%s Mati"
-
-#~ msgid "%s Connected"
-#~ msgstr "%s Tersambung"
-
-#~ msgid "%s Unmanaged"
-#~ msgstr "%s Tak Dikelola"
-
-#~ msgid "%s Connecting"
-#~ msgstr "%s Menyambung"
-
-#~ msgid "%s Requires Authentication"
-#~ msgstr "%s Memerlukan Autentikasi"
-
-#~ msgid "Firmware Missing For %s"
-#~ msgstr "Firmware Hilang Untuk %s"
-
-#~ msgid "%s Unavailable"
-#~ msgstr "%s Tak tersedia"
-
-#~ msgid "%s Connection Failed"
-#~ msgstr "Koneksi %s Gagal"
-
-#~ msgid "%s Hardware Disabled"
-#~ msgstr "%s Perangkat Keras Dinonaktifkan"
-
-#~ msgid "%s Disabled"
-#~ msgstr "%s Dinonaktifkan"
-
-#~ msgid "Connect to Internet"
-#~ msgstr "Sambungkan ke Internet"
-
-#~ msgid "Airplane Mode is On"
-#~ msgstr "Mode Pesawat Terbang Menyala"
-
-#~ msgid "Wi-Fi is disabled when airplane mode is on."
-#~ msgstr "Wi-Fi dinonaktifkan ketika mode pesawat terbang menyala."
-
-#~ msgid "Turn Off Airplane Mode"
-#~ msgstr "Matikan Mode Pesawat Terbang"
-
-#~ msgid "Wi-Fi is Off"
-#~ msgstr "Wi-Fi Mati"
-
-#~ msgid "Wi-Fi needs to be turned on in order to connect to a network."
-#~ msgstr "Wi-Fi perlu dinyalakan untuk menyambung ke suatu jaringan."
-
-#~ msgid "Turn On Wi-Fi"
-#~ msgstr "Nyalakan Wi-Fi"
-
-#~ msgid "Wi-Fi Networks"
-#~ msgstr "Jaringan Wi-Fi"
-
-#~ msgid "Select a network"
-#~ msgstr "Pilih jaringan"
-
-#~ msgid "Use hardware switch to turn off"
-#~ msgstr "Pakai saklar perangkat keras untuk mematikan"
-
-#~ msgid "Select Network"
-#~ msgstr "Pilih Jaringan"
-
-#~ msgid "Wi-Fi Settings"
-#~ msgstr "Pengaturan Wi-Fi"
-
-#~ msgid "%s Not Connected"
-#~ msgstr "%s Tak Tersambung"
-
-#~ msgid "unknown"
-#~ msgstr "tidak dikenal"
-
-#~ msgid "activating…"
-#~ msgstr "mengaktifkan…"
-
-#~ msgid "deactivating…"
-#~ msgstr "menonaktifkan…"
-
-#~ msgid "deactivated"
-#~ msgstr "dinonaktifkan"
-
-#~ msgid "connecting…"
-#~ msgstr "menyambung…"
-
-#~ msgid "authentication required"
-#~ msgstr "diperlukan autentikasi"
-
-#~ msgid "connection failed"
-#~ msgstr "koneksi gagal"
-
-#~ msgid "VPN Off"
-#~ msgstr "VPN Mati"
-
-#~ msgid "Network Settings"
-#~ msgstr "Pengaturan Jaringan"
-
-#~ msgid "%s Wi-Fi Connection"
-#~ msgid_plural "%s Wi-Fi Connections"
-#~ msgstr[0] "%s Koneksi Wi-Fi"
-
-#~ msgid "Power Settings"
-#~ msgstr "Pengaturan Daya"
-
-#~ msgid "Lock"
-#~ msgstr "Kunci"
-
-#~ msgid "Power Off / Log Out"
-#~ msgstr "Matikan / Log Keluar"
-
-#~ msgid "%d Connected"
-#~ msgid_plural "%d Connected"
-#~ msgstr[0] "%d Tersambung"
-
-#~ msgid "Bluetooth On"
-#~ msgstr "Bluetooth Nyala"
-
-#~ msgid "Bluetooth Off"
-#~ msgstr "Bluetooth Mati"
-
-#~ msgid "Location Enabled"
-#~ msgstr "Lokasi Diaktifkan"
-
-#~ msgid "Disable"
-#~ msgstr "Nonaktifkan"
-
-#~ msgid "Privacy Settings"
-#~ msgstr "Pengaturan Privasi"
-
-#~ msgid "Location In Use"
-#~ msgstr "Lokasi Sedang Digunakan"
-
-#~ msgid "Location Disabled"
-#~ msgstr "Koneksi Dinonaktifkan"
-
-#~ msgid "Enable"
-#~ msgstr "Fungsikan"
-
-#~ msgid "Night Light Disabled"
-#~ msgstr "Lampu Malam Dinonaktifkan"
-
-#~ msgid "Resume"
-#~ msgstr "Lanjutkan"
-
-#~ msgid "Disable Until Tomorrow"
-#~ msgstr "Nonaktifkan Sampai Besok"
-
-#~ msgid "Fully Charged"
-#~ msgstr "Terisi Penuh"
-
-#~ msgid "Not Charging"
-#~ msgstr "Tidak Mengisi Daya"
-
-#~ msgid "Estimating…"
-#~ msgstr "Memperkirakan…"
-
-#~ msgid "%d∶%02d Remaining (%d %%)"
-#~ msgstr "%d:%02d Tersisa (%d%%)"
-
-#~ msgid "%d∶%02d Until Full (%d %%)"
-#~ msgstr "%d:%02d Sampai Penuh (%d%%)"
-
-#~ msgid "Screen is Being Shared"
-#~ msgstr "Layar Sedang Dibagi"
-
-#~ msgid "Turn off"
-#~ msgstr "Matikan"

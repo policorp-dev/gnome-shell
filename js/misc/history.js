@@ -1,13 +1,10 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported HistoryManager */
+import * as Signals from './signals.js';
+import Clutter from 'gi://Clutter';
+import * as Params from './params.js';
 
-const Signals = imports.misc.signals;
-const Clutter = imports.gi.Clutter;
-const Params = imports.misc.params;
+const DEFAULT_LIMIT = 512;
 
-var DEFAULT_LIMIT = 512;
-
-var HistoryManager = class extends Signals.EventEmitter {
+export class HistoryManager extends Signals.EventEmitter {
     constructor(params) {
         super();
 
@@ -24,7 +21,7 @@ var HistoryManager = class extends Signals.EventEmitter {
         if (this._key) {
             this._history = global.settings.get_strv(this._key);
             global.settings.connect(`changed::${this._key}`,
-                                    this._historyChanged.bind(this));
+                this._historyChanged.bind(this));
         } else {
             this._history = [];
         }
@@ -33,7 +30,7 @@ var HistoryManager = class extends Signals.EventEmitter {
 
         if (this._entry) {
             this._entry.connect('key-press-event',
-                                this._onEntryKeyPress.bind(this));
+                this._onEntryKeyPress.bind(this));
         }
     }
 
@@ -111,4 +108,4 @@ var HistoryManager = class extends Signals.EventEmitter {
         if (this._key)
             global.settings.set_strv(this._key, this._history);
     }
-};
+}

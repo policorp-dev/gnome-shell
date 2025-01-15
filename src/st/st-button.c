@@ -20,16 +20,15 @@
  */
 
 /**
- * SECTION:st-button
- * @short_description: Button widget
+ * StButton:
+ *
+ * Button widget
  *
  * A button widget with support for either a text label or icon, toggle mode
  * and transitions effects between states.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -78,7 +77,6 @@ struct _StButtonPrivate
 
   ClutterInputDevice *device;
   ClutterEventSequence *press_sequence;
-  ClutterGrab *grab;
 
   guint  button_mask : 3;
   guint  is_toggle   : 1;
@@ -92,7 +90,10 @@ static guint button_signals[LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE_WITH_PRIVATE (StButton, st_button, ST_TYPE_BIN);
 
-static GType st_button_accessible_get_type (void) G_GNUC_CONST;
+G_DECLARE_FINAL_TYPE (StButtonAccessible,
+                      st_button_accessible,
+                      ST, BUTTON_ACCESSIBLE,
+                      StWidgetAccessible)
 
 static void
 st_button_update_label_style (StButton *button)
@@ -181,26 +182,20 @@ st_button_release (StButton             *button,
 }
 
 static gboolean
-st_button_button_press (ClutterActor       *actor,
-                        ClutterButtonEvent *event)
+st_button_button_press (ClutterActor *actor,
+                        ClutterEvent *event)
 {
   StButton *button = ST_BUTTON (actor);
   StButtonPrivate *priv = st_button_get_instance_private (button);
-  StButtonMask mask = ST_BUTTON_MASK_FROM_BUTTON (event->button);
-  ClutterInputDevice *device = clutter_event_get_device ((ClutterEvent*) event);
+  int button_nr = clutter_event_get_button (event);
+  StButtonMask mask = ST_BUTTON_MASK_FROM_BUTTON (button_nr);
+  ClutterInputDevice *device = clutter_event_get_device (event);
 
   if (priv->press_sequence)
     return CLUTTER_EVENT_PROPAGATE;
 
   if (priv->button_mask & mask)
     {
-      ClutterActor *stage;
-
-      stage = clutter_actor_get_stage (actor);
-
-      if (priv->grabbed == 0)
-        priv->grab = clutter_stage_grab (CLUTTER_STAGE (stage), actor);
-
       priv->grabbed |= mask;
       st_button_press (button, device, mask, NULL);
 
@@ -211,13 +206,14 @@ st_button_button_press (ClutterActor       *actor,
 }
 
 static gboolean
-st_button_button_release (ClutterActor       *actor,
-                          ClutterButtonEvent *event)
+st_button_button_release (ClutterActor *actor,
+                          ClutterEvent *event)
 {
   StButton *button = ST_BUTTON (actor);
   StButtonPrivate *priv = st_button_get_instance_private (button);
-  StButtonMask mask = ST_BUTTON_MASK_FROM_BUTTON (event->button);
-  ClutterInputDevice *device = clutter_event_get_device ((ClutterEvent*) event);
+  int button_nr = clutter_event_get_button (event);
+  StButtonMask mask = ST_BUTTON_MASK_FROM_BUTTON (button_nr);
+  ClutterInputDevice *device = clutter_event_get_device (event);
 
   if (priv->button_mask & mask)
     {
@@ -225,18 +221,13 @@ st_button_button_release (ClutterActor       *actor,
       ClutterActor *target;
       gboolean is_click;
 
-      stage = clutter_event_get_stage ((ClutterEvent *) event);
-      target = clutter_stage_get_event_actor (stage, (ClutterEvent *) event);
+      stage = CLUTTER_STAGE (clutter_actor_get_stage (actor));
+      target = clutter_stage_get_event_actor (stage, event);
 
       is_click = priv->grabbed && clutter_actor_contains (actor, target);
-      st_button_release (button, device, mask, is_click ? event->button : 0, NULL);
+      st_button_release (button, device, mask, is_click ? button_nr : 0, NULL);
 
       priv->grabbed &= ~mask;
-      if (priv->grab && priv->grabbed == 0)
-        {
-          clutter_grab_dismiss (priv->grab);
-          g_clear_pointer (&priv->grab, clutter_grab_unref);
-        }
 
       return TRUE;
     }
@@ -245,36 +236,39 @@ st_button_button_release (ClutterActor       *actor,
 }
 
 static gboolean
-st_button_touch_event (ClutterActor      *actor,
-                       ClutterTouchEvent *event)
+st_button_touch_event (ClutterActor *actor,
+                       ClutterEvent *event)
 {
   StButton *button = ST_BUTTON (actor);
   StButtonPrivate *priv = st_button_get_instance_private (button);
   StButtonMask mask = ST_BUTTON_MASK_FROM_BUTTON (1);
   ClutterEventSequence *sequence;
   ClutterInputDevice *device;
+  ClutterEventType event_type;
 
   if (priv->pressed != 0)
     return CLUTTER_EVENT_PROPAGATE;
   if ((priv->button_mask & mask) == 0)
     return CLUTTER_EVENT_PROPAGATE;
 
-  device = clutter_event_get_device ((ClutterEvent*) event);
-  sequence = clutter_event_get_event_sequence ((ClutterEvent*) event);
+  device = clutter_event_get_device (event);
+  sequence = clutter_event_get_event_sequence (event);
+  event_type = clutter_event_type (event);
 
-  if (event->type == CLUTTER_TOUCH_BEGIN && !priv->grab && !priv->press_sequence)
+  if (event_type == CLUTTER_TOUCH_BEGIN &&
+      priv->grabbed == 0 && !priv->press_sequence)
     {
       st_button_press (button, device, 0, sequence);
       return CLUTTER_EVENT_STOP;
     }
-  else if (event->type == CLUTTER_TOUCH_END &&
+  else if (event_type == CLUTTER_TOUCH_END &&
            priv->device == device &&
            priv->press_sequence == sequence)
     {
       st_button_release (button, device, mask, 0, sequence);
       return CLUTTER_EVENT_STOP;
     }
-  else if (event->type == CLUTTER_TOUCH_CANCEL)
+  else if (event_type == CLUTTER_TOUCH_CANCEL)
     {
       st_button_fake_release (button);
     }
@@ -283,18 +277,21 @@ st_button_touch_event (ClutterActor      *actor,
 }
 
 static gboolean
-st_button_key_press (ClutterActor    *actor,
-                     ClutterKeyEvent *event)
+st_button_key_press (ClutterActor *actor,
+                     ClutterEvent *event)
 {
   StButton *button = ST_BUTTON (actor);
   StButtonPrivate *priv = st_button_get_instance_private (button);
+  uint32_t keyval;
 
   if (priv->button_mask & ST_BUTTON_ONE)
     {
-      if (event->keyval == CLUTTER_KEY_space ||
-          event->keyval == CLUTTER_KEY_Return ||
-          event->keyval == CLUTTER_KEY_KP_Enter ||
-          event->keyval == CLUTTER_KEY_ISO_Enter)
+      keyval = clutter_event_get_key_symbol (event);
+
+      if (keyval == CLUTTER_KEY_space ||
+          keyval == CLUTTER_KEY_Return ||
+          keyval == CLUTTER_KEY_KP_Enter ||
+          keyval == CLUTTER_KEY_ISO_Enter)
         {
           st_button_press (button, NULL, ST_BUTTON_ONE, NULL);
           return TRUE;
@@ -305,18 +302,21 @@ st_button_key_press (ClutterActor    *actor,
 }
 
 static gboolean
-st_button_key_release (ClutterActor    *actor,
-                       ClutterKeyEvent *event)
+st_button_key_release (ClutterActor *actor,
+                       ClutterEvent *event)
 {
   StButton *button = ST_BUTTON (actor);
   StButtonPrivate *priv = st_button_get_instance_private (button);
+  uint32_t keyval;
 
   if (priv->button_mask & ST_BUTTON_ONE)
     {
-      if (event->keyval == CLUTTER_KEY_space ||
-          event->keyval == CLUTTER_KEY_Return ||
-          event->keyval == CLUTTER_KEY_KP_Enter ||
-          event->keyval == CLUTTER_KEY_ISO_Enter)
+      keyval = clutter_event_get_key_symbol (event);
+
+      if (keyval == CLUTTER_KEY_space ||
+          keyval == CLUTTER_KEY_Return ||
+          keyval == CLUTTER_KEY_KP_Enter ||
+          keyval == CLUTTER_KEY_ISO_Enter)
         {
           gboolean is_click;
 
@@ -344,8 +344,8 @@ st_button_key_focus_out (ClutterActor *actor)
 }
 
 static gboolean
-st_button_enter (ClutterActor         *actor,
-                 ClutterCrossingEvent *event)
+st_button_enter (ClutterActor *actor,
+                 ClutterEvent *event)
 {
   StButton *button = ST_BUTTON (actor);
   StButtonPrivate *priv = st_button_get_instance_private (button);
@@ -367,8 +367,8 @@ st_button_enter (ClutterActor         *actor,
 }
 
 static gboolean
-st_button_leave (ClutterActor         *actor,
-                 ClutterCrossingEvent *event)
+st_button_leave (ClutterActor *actor,
+                 ClutterEvent *event)
 {
   StButton *button = ST_BUTTON (actor);
   StButtonPrivate *priv = st_button_get_instance_private (button);
@@ -479,6 +479,7 @@ st_button_class_init (StButtonClass *klass)
   gobject_class->get_property = st_button_get_property;
   gobject_class->finalize = st_button_finalize;
 
+  actor_class->get_accessible_type = st_button_accessible_get_type;
   actor_class->button_press_event = st_button_button_press;
   actor_class->button_release_event = st_button_button_release;
   actor_class->key_press_event = st_button_key_press;
@@ -489,7 +490,6 @@ st_button_class_init (StButtonClass *klass)
   actor_class->touch_event = st_button_touch_event;
 
   widget_class->style_changed = st_button_style_changed;
-  widget_class->get_accessible_type = st_button_accessible_get_type;
 
   /**
    * StButton:label:
@@ -497,9 +497,7 @@ st_button_class_init (StButtonClass *klass)
    * The label of the #StButton.
    */
   props[PROP_LABEL] =
-    g_param_spec_string ("label",
-                         "Label",
-                         "Label of the button",
+    g_param_spec_string ("label", NULL, NULL,
                          NULL,
                          ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -509,9 +507,7 @@ st_button_class_init (StButtonClass *klass)
    * The icon name of the #StButton.
    */
   props[PROP_ICON_NAME] =
-    g_param_spec_string ("icon-name",
-                         "Icon name",
-                         "Icon name of the button",
+    g_param_spec_string ("icon-name", NULL, NULL,
                          NULL,
                          ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -521,9 +517,7 @@ st_button_class_init (StButtonClass *klass)
    * Which buttons will trigger the #StButton::clicked signal.
    */
   props[PROP_BUTTON_MASK] =
-    g_param_spec_flags ("button-mask",
-                        "Button mask",
-                        "Which buttons trigger the 'clicked' signal",
+    g_param_spec_flags ("button-mask", NULL, NULL,
                         ST_TYPE_BUTTON_MASK, ST_BUTTON_ONE,
                         ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -533,9 +527,7 @@ st_button_class_init (StButtonClass *klass)
    * Whether the #StButton is operating in toggle mode (on/off).
    */
   props[PROP_TOGGLE_MODE] =
-    g_param_spec_boolean ("toggle-mode",
-                          "Toggle Mode",
-                          "Enable or disable toggling",
+    g_param_spec_boolean ("toggle-mode", NULL, NULL,
                           FALSE,
                           ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -549,9 +541,7 @@ st_button_class_init (StButtonClass *klass)
    * pseudo-class set.
    */
   props[PROP_CHECKED] =
-    g_param_spec_boolean ("checked",
-                          "Checked",
-                          "Indicates if a toggle button is \"on\" or \"off\"",
+    g_param_spec_boolean ("checked", NULL, NULL,
                           FALSE,
                           ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -562,9 +552,7 @@ st_button_class_init (StButtonClass *klass)
    * #StButton is being actively pressed, rather than just in the "on" state.
    */
   props[PROP_PRESSED] =
-    g_param_spec_boolean ("pressed",
-                          "Pressed",
-                          "Indicates if the button is pressed in",
+    g_param_spec_boolean ("pressed", NULL, NULL,
                           FALSE,
                           ST_PARAM_READABLE);
 
@@ -684,7 +672,6 @@ st_button_set_label (StButton    *button,
                             "text", priv->text,
                             "line-alignment", PANGO_ALIGN_CENTER,
                             "ellipsize", PANGO_ELLIPSIZE_END,
-                            "use-markup", TRUE,
                             "x-align", CLUTTER_ACTOR_ALIGN_CENTER,
                             "y-align", CLUTTER_ACTOR_ALIGN_CENTER,
                             NULL);
@@ -824,7 +811,7 @@ st_button_get_toggle_mode (StButton *button)
  * @button: a #Stbutton
  * @toggle: %TRUE or %FALSE
  *
- * Enables or disables toggle mode for the button. In toggle mode, the active
+ * Enables or disables toggle mode for the button. In toggle mode, the checked
  * state will be "toggled" when the user clicks the button.
  */
 void
@@ -913,12 +900,6 @@ st_button_fake_release (StButton *button)
 
   priv = st_button_get_instance_private (button);
 
-  if (priv->grab)
-    {
-      clutter_grab_dismiss (priv->grab);
-      g_clear_pointer (&priv->grab, clutter_grab_unref);
-    }
-
   priv->grabbed = 0;
 
   if (priv->pressed || priv->press_sequence)
@@ -932,44 +913,17 @@ st_button_fake_release (StButton *button)
 
 #define ST_TYPE_BUTTON_ACCESSIBLE st_button_accessible_get_type ()
 
-#define ST_BUTTON_ACCESSIBLE(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  ST_TYPE_BUTTON_ACCESSIBLE, StButtonAccessible))
-
-#define ST_IS_BUTTON_ACCESSIBLE(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  ST_TYPE_BUTTON_ACCESSIBLE))
-
-#define ST_BUTTON_ACCESSIBLE_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  ST_TYPE_BUTTON_ACCESSIBLE, StButtonAccessibleClass))
-
-#define ST_IS_BUTTON_ACCESSIBLE_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  ST_TYPE_BUTTON_ACCESSIBLE))
-
-#define ST_BUTTON_ACCESSIBLE_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  ST_TYPE_BUTTON_ACCESSIBLE, StButtonAccessibleClass))
-
-typedef struct _StButtonAccessible  StButtonAccessible;
-typedef struct _StButtonAccessibleClass  StButtonAccessibleClass;
-
-struct _StButtonAccessible
+typedef struct _StButtonAccessible
 {
   StWidgetAccessible parent;
-};
+} StButtonAccessible;
 
-struct _StButtonAccessibleClass
-{
-  StWidgetAccessibleClass parent_class;
-};
 
 /* AtkObject */
 static void          st_button_accessible_initialize (AtkObject *obj,
                                                       gpointer   data);
 
-G_DEFINE_TYPE (StButtonAccessible, st_button_accessible, ST_TYPE_WIDGET_ACCESSIBLE)
+G_DEFINE_FINAL_TYPE (StButtonAccessible, st_button_accessible, ST_TYPE_WIDGET_ACCESSIBLE)
 
 static const gchar *
 st_button_accessible_get_name (AtkObject *obj)

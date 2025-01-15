@@ -1,6 +1,7 @@
 theme_sources = files([
   'gnome-shell-high-contrast.scss',
-  'gnome-shell.scss',
+  'gnome-shell-dark.scss',
+  'gnome-shell-light.scss',
   'gnome-shell-sass/_colors.scss',
   'gnome-shell-sass/_common.scss',
   'gnome-shell-sass/_drawing.scss',
@@ -16,10 +17,9 @@ theme_sources = files([
   'gnome-shell-sass/widgets/_dash.scss',
   'gnome-shell-sass/widgets/_dialogs.scss',
   'gnome-shell-sass/widgets/_entries.scss',
-  'gnome-shell-sass/widgets/_hotplug.scss',
   'gnome-shell-sass/widgets/_ibus-popup.scss',
   'gnome-shell-sass/widgets/_keyboard.scss',
-  'gnome-shell-sass/widgets/_login-dialog.scss',
+  'gnome-shell-sass/widgets/_login-lock.scss',
   'gnome-shell-sass/widgets/_looking-glass.scss',
   'gnome-shell-sass/widgets/_message-list.scss',
   'gnome-shell-sass/widgets/_misc.scss',
@@ -29,7 +29,6 @@ theme_sources = files([
   'gnome-shell-sass/widgets/_panel.scss',
   'gnome-shell-sass/widgets/_popovers.scss',
   'gnome-shell-sass/widgets/_quick-settings.scss',
-  'gnome-shell-sass/widgets/_screen-shield.scss',
   'gnome-shell-sass/widgets/_screenshot.scss',
   'gnome-shell-sass/widgets/_scrollbars.scss',
   'gnome-shell-sass/widgets/_search-entry.scss',
@@ -44,7 +43,8 @@ theme_sources = files([
 
 stylesheets = [
   'gnome-shell-high-contrast.css',
-  'gnome-shell.css'
+  'gnome-shell-dark.css',
+  'gnome-shell-light.css',
 ]
 
 foreach stylesheet: stylesheets

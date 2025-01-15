@@ -1,14 +1,15 @@
-/* exported DBusService, ServiceImplementation */
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 
-const { Gio, GLib } = imports.gi;
+import {programArgs} from 'system';
+
+import './misc/dbusErrors.js';
 
 const Signals = imports.signals;
 
 const IDLE_SHUTDOWN_TIME = 2; // s
 
-const { programArgs } = imports.system;
-
-var ServiceImplementation = class {
+export class ServiceImplementation {
     constructor(info, objectPath) {
         this._objectPath = objectPath;
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(info, this);
@@ -21,6 +22,8 @@ var ServiceImplementation = class {
 
         this._senders = new Map();
         this._holdCount = 0;
+
+        this._shellName = this._getUniqueShellName();
 
         this._hasSignals = this._dbusImpl.get_info().signals.length > 0;
         this._shutdownTimeoutId = 0;
@@ -60,12 +63,11 @@ var ServiceImplementation = class {
     }
 
     /**
-     * _handleError:
-     * @param {Gio.DBusMethodInvocation}
-     * @param {Error}
-     *
      * Complete @invocation with an appropriate error if @error is set;
      * useful for implementing early returns from method implementations.
+     *
+     * @param {Gio.DBusMethodInvocation}
+     * @param {Error}
      *
      * @returns {bool} - true if @invocation was completed
      */
@@ -75,6 +77,7 @@ var ServiceImplementation = class {
             return false;
 
         if (error instanceof GLib.Error) {
+            Gio.DBusError.strip_remote_error(error);
             invocation.return_gerror(error);
         } else {
             let name = error.name;
@@ -117,6 +120,9 @@ var ServiceImplementation = class {
         if (this._senders.has(sender))
             return;
 
+        if (sender === this._shellName)
+            return; // don't track the shell
+
         this.hold();
         this._senders.set(sender,
             this._dbusImpl.get_connection().watch_name(
@@ -137,7 +143,7 @@ var ServiceImplementation = class {
     }
 
     _injectTracking(methodName) {
-        const { prototype } = Gio.DBusMethodInvocation;
+        const {prototype} = Gio.DBusMethodInvocation;
         const origMethod = prototype[methodName];
         const that = this;
 
@@ -150,10 +156,30 @@ var ServiceImplementation = class {
             that._queueShutdownCheck();
         };
     }
-};
+
+    _getUniqueShellName() {
+        try {
+            const res = Gio.DBus.session.call_sync(
+                'org.freedesktop.DBus',
+                '/org/freedesktop/DBus',
+                'org.freedesktop.DBus',
+                'GetNameOwner',
+                new GLib.Variant('(s)', ['org.gnome.Shell']),
+                null,
+                Gio.DBusCallFlags.NONE,
+                -1,
+                null);
+            const [name] = res.deepUnpack();
+            return name;
+        } catch (e) {
+            console.warn(`Failed to resolve shell name: ${e.message}`);
+            return '';
+        }
+    }
+}
 Signals.addSignalMethods(ServiceImplementation.prototype);
 
-var DBusService = class {
+export class DBusService {
     constructor(name, service) {
         this._name = name;
         this._service = service;
@@ -162,7 +188,7 @@ var DBusService = class {
         this._service.connect('shutdown', () => this._loop.quit());
     }
 
-    run() {
+    async runAsync() {
         // Bail out when not running under gnome-shell
         Gio.DBus.watch_name(Gio.BusType.SESSION,
             'org.gnome.Shell',
@@ -183,6 +209,6 @@ var DBusService = class {
             null,
             () => this._loop.quit());
 
-        this._loop.run();
+        await this._loop.runAsync();
     }
-};
+}

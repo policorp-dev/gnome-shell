@@ -18,8 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ST_SHADOW__
-#define __ST_SHADOW__
+#pragma once
 
 #include <clutter/clutter.h>
 
@@ -42,21 +41,24 @@ typedef struct _StShadowHelper StShadowHelper;
  * @spread: shadow's spread radius - grow the shadow without enlarging the
  *           blur.
  *
- * Attributes of the -st-shadow property.
+ * A type representing -st-shadow attributes
+ *
+ * #StShadow is a boxed type for storing attributes of the -st-shadow
+ * property, modelled liberally after the CSS3 box-shadow property.
+ * See http://www.css3.info/preview/box-shadow/
  */
 struct _StShadow {
-    ClutterColor color;
+    CoglColor color;
     gdouble      xoffset;
     gdouble      yoffset;
     gdouble      blur;
     gdouble      spread;
     gboolean     inset;
-    volatile int ref_count;
 };
 
 GType     st_shadow_get_type (void) G_GNUC_CONST;
 
-StShadow *st_shadow_new      (ClutterColor   *color,
+StShadow *st_shadow_new      (CoglColor      *color,
                               gdouble         xoffset,
                               gdouble         yoffset,
                               gdouble         blur,
@@ -82,14 +84,13 @@ StShadowHelper *st_shadow_helper_new  (StShadow       *shadow);
 StShadowHelper *st_shadow_helper_copy (StShadowHelper *helper);
 void            st_shadow_helper_free (StShadowHelper *helper);
 
-void            st_shadow_helper_update (StShadowHelper *helper,
-                                         ClutterActor   *source);
+void            st_shadow_helper_update (StShadowHelper      *helper,
+                                         ClutterActor        *source,
+                                         ClutterPaintContext *paint_context);
 
-void            st_shadow_helper_paint (StShadowHelper  *helper,
-                                        CoglFramebuffer *framebuffer,
-                                        ClutterActorBox *actor_box,
-                                        guint8           paint_opacity);
+void            st_shadow_helper_paint (StShadowHelper   *helper,
+                                        ClutterPaintNode *node,
+                                        ClutterActorBox  *actor_box,
+                                        uint8_t           paint_opacity);
 
 G_END_DECLS
-
-#endif /* __ST_SHADOW__ */

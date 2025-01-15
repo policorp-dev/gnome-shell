@@ -25,8 +25,7 @@
 #error "Only <st/st.h> can be included directly.h"
 #endif
 
-#ifndef __ST_WIDGET_H__
-#define __ST_WIDGET_H__
+#pragma once
 
 #include <clutter/clutter.h>
 #include <st/st-types.h>
@@ -86,8 +85,6 @@ struct _StWidgetClass
   gboolean (* navigate_focus)      (StWidget         *self,
                                     ClutterActor     *from,
                                     StDirectionType   direction);
-  GType    (* get_accessible_type) (void);
-
   GList *  (* get_focus_chain)     (StWidget         *widget);
 };
 
@@ -144,24 +141,15 @@ StThemeNode *         st_widget_peek_theme_node           (StWidget        *widg
 
 GList *               st_widget_get_focus_chain           (StWidget        *widget);
 void                  st_widget_paint_background          (StWidget            *widget,
+                                                           ClutterPaintNode    *node,
                                                            ClutterPaintContext *paint_context);
 
 /* debug methods */
 char  *st_describe_actor       (ClutterActor *actor);
 
 /* accessibility methods */
-void                  st_widget_set_accessible_role      (StWidget    *widget,
-                                                          AtkRole      role);
-AtkRole               st_widget_get_accessible_role      (StWidget    *widget);
 void                  st_widget_add_accessible_state     (StWidget    *widget,
                                                           AtkStateType state);
 void                  st_widget_remove_accessible_state  (StWidget    *widget,
                                                           AtkStateType state);
-void                  st_widget_set_accessible_name      (StWidget    *widget,
-                                                          const gchar *name);
-const gchar *         st_widget_get_accessible_name      (StWidget    *widget);
-void                  st_widget_set_accessible           (StWidget    *widget,
-                                                          AtkObject   *accessible);
 G_END_DECLS
-
-#endif /* __ST_WIDGET_H__ */

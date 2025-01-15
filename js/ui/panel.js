@@ -1,25 +1,53 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported Panel */
+import Atk from 'gi://Atk';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Graphene from 'gi://Graphene';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
-const { Atk, Clutter, GLib, GObject, Meta, Shell, St } = imports.gi;
+import * as Animation from './animation.js';
+import {AppMenu} from './appMenu.js';
+import * as Config from '../misc/config.js';
+import * as CtrlAltTab from './ctrlAltTab.js';
+import * as DND from './dnd.js';
+import * as Overview from './overview.js';
+import * as PopupMenu from './popupMenu.js';
+import * as PanelMenu from './panelMenu.js';
+import {QuickSettingsMenu, SystemIndicator} from './quickSettings.js';
+import * as Main from './main.js';
+import * as Util from '../misc/util.js';
 
-const Animation = imports.ui.animation;
-const { AppMenu } = imports.ui.appMenu;
-const Config = imports.misc.config;
-const CtrlAltTab = imports.ui.ctrlAltTab;
-const DND = imports.ui.dnd;
-const Overview = imports.ui.overview;
-const PopupMenu = imports.ui.popupMenu;
-const PanelMenu = imports.ui.panelMenu;
-const {QuickSettingsMenu, SystemIndicator} = imports.ui.quickSettings;
-const Main = imports.ui.main;
+import * as RemoteAccessStatus from './status/remoteAccess.js';
+import * as PowerProfileStatus from './status/powerProfiles.js';
+import * as RFKillStatus from './status/rfkill.js';
+import * as CameraStatus from './status/camera.js';
+import * as VolumeStatus from './status/volume.js';
+import * as BrightnessStatus from './status/brightness.js';
+import * as SystemStatus from './status/system.js';
+import * as LocationStatus from './status/location.js';
+import * as NightLightStatus from './status/nightLight.js';
+import * as DarkModeStatus from './status/darkMode.js';
+import * as BacklightStatus from './status/backlight.js';
+import * as ThunderboltStatus from './status/thunderbolt.js';
+import * as AutoRotateStatus from './status/autoRotate.js';
+import * as BackgroundAppsStatus from './status/backgroundApps.js';
 
-var PANEL_ICON_SIZE = 16;
-var APP_MENU_ICON_MARGIN = 0;
+import {DateMenuButton} from './dateMenu.js';
+import {ATIndicator} from './status/accessibility.js';
+import {InputSourceIndicator} from './status/keyboard.js';
+import {DwellClickIndicator} from './status/dwellClick.js';
+import {ScreenRecordingIndicator, ScreenSharingIndicator} from './status/remoteAccess.js';
 
-var BUTTON_DND_ACTIVATION_TIMEOUT = 250;
+const PANEL_ICON_SIZE = 16;
+const APP_MENU_ICON_MARGIN = 0;
+
+const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
 const N_QUICK_SETTINGS_COLUMNS = 2;
+
+const INACTIVE_WORKSPACE_DOT_SCALE = 0.75;
 
 /**
  * AppMenuButton:
@@ -29,8 +57,8 @@ const N_QUICK_SETTINGS_COLUMNS = 2;
  * this menu also handles startup notification for it.  So when we
  * have an active startup notification, we switch modes to display that.
  */
-var AppMenuButton = GObject.registerClass({
-    Signals: { 'changed': {} },
+const AppMenuButton = GObject.registerClass({
+    Signals: {'changed': {}},
 }, class AppMenuButton extends PanelMenu.Button {
     _init(panel) {
         super._init(0.0, null, true);
@@ -42,18 +70,18 @@ var AppMenuButton = GObject.registerClass({
         this._menuManager = panel.menuManager;
         this._targetApp = null;
 
-        let bin = new St.Bin({ name: 'appMenu' });
-        this.add_actor(bin);
+        let bin = new St.Bin({name: 'appMenu'});
+        this.add_child(bin);
 
-        this.bind_property("reactive", this, "can-focus", 0);
+        this.bind_property('reactive', this, 'can-focus', 0);
         this.reactive = false;
 
-        this._container = new St.BoxLayout({ style_class: 'panel-status-menu-box' });
+        this._container = new St.BoxLayout({style_class: 'panel-status-menu-box'});
         bin.set_child(this._container);
 
         let textureCache = St.TextureCache.get_default();
         textureCache.connect('icon-theme-changed',
-                             this._onIconThemeChanged.bind(this));
+            this._onIconThemeChanged.bind(this));
 
         let iconEffect = new Clutter.DesaturateEffect();
         this._iconBox = new St.Bin({
@@ -61,18 +89,18 @@ var AppMenuButton = GObject.registerClass({
             y_align: Clutter.ActorAlign.CENTER,
         });
         this._iconBox.add_effect(iconEffect);
-        this._container.add_actor(this._iconBox);
+        this._container.add_child(this._iconBox);
 
         this._iconBox.connect('style-changed', () => {
             let themeNode = this._iconBox.get_theme_node();
-            iconEffect.enabled = themeNode.get_icon_style() == St.IconStyle.SYMBOLIC;
+            iconEffect.enabled = themeNode.get_icon_style() === St.IconStyle.SYMBOLIC;
         });
 
         this._label = new St.Label({
             y_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
         });
-        this._container.add_actor(this._label);
+        this._container.add_child(this._label);
 
         this._visible = !Main.overview.visible;
         if (!this._visible)
@@ -85,7 +113,7 @@ var AppMenuButton = GObject.registerClass({
             animate: true,
             hideOnStop: true,
         });
-        this._container.add_actor(this._spinner);
+        this._container.add_child(this._spinner);
 
         let menu = new AppMenu(this);
         this.setMenu(menu);
@@ -152,9 +180,9 @@ var AppMenuButton = GObject.registerClass({
 
     _onAppStateChanged(appSys, app) {
         let state = app.state;
-        if (state != Shell.AppState.STARTING)
-            this._startingApps = this._startingApps.filter(a => a != app);
-        else if (state == Shell.AppState.STARTING)
+        if (state !== Shell.AppState.STARTING)
+            this._startingApps = this._startingApps.filter(a => a !== app);
+        else if (state === Shell.AppState.STARTING)
             this._startingApps.push(app);
         // For now just resync on all running state changes; this is mainly to handle
         // cases where the focused window's application changes without the focus
@@ -195,7 +223,7 @@ var AppMenuButton = GObject.registerClass({
     _sync() {
         let targetApp = this._findTargetApp();
 
-        if (this._targetApp != targetApp) {
+        if (this._targetApp !== targetApp) {
             this._targetApp?.disconnectObject(this);
 
             this._targetApp = targetApp;
@@ -216,7 +244,7 @@ var AppMenuButton = GObject.registerClass({
             this.fadeOut();
 
         let isBusy = this._targetApp != null &&
-                      (this._targetApp.get_state() == Shell.AppState.STARTING ||
+                      (this._targetApp.get_state() === Shell.AppState.STARTING ||
                        this._targetApp.get_busy());
         if (isBusy)
             this.startAnimation();
@@ -230,41 +258,188 @@ var AppMenuButton = GObject.registerClass({
     }
 });
 
-var ActivitiesButton = GObject.registerClass(
+const WorkspaceDot = GObject.registerClass({
+    Properties: {
+        'expansion': GObject.ParamSpec.double('expansion', null, null,
+            GObject.ParamFlags.READWRITE,
+            0.0, 1.0, 0.0),
+        'width-multiplier': GObject.ParamSpec.double(
+            'width-multiplier', null, null,
+            GObject.ParamFlags.READWRITE,
+            1.0, 10.0, 1.0),
+    },
+}, class WorkspaceDot extends Clutter.Actor {
+    constructor(params = {}) {
+        super({
+            pivot_point: new Graphene.Point({x: 0.5, y: 0.5}),
+            ...params,
+        });
+
+        this._dot = new St.Widget({
+            style_class: 'workspace-dot',
+            y_align: Clutter.ActorAlign.CENTER,
+            pivot_point: new Graphene.Point({x: 0.5, y: 0.5}),
+            request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT,
+        });
+        this.add_child(this._dot);
+
+        this.connect('notify::width-multiplier', () => this.queue_relayout());
+        this.connect('notify::expansion', () => {
+            this._updateVisuals();
+            this.queue_relayout();
+        });
+        this._updateVisuals();
+
+        this._destroying = false;
+    }
+
+    _updateVisuals() {
+        const {expansion} = this;
+
+        this._dot.set({
+            opacity: Util.lerp(0.50, 1.0, expansion) * 255,
+            scaleX: Util.lerp(INACTIVE_WORKSPACE_DOT_SCALE, 1.0, expansion),
+            scaleY: Util.lerp(INACTIVE_WORKSPACE_DOT_SCALE, 1.0, expansion),
+        });
+    }
+
+    vfunc_get_preferred_width(forHeight) {
+        const factor = Util.lerp(1.0, this.widthMultiplier, this.expansion);
+        return this._dot.get_preferred_width(forHeight).map(v => Math.round(v * factor));
+    }
+
+    vfunc_get_preferred_height(forWidth) {
+        return this._dot.get_preferred_height(forWidth);
+    }
+
+    vfunc_allocate(box) {
+        this.set_allocation(box);
+
+        box.set_origin(0, 0);
+        this._dot.allocate(box);
+    }
+
+    scaleIn() {
+        this.set({
+            scale_x: 0,
+            scale_y: 0,
+        });
+
+        this.ease({
+            duration: 500,
+            mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
+            scale_x: 1.0,
+            scale_y: 1.0,
+        });
+    }
+
+    scaleOutAndDestroy() {
+        this._destroying = true;
+
+        this.ease({
+            duration: 500,
+            mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
+            scale_x: 0.0,
+            scale_y: 0.0,
+            onComplete: () => this.destroy(),
+        });
+    }
+
+    get destroying() {
+        return this._destroying;
+    }
+});
+
+const WorkspaceIndicators = GObject.registerClass(
+class WorkspaceIndicators extends St.BoxLayout {
+    constructor() {
+        super();
+
+        this._workspacesAdjustment = Main.createWorkspacesAdjustment(this);
+        this._workspacesAdjustment.connectObject(
+            'notify::value', () => this._updateExpansion(),
+            'notify::upper', () => this._recalculateDots(),
+            this);
+
+        for (let i = 0; i < this._workspacesAdjustment.upper; i++)
+            this.insert_child_at_index(new WorkspaceDot(), i);
+        this._updateExpansion();
+    }
+
+    _getActiveIndicators() {
+        return [...this].filter(i => !i.destroying);
+    }
+
+    _recalculateDots() {
+        const activeIndicators = this._getActiveIndicators();
+        const nIndicators = activeIndicators.length;
+        const targetIndicators = this._workspacesAdjustment.upper;
+
+        let remaining = Math.abs(nIndicators - targetIndicators);
+        while (remaining--) {
+            if (nIndicators < targetIndicators) {
+                const indicator = new WorkspaceDot();
+                this.add_child(indicator);
+                indicator.scaleIn();
+            } else {
+                const indicator = activeIndicators[nIndicators - remaining - 1];
+                indicator.scaleOutAndDestroy();
+            }
+        }
+
+        this._updateExpansion();
+    }
+
+    _updateExpansion() {
+        const nIndicators = this._getActiveIndicators().length;
+        const activeWorkspace = this._workspacesAdjustment.value;
+
+        let widthMultiplier;
+        if (nIndicators <= 2)
+            widthMultiplier = 3.625;
+        else if (nIndicators <= 5)
+            widthMultiplier = 3.25;
+        else
+            widthMultiplier = 2.75;
+
+        this.get_children().forEach((indicator, index) => {
+            const distance = Math.abs(index - activeWorkspace);
+            indicator.expansion = Math.clamp(1 - distance, 0, 1);
+            indicator.widthMultiplier = widthMultiplier;
+        });
+    }
+});
+
+const ActivitiesButton = GObject.registerClass(
 class ActivitiesButton extends PanelMenu.Button {
     _init() {
         super._init(0.0, null, true);
-        this.accessible_role = Atk.Role.TOGGLE_BUTTON;
 
-        this.name = 'panelActivities';
-
-        /* Translators: If there is no suitable word for "Activities"
-           in your language, you can use the word for "Overview". */
-        this._label = new St.Label({
-            text: _('Activities'),
-            y_align: Clutter.ActorAlign.CENTER,
+        this.set({
+            name: 'panelActivities',
+            accessible_role: Atk.Role.TOGGLE_BUTTON,
+            /* Translators: If there is no suitable word for "Activities"
+               in your language, you can use the word for "Overview". */
+            accessible_name: _('Activities'),
         });
-        this.add_actor(this._label);
 
-        this.label_actor = this._label;
+        this.add_child(new WorkspaceIndicators());
 
-        Main.overview.connect('showing', () => {
-            this.add_style_pseudo_class('overview');
-            this.add_accessible_state(Atk.StateType.CHECKED);
-        });
-        Main.overview.connect('hiding', () => {
-            this.remove_style_pseudo_class('overview');
-            this.remove_accessible_state(Atk.StateType.CHECKED);
-        });
+        Main.overview.connectObject('showing',
+            () => this.add_style_pseudo_class('checked'),
+            this);
+        Main.overview.connectObject('hiding',
+            () => this.remove_style_pseudo_class('checked'),
+            this);
 
         this._xdndTimeOut = 0;
     }
 
     handleDragOver(source, _actor, _x, _y, _time) {
-        if (source != Main.xdndHandler)
+        if (source !== Main.xdndHandler)
             return DND.DragMotionResult.CONTINUE;
 
-        if (this._xdndTimeOut != 0)
+        if (this._xdndTimeOut !== 0)
             GLib.source_remove(this._xdndTimeOut);
         this._xdndTimeOut = GLib.timeout_add(GLib.PRIORITY_DEFAULT, BUTTON_DND_ACTIVATION_TIMEOUT, () => {
             this._xdndToggleOverview();
@@ -274,28 +449,19 @@ class ActivitiesButton extends PanelMenu.Button {
         return DND.DragMotionResult.CONTINUE;
     }
 
-    vfunc_captured_event(event) {
-        if (event.type() == Clutter.EventType.BUTTON_PRESS ||
-            event.type() == Clutter.EventType.TOUCH_BEGIN) {
-            if (!Main.overview.shouldToggleByCornerOrButton())
-                return Clutter.EVENT_STOP;
-        }
-        return Clutter.EVENT_PROPAGATE;
-    }
-
     vfunc_event(event) {
-        if (event.type() == Clutter.EventType.TOUCH_END ||
-            event.type() == Clutter.EventType.BUTTON_RELEASE) {
+        if (event.type() === Clutter.EventType.TOUCH_END ||
+            event.type() === Clutter.EventType.BUTTON_RELEASE) {
             if (Main.overview.shouldToggleByCornerOrButton())
                 Main.overview.toggle();
         }
 
-        return Clutter.EVENT_PROPAGATE;
+        return Main.wm.handleWorkspaceScroll(event);
     }
 
-    vfunc_key_release_event(keyEvent) {
-        let symbol = keyEvent.keyval;
-        if (symbol == Clutter.KEY_Return || symbol == Clutter.KEY_space) {
+    vfunc_key_release_event(event) {
+        let symbol = event.get_key_symbol();
+        if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_space) {
             if (Main.overview.shouldToggleByCornerOrButton()) {
                 Main.overview.toggle();
                 return Clutter.EVENT_STOP;
@@ -309,7 +475,7 @@ class ActivitiesButton extends PanelMenu.Button {
         let [x, y] = global.get_pointer();
         let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, x, y);
 
-        if (pickedActor == this && Main.overview.shouldToggleByCornerOrButton())
+        if (pickedActor === this && Main.overview.shouldToggleByCornerOrButton())
             Main.overview.toggle();
 
         GLib.source_remove(this._xdndTimeOut);
@@ -332,10 +498,10 @@ class UnsafeModeIndicator extends SystemIndicator {
     }
 });
 
-var QuickSettings = GObject.registerClass(
+const QuickSettings = GObject.registerClass(
 class QuickSettings extends PanelMenu.Button {
-    _init() {
-        super._init(0.0, C_('System menu in the top bar', 'System'), true);
+    constructor() {
+        super(0.0, C_('System menu in the top bar', 'System'), true);
 
         this._indicators = new St.BoxLayout({
             style_class: 'panel-status-indicators-box',
@@ -344,67 +510,121 @@ class QuickSettings extends PanelMenu.Button {
 
         this.setMenu(new QuickSettingsMenu(this, N_QUICK_SETTINGS_COLUMNS));
 
-        if (Config.HAVE_NETWORKMANAGER)
-            this._network = new imports.ui.status.network.Indicator();
-        else
+        this._setupIndicators().catch(error =>
+            logError(error, 'Failed to setup quick settings'));
+    }
+
+    async _setupIndicators() {
+        if (Config.HAVE_NETWORKMANAGER) {
+            /** @type {import('./status/network.js')} */
+            const NetworkStatus = await import('./status/network.js');
+
+            this._network = new NetworkStatus.Indicator();
+        } else {
             this._network = null;
+        }
 
-        if (Config.HAVE_BLUETOOTH)
-            this._bluetooth = new imports.ui.status.bluetooth.Indicator();
-        else
+        if (Config.HAVE_BLUETOOTH) {
+            /** @type {import('./status/bluetooth.js')} */
+            const BluetoothStatus = await import('./status/bluetooth.js');
+
+            this._bluetooth = new BluetoothStatus.Indicator();
+        } else {
             this._bluetooth = null;
+        }
 
-        this._system = new imports.ui.status.system.Indicator();
-        this._volume = new imports.ui.status.volume.Indicator();
-        this._brightness = new imports.ui.status.brightness.Indicator();
-        this._remoteAccess = new imports.ui.status.remoteAccess.RemoteAccessApplet();
-        this._location = new imports.ui.status.location.Indicator();
-        this._thunderbolt = new imports.ui.status.thunderbolt.Indicator();
-        this._nightLight = new imports.ui.status.nightLight.Indicator();
-        this._darkMode = new imports.ui.status.darkMode.Indicator();
-        this._powerProfiles = new imports.ui.status.powerProfiles.Indicator();
-        this._rfkill = new imports.ui.status.rfkill.Indicator();
-        this._autoRotate = new imports.ui.status.autoRotate.Indicator();
+        this._system = new SystemStatus.Indicator();
+        this._camera = new CameraStatus.Indicator();
+        this._volumeOutput = new VolumeStatus.OutputIndicator();
+        this._volumeInput = new VolumeStatus.InputIndicator();
+        this._brightness = new BrightnessStatus.Indicator();
+        this._remoteAccess = new RemoteAccessStatus.RemoteAccessApplet();
+        this._location = new LocationStatus.Indicator();
+        this._thunderbolt = new ThunderboltStatus.Indicator();
+        this._nightLight = new NightLightStatus.Indicator();
+        this._darkMode = new DarkModeStatus.Indicator();
+        this._backlight = new BacklightStatus.Indicator();
+        this._powerProfiles = new PowerProfileStatus.Indicator();
+        this._rfkill = new RFKillStatus.Indicator();
+        this._autoRotate = new AutoRotateStatus.Indicator();
         this._unsafeMode = new UnsafeModeIndicator();
+        this._backgroundApps = new BackgroundAppsStatus.Indicator();
 
+        // add privacy-related indicators before any external indicators
+        let pos = 0;
+        this._indicators.insert_child_at_index(this._remoteAccess, pos++);
+        this._indicators.insert_child_at_index(this._camera, pos++);
+        this._indicators.insert_child_at_index(this._volumeInput, pos++);
+        this._indicators.insert_child_at_index(this._location, pos++);
+
+        // append all other indicators
         this._indicators.add_child(this._brightness);
-        this._indicators.add_child(this._remoteAccess);
         this._indicators.add_child(this._thunderbolt);
-        this._indicators.add_child(this._location);
         this._indicators.add_child(this._nightLight);
         if (this._network)
             this._indicators.add_child(this._network);
         this._indicators.add_child(this._darkMode);
+        this._indicators.add_child(this._backlight);
         this._indicators.add_child(this._powerProfiles);
         if (this._bluetooth)
             this._indicators.add_child(this._bluetooth);
         this._indicators.add_child(this._rfkill);
         this._indicators.add_child(this._autoRotate);
-        this._indicators.add_child(this._volume);
+        this._indicators.add_child(this._volumeOutput);
         this._indicators.add_child(this._unsafeMode);
         this._indicators.add_child(this._system);
 
-        this._addItems(this._system.quickSettingsItems, N_QUICK_SETTINGS_COLUMNS);
-        this._addItems(this._volume.quickSettingsItems, N_QUICK_SETTINGS_COLUMNS);
-        this._addItems(this._brightness.quickSettingsItems, N_QUICK_SETTINGS_COLUMNS);
+        // add our quick settings items before any external ones
+        const sibling = this.menu.getFirstItem();
+        this._addItemsBefore(this._system.quickSettingsItems,
+            sibling, N_QUICK_SETTINGS_COLUMNS);
+        this._addItemsBefore(this._volumeOutput.quickSettingsItems,
+            sibling, N_QUICK_SETTINGS_COLUMNS);
+        this._addItemsBefore(this._volumeInput.quickSettingsItems,
+            sibling, N_QUICK_SETTINGS_COLUMNS);
+        this._addItemsBefore(this._brightness.quickSettingsItems,
+            sibling, N_QUICK_SETTINGS_COLUMNS);
 
-        this._addItems(this._remoteAccess.quickSettingsItems);
-        this._addItems(this._thunderbolt.quickSettingsItems);
-        this._addItems(this._location.quickSettingsItems);
+        this._addItemsBefore(this._camera.quickSettingsItems, sibling);
+        this._addItemsBefore(this._remoteAccess.quickSettingsItems, sibling);
+        this._addItemsBefore(this._thunderbolt.quickSettingsItems, sibling);
+        this._addItemsBefore(this._location.quickSettingsItems, sibling);
         if (this._network)
-            this._addItems(this._network.quickSettingsItems);
+            this._addItemsBefore(this._network.quickSettingsItems, sibling);
         if (this._bluetooth)
-            this._addItems(this._bluetooth.quickSettingsItems);
-        this._addItems(this._powerProfiles.quickSettingsItems);
-        this._addItems(this._nightLight.quickSettingsItems);
-        this._addItems(this._darkMode.quickSettingsItems);
-        this._addItems(this._rfkill.quickSettingsItems);
-        this._addItems(this._autoRotate.quickSettingsItems);
-        this._addItems(this._unsafeMode.quickSettingsItems);
+            this._addItemsBefore(this._bluetooth.quickSettingsItems, sibling);
+        this._addItemsBefore(this._powerProfiles.quickSettingsItems, sibling);
+        this._addItemsBefore(this._nightLight.quickSettingsItems, sibling);
+        this._addItemsBefore(this._darkMode.quickSettingsItems, sibling);
+        this._addItemsBefore(this._backlight.quickSettingsItems, sibling);
+        this._addItemsBefore(this._rfkill.quickSettingsItems, sibling);
+        this._addItemsBefore(this._autoRotate.quickSettingsItems, sibling);
+        this._addItemsBefore(this._unsafeMode.quickSettingsItems, sibling);
+
+        // append background apps
+        this._backgroundApps.quickSettingsItems.forEach(
+            item => this.menu.addItem(item, N_QUICK_SETTINGS_COLUMNS));
     }
 
-    _addItems(items, colSpan = 1) {
-        items.forEach(item => this.menu.addItem(item, colSpan));
+    _addItemsBefore(items, sibling, colSpan = 1) {
+        items.forEach(item => this.menu.insertItemBefore(item, sibling, colSpan));
+    }
+
+    /**
+     * Insert indicator and quick settings items at
+     * appropriate positions
+     *
+     * @param {PanelMenu.Button} indicator
+     * @param {number=} colSpan
+     */
+    addExternalIndicator(indicator, colSpan = 1) {
+        // Insert before first non-privacy indicator if it exists
+        let sibling = this._brightness ?? null;
+        this._indicators.insert_child_below(indicator, sibling);
+
+        // Insert before background apps if it exists
+        sibling = this._backgroundApps?.quickSettingsItems?.at(-1) ?? null;
+        this._addItemsBefore(indicator.quickSettingsItems, sibling, colSpan);
     }
 });
 
@@ -412,15 +632,15 @@ const PANEL_ITEM_IMPLEMENTATIONS = {
     'activities': ActivitiesButton,
     'appMenu': AppMenuButton,
     'quickSettings': QuickSettings,
-    'dateMenu': imports.ui.dateMenu.DateMenuButton,
-    'a11y': imports.ui.status.accessibility.ATIndicator,
-    'keyboard': imports.ui.status.keyboard.InputSourceIndicator,
-    'dwellClick': imports.ui.status.dwellClick.DwellClickIndicator,
-    'screenRecording': imports.ui.status.remoteAccess.ScreenRecordingIndicator,
-    'screenSharing': imports.ui.status.remoteAccess.ScreenSharingIndicator,
+    'dateMenu': DateMenuButton,
+    'a11y': ATIndicator,
+    'keyboard': InputSourceIndicator,
+    'dwellClick': DwellClickIndicator,
+    'screenRecording': ScreenRecordingIndicator,
+    'screenSharing': ScreenSharingIndicator,
 };
 
-var Panel = GObject.registerClass(
+export const Panel = GObject.registerClass(
 class Panel extends St.Widget {
     _init() {
         super._init({
@@ -436,26 +656,27 @@ class Panel extends St.Widget {
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
 
-        this._leftBox = new St.BoxLayout({ name: 'panelLeft' });
+        this._leftBox = new St.BoxLayout({name: 'panelLeft'});
         this.add_child(this._leftBox);
-        this._centerBox = new St.BoxLayout({ name: 'panelCenter' });
+        this._centerBox = new St.BoxLayout({name: 'panelCenter'});
         this.add_child(this._centerBox);
-        this._rightBox = new St.BoxLayout({ name: 'panelRight' });
+        this._rightBox = new St.BoxLayout({name: 'panelRight'});
         this.add_child(this._rightBox);
 
         this.connect('button-press-event', this._onButtonPress.bind(this));
         this.connect('touch-event', this._onTouchEvent.bind(this));
 
-        Main.overview.connect('showing', () => {
-            this.add_style_pseudo_class('overview');
-        });
-        Main.overview.connect('hiding', () => {
-            this.remove_style_pseudo_class('overview');
-        });
+        Main.overview.connectObject('showing',
+            () => this.add_style_pseudo_class('overview'),
+            this);
+        Main.overview.connectObject('hiding',
+            () => this.remove_style_pseudo_class('overview'),
+            this);
 
-        Main.layoutManager.panelBox.add(this);
-        Main.ctrlAltTabManager.addGroup(this, _("Top Bar"), 'focus-top-bar-symbolic',
-                                        { sortGroup: CtrlAltTab.SortGroup.TOP });
+        Main.layoutManager.panelBox.add_child(this);
+        Main.ctrlAltTabManager.addGroup(this,
+            _('Top Bar'), 'shell-focus-top-bar-symbolic',
+            {sortGroup: CtrlAltTab.SortGroup.TOP});
 
         Main.sessionMode.connect('updated', this._updatePanel.bind(this));
 
@@ -499,15 +720,14 @@ class Panel extends St.Widget {
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
-        if (this.get_text_direction() == Clutter.TextDirection.RTL) {
-            childBox.x1 = Math.max(allocWidth - Math.min(Math.floor(sideWidth),
-                                                         leftNaturalWidth),
-                                   0);
+        if (this.get_text_direction() === Clutter.TextDirection.RTL) {
+            childBox.x1 = Math.max(
+                allocWidth - Math.min(Math.floor(sideWidth), leftNaturalWidth),
+                0);
             childBox.x2 = allocWidth;
         } else {
             childBox.x1 = 0;
-            childBox.x2 = Math.min(Math.floor(sideWidth),
-                                   leftNaturalWidth);
+            childBox.x2 = Math.min(Math.floor(sideWidth), leftNaturalWidth);
         }
         this._leftBox.allocate(childBox);
 
@@ -519,14 +739,13 @@ class Panel extends St.Widget {
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
-        if (this.get_text_direction() == Clutter.TextDirection.RTL) {
+        if (this.get_text_direction() === Clutter.TextDirection.RTL) {
             childBox.x1 = 0;
-            childBox.x2 = Math.min(Math.floor(sideWidth),
-                                   rightNaturalWidth);
+            childBox.x2 = Math.min(Math.floor(sideWidth), rightNaturalWidth);
         } else {
-            childBox.x1 = Math.max(allocWidth - Math.min(Math.floor(sideWidth),
-                                                         rightNaturalWidth),
-                                   0);
+            childBox.x1 = Math.max(
+                allocWidth - Math.min(Math.floor(sideWidth), rightNaturalWidth),
+                0);
             childBox.x2 = allocWidth;
         }
         this._rightBox.allocate(childBox);
@@ -546,18 +765,13 @@ class Panel extends St.Widget {
         if (!dragWindow)
             return Clutter.EVENT_PROPAGATE;
 
-        const button = event.type() === Clutter.EventType.BUTTON_PRESS
-            ? event.get_button() : -1;
-
-        return global.display.begin_grab_op(
-            dragWindow,
+        const positionHint = new Graphene.Point({x, y});
+        return dragWindow.begin_grab_op(
             Meta.GrabOp.MOVING,
-            false, /* pointer grab */
-            true, /* frame action */
-            button,
-            event.get_state(),
+            event.get_device(),
+            event.get_event_sequence(),
             event.get_time(),
-            x, y) ? Clutter.EVENT_STOP : Clutter.EVENT_PROPAGATE;
+            positionHint) ? Clutter.EVENT_STOP : Clutter.EVENT_PROPAGATE;
     }
 
     _onButtonPress(actor, event) {
@@ -574,14 +788,14 @@ class Panel extends St.Widget {
         return this._tryDragWindow(event);
     }
 
-    vfunc_key_press_event(keyEvent) {
-        let symbol = keyEvent.keyval;
-        if (symbol == Clutter.KEY_Escape) {
-            global.display.focus_default_window(keyEvent.time);
+    vfunc_key_press_event(event) {
+        let symbol = event.get_key_symbol();
+        if (symbol === Clutter.KEY_Escape) {
+            global.display.focus_default_window(event.get_time());
             return Clutter.EVENT_STOP;
         }
 
-        return super.vfunc_key_press_event(keyEvent);
+        return super.vfunc_key_press_event(event);
     }
 
     _toggleMenu(indicator) {
@@ -607,12 +821,12 @@ class Panel extends St.Widget {
         indicator.menu.close();
     }
 
-    toggleAppMenu() {
-        this._toggleMenu(this.statusArea.appMenu);
-    }
-
     toggleCalendar() {
         this._toggleMenu(this.statusArea.dateMenu);
+    }
+
+    toggleQuickSettings() {
+        this._toggleMenu(this.statusArea.quickSettings);
     }
 
     closeCalendar() {
@@ -703,7 +917,7 @@ class Panel extends St.Widget {
 
         let parent = container.get_parent();
         if (parent)
-            parent.remove_actor(container);
+            parent.remove_child(container);
 
 
         box.insert_child_at_index(container, position);
@@ -736,12 +950,13 @@ class Panel extends St.Widget {
     }
 
     _onMenuSet(indicator) {
-        if (!indicator.menu || indicator.menu._openChangedId)
+        if (!indicator.menu || indicator.menu._openChangedConnected)
             return;
 
         this.menuManager.addMenu(indicator.menu);
 
-        indicator.menu._openChangedId = indicator.menu.connect('open-state-changed',
+        indicator.menu._openChangedConnected = true;
+        indicator.menu.connectObject('open-state-changed',
             (menu, isOpen) => {
                 let boxAlignment;
                 if (this._leftBox.contains(indicator.container))
@@ -751,9 +966,9 @@ class Panel extends St.Widget {
                 else if (this._rightBox.contains(indicator.container))
                     boxAlignment = Clutter.ActorAlign.END;
 
-                if (boxAlignment == Main.messageTray.bannerAlignment)
+                if (boxAlignment === Main.messageTray.bannerAlignment)
                     Main.messageTray.bannerBlocked = isOpen;
-            });
+            }, this);
     }
 
     _getDraggableWindowForPosition(stageX) {
@@ -766,7 +981,7 @@ class Panel extends St.Widget {
             let rect = metaWindow.get_frame_rect();
             return metaWindow.is_on_primary_monitor() &&
                    metaWindow.showing_on_its_workspace() &&
-                   metaWindow.get_window_type() != Meta.WindowType.DESKTOP &&
+                   metaWindow.get_window_type() !== Meta.WindowType.DESKTOP &&
                    metaWindow.maximized_vertically &&
                    stageX > rect.x && stageX < rect.x + rect.width;
         });

@@ -22,8 +22,7 @@
  * See COPYRIGHTS file for copyright information.
  */
 
-#ifndef __CR_SELECTOR_H__
-#define __CR_SELECTOR_H__
+#pragma once
 
 #include <stdio.h>
 #include "cr-utils.h"
@@ -70,9 +69,6 @@ struct _CRSelector
 
 CRSelector* cr_selector_new (CRSimpleSel *a_sel_expr) ;
 
-CRSelector * cr_selector_parse_from_buf (const guchar * a_char_buf,
-					 enum CREncoding a_enc) ;
-
 CRSelector* cr_selector_append (CRSelector *a_this, CRSelector *a_new) ;
 
 CRSelector* cr_selector_append_simple_sel (CRSelector *a_this,
@@ -91,5 +87,3 @@ gboolean cr_selector_unref (CRSelector *a_this) ;
 void cr_selector_destroy (CRSelector *a_this) ;
 
 G_END_DECLS
-
-#endif /*__CR_SELECTOR_H__*/

@@ -1,6 +1,3 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported SystemBackground, BackgroundManager */
-
 // READ THIS FIRST
 // Background handling is a maze of objects, both objects in this file, and
 // also objects inside Mutter. They all have a role.
@@ -94,16 +91,22 @@
 //     MetaBackgroundImage         MetaBackgroundImage
 //     MetaBackgroundImage         MetaBackgroundImage
 
-const { Clutter, GDesktopEnums, Gio, GLib, GObject, GnomeDesktop, Meta } = imports.gi;
-const Signals = imports.misc.signals;
+import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
+import GDesktopEnums from 'gi://GDesktopEnums';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import GnomeBG from 'gi://GnomeBG';
+import GnomeDesktop from 'gi://GnomeDesktop';
+import Meta from 'gi://Meta';
+import * as Signals from '../misc/signals.js';
 
-const LoginManager = imports.misc.loginManager;
-const Main = imports.ui.main;
-const Params = imports.misc.params;
+import * as LoginManager from '../misc/loginManager.js';
+import * as Main from './main.js';
+import * as Params from '../misc/params.js';
 
-Gio._promisify(Gio.File.prototype, 'query_info_async');
-
-var DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x2e3436ff);
+const DEFAULT_BACKGROUND_COLOR = new Cogl.Color({red: 40, green: 40, blue: 40, alpha: 255});
 
 const BACKGROUND_SCHEMA = 'org.gnome.desktop.background';
 const PRIMARY_COLOR_KEY = 'primary-color';
@@ -116,19 +119,19 @@ const PICTURE_URI_DARK_KEY = 'picture-uri-dark';
 const INTERFACE_SCHEMA = 'org.gnome.desktop.interface';
 const COLOR_SCHEME_KEY = 'color-scheme';
 
-var FADE_ANIMATION_TIME = 1000;
+const FADE_ANIMATION_TIME = 1000;
 
 // These parameters affect how often we redraw.
 // The first is how different (percent crossfaded) the slide show
 // has to look before redrawing and the second is the minimum
 // frequency (in seconds) we're willing to wake up
-var ANIMATION_OPACITY_STEP_INCREMENT = 4.0;
-var ANIMATION_MIN_WAKEUP_INTERVAL = 1.0;
+const ANIMATION_OPACITY_STEP_INCREMENT = 4.0;
+const ANIMATION_MIN_WAKEUP_INTERVAL = 1.0;
 
 let _backgroundCache = null;
 
 function _fileEqual0(file1, file2) {
-    if (file1 == file2)
+    if (file1 === file2)
         return true;
 
     if (!file1 || !file2)
@@ -137,7 +140,7 @@ function _fileEqual0(file1, file2) {
     return file1.equal(file2);
 }
 
-var BackgroundCache = class BackgroundCache extends Signals.EventEmitter {
+class BackgroundCache extends Signals.EventEmitter {
     constructor() {
         super();
 
@@ -153,13 +156,13 @@ var BackgroundCache = class BackgroundCache extends Signals.EventEmitter {
 
         let monitor = file.monitor(Gio.FileMonitorFlags.NONE, null);
         monitor.connect('changed',
-                        (obj, theFile, otherFile, eventType) => {
-                            // Ignore CHANGED and CREATED events, since in both cases
-                            // we'll get a CHANGES_DONE_HINT event when done.
-                            if (eventType != Gio.FileMonitorEvent.CHANGED &&
-                                eventType != Gio.FileMonitorEvent.CREATED)
-                                this.emit('file-changed', file);
-                        });
+            (obj, theFile, otherFile, eventType) => {
+                // Ignore CHANGED and CREATED events, since in both cases
+                // we'll get a CHANGES_DONE_HINT event when done.
+                if (eventType !== Gio.FileMonitorEvent.CHANGED &&
+                    eventType !== Gio.FileMonitorEvent.CREATED)
+                    this.emit('file-changed', file);
+            });
 
         this._fileMonitors[key] = monitor;
     }
@@ -183,7 +186,7 @@ var BackgroundCache = class BackgroundCache extends Signals.EventEmitter {
             return;
         }
 
-        animation = new Animation({ file: params.file });
+        animation = new Animation({file: params.file});
 
         animation.load_async(null, () => {
             this._animations[params.settingsSchema] = animation;
@@ -216,22 +219,25 @@ var BackgroundCache = class BackgroundCache extends Signals.EventEmitter {
         if (settingsSchema in this._backgroundSources) {
             let source = this._backgroundSources[settingsSchema];
             source._useCount--;
-            if (source._useCount == 0) {
+            if (source._useCount === 0) {
                 delete this._backgroundSources[settingsSchema];
                 source.destroy();
             }
         }
     }
-};
+}
 
+/**
+ * @returns {BackgroundCache}
+ */
 function getBackgroundCache() {
     if (!_backgroundCache)
         _backgroundCache = new BackgroundCache();
     return _backgroundCache;
 }
 
-var Background = GObject.registerClass({
-    Signals: { 'loaded': {}, 'bg-changed': {} },
+const Background = GObject.registerClass({
+    Signals: {'loaded': {}, 'bg-changed': {}},
 }, class Background extends Meta.Background {
     _init(params) {
         params = Params.parse(params, {
@@ -242,7 +248,7 @@ var Background = GObject.registerClass({
             style: null,
         });
 
-        super._init({ meta_display: global.display });
+        super._init({meta_display: global.display});
 
         this._settings = params.settings;
         this._file = params.file;
@@ -253,7 +259,7 @@ var Background = GObject.registerClass({
         this._cancellable = new Gio.Cancellable();
         this.isLoaded = false;
 
-        this._interfaceSettings = new Gio.Settings({ schema_id: INTERFACE_SCHEMA });
+        this._interfaceSettings = new Gio.Settings({schema_id: INTERFACE_SCHEMA});
 
         this._clock = new GnomeDesktop.WallClock();
         this._clock.connectObject('notify::timezone',
@@ -348,13 +354,13 @@ var Background = GObject.registerClass({
         let colorString, res_, color, secondColor;
 
         colorString = this._settings.get_string(PRIMARY_COLOR_KEY);
-        [res_, color] = Clutter.Color.from_string(colorString);
+        [res_, color] = Cogl.Color.from_string(colorString);
         colorString = this._settings.get_string(SECONDARY_COLOR_KEY);
-        [res_, secondColor] = Clutter.Color.from_string(colorString);
+        [res_, secondColor] = Cogl.Color.from_string(colorString);
 
         let shadingType = this._settings.get_enum(COLOR_SHADING_TYPE_KEY);
 
-        if (shadingType == GDesktopEnums.BackgroundShading.SOLID)
+        if (shadingType === GDesktopEnums.BackgroundShading.SOLID)
             this.set_color(color);
         else
             this.set_gradient(shadingType, color, secondColor);
@@ -367,13 +373,13 @@ var Background = GObject.registerClass({
 
         this._cache.monitorFile(file);
         let signalId = this._cache.connect('file-changed',
-                                           (cache, changedFile) => {
-                                               if (changedFile.equal(file)) {
-                                                   let imageCache = Meta.BackgroundImageCache.get_default();
-                                                   imageCache.purge(changedFile);
-                                                   this._emitChangedSignal();
-                                               }
-                                           });
+            (cache, changedFile) => {
+                if (changedFile.equal(file)) {
+                    let imageCache = Meta.BackgroundImageCache.get_default();
+                    imageCache.purge(changedFile);
+                    this._emitChangedSignal();
+                }
+            });
         this._fileWatches[key] = signalId;
     }
 
@@ -394,8 +400,8 @@ var Background = GObject.registerClass({
             this._setLoaded();
             if (files.length > 1) {
                 this.set_blend(files[0], files[1],
-                               this._animation.transitionProgress,
-                               this._style);
+                    this._animation.transitionProgress,
+                    this._style);
             } else if (files.length > 0) {
                 this.set_file(files[0], this._style);
             } else {
@@ -411,14 +417,14 @@ var Background = GObject.registerClass({
             let image = cache.load(files[i]);
             if (image.is_loaded()) {
                 numPendingImages--;
-                if (numPendingImages == 0)
+                if (numPendingImages === 0)
                     finish();
             } else {
                 // eslint-disable-next-line no-loop-func
                 let id = image.connect('loaded', () => {
                     image.disconnect(id);
                     numPendingImages--;
-                    if (numPendingImages == 0)
+                    if (numPendingImages === 0)
                         finish();
                 });
             }
@@ -426,7 +432,7 @@ var Background = GObject.registerClass({
     }
 
     _queueUpdateAnimation() {
-        if (this._updateAnimationTimeoutId != 0)
+        if (this._updateAnimationTimeoutId !== 0)
             return;
 
         if (!this._cancellable || this._cancellable.is_cancelled())
@@ -438,19 +444,20 @@ var Background = GObject.registerClass({
         let nSteps = 255 / ANIMATION_OPACITY_STEP_INCREMENT;
         let timePerStep = (this._animation.transitionDuration * 1000) / nSteps;
 
-        let interval = Math.max(ANIMATION_MIN_WAKEUP_INTERVAL * 1000,
-                                timePerStep);
+        let interval = Math.max(
+            ANIMATION_MIN_WAKEUP_INTERVAL * 1000,
+            timePerStep);
 
         if (interval > GLib.MAXUINT32)
             return;
 
         this._updateAnimationTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT,
-                                                          interval,
-                                                          () => {
-                                                              this._updateAnimationTimeoutId = 0;
-                                                              this._updateAnimation();
-                                                              return GLib.SOURCE_REMOVE;
-                                                          });
+            interval,
+            () => {
+                this._updateAnimationTimeoutId = 0;
+                this._updateAnimation();
+                return GLib.SOURCE_REMOVE;
+            });
         GLib.Source.set_name_by_id(this._updateAnimationTimeoutId, '[gnome-shell] this._updateAnimation');
     }
 
@@ -524,12 +531,12 @@ var Background = GObject.registerClass({
 
 let _systemBackground;
 
-var SystemBackground = GObject.registerClass({
-    Signals: { 'loaded': {} },
+export const SystemBackground = GObject.registerClass({
+    Signals: {'loaded': {}},
 }, class SystemBackground extends Meta.BackgroundActor {
     _init() {
         if (_systemBackground == null) {
-            _systemBackground = new Meta.Background({ meta_display: global.display });
+            _systemBackground = new Meta.Background({meta_display: global.display});
             _systemBackground.set_color(DEFAULT_BACKGROUND_COLOR);
         }
 
@@ -547,20 +554,20 @@ var SystemBackground = GObject.registerClass({
     }
 });
 
-var BackgroundSource = class BackgroundSource {
+class BackgroundSource {
     constructor(layoutManager, settingsSchema) {
         // Allow override the background image setting for performance testing
         this._layoutManager = layoutManager;
         this._overrideImage = GLib.getenv('SHELL_BACKGROUND_IMAGE');
-        this._settings = new Gio.Settings({ schema_id: settingsSchema });
+        this._settings = new Gio.Settings({schema_id: settingsSchema});
         this._backgrounds = [];
 
-        let monitorManager = Meta.MonitorManager.get();
+        const monitorManager = global.backend.get_monitor_manager();
         this._monitorsChangedId =
             monitorManager.connect('monitors-changed',
-                                   this._onMonitorsChanged.bind(this));
+                this._onMonitorsChanged.bind(this));
 
-        this._interfaceSettings = new Gio.Settings({ schema_id: INTERFACE_SCHEMA });
+        this._interfaceSettings = new Gio.Settings({schema_id: INTERFACE_SCHEMA});
     }
 
     _onMonitorsChanged() {
@@ -590,7 +597,7 @@ var BackgroundSource = class BackgroundSource {
             style = GDesktopEnums.BackgroundStyle.ZOOM; // Hardcode
         } else {
             style = this._settings.get_enum(BACKGROUND_STYLE_KEY);
-            if (style != GDesktopEnums.BackgroundStyle.NONE) {
+            if (style !== GDesktopEnums.BackgroundStyle.NONE) {
                 const colorScheme = this._interfaceSettings.get_enum('color-scheme');
                 const uri = this._settings.get_string(
                     colorScheme === GDesktopEnums.ColorScheme.PREFER_DARK
@@ -630,7 +637,7 @@ var BackgroundSource = class BackgroundSource {
     }
 
     destroy() {
-        let monitorManager = Meta.MonitorManager.get();
+        const monitorManager = global.backend.get_monitor_manager();
         monitorManager.disconnect(this._monitorsChangedId);
 
         for (let monitorIndex in this._backgrounds) {
@@ -641,10 +648,10 @@ var BackgroundSource = class BackgroundSource {
 
         this._backgrounds = null;
     }
-};
+}
 
-var Animation = GObject.registerClass(
-class Animation extends GnomeDesktop.BGSlideShow {
+const Animation = GObject.registerClass(
+class Animation extends GnomeBG.BGSlideShow {
     _init(params) {
         super._init(params);
 
@@ -683,7 +690,7 @@ class Animation extends GnomeDesktop.BGSlideShow {
     }
 });
 
-var BackgroundManager = class BackgroundManager extends Signals.EventEmitter {
+export class BackgroundManager extends Signals.EventEmitter {
     constructor(params) {
         super();
         params = Params.parse(params, {
@@ -765,7 +772,7 @@ var BackgroundManager = class BackgroundManager extends Signals.EventEmitter {
 
         this._newBackgroundActor = newBackgroundActor;
 
-        const { background } = newBackgroundActor.content;
+        const {background} = newBackgroundActor.content;
 
         if (background.isLoaded) {
             this._swapBackgroundActor();
@@ -839,4 +846,4 @@ var BackgroundManager = class BackgroundManager extends Signals.EventEmitter {
 
         return backgroundActor;
     }
-};
+}

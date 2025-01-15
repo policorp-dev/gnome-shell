@@ -17,12 +17,15 @@
 #include <cogl/cogl.h>
 
 #include "shell-app-cache-private.h"
+#include "shell-global.h"
 #include "shell-util.h"
 #include <glib/gi18n-lib.h>
-#include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <meta/meta-context.h>
 #include <meta/display.h>
+#ifdef HAVE_X11_CLIENT
 #include <meta/meta-x11-display.h>
+#endif
 
 #include <locale.h>
 #ifdef HAVE__NL_TIME_FIRST_WEEKDAY
@@ -117,7 +120,7 @@ shell_util_get_week_start (void)
 #else
   /* Use a define to hide the string from xgettext */
 # define GTK_WEEK_START "calendar:week_start:0"
-  gtk_week_start = dgettext ("gtk30", GTK_WEEK_START);
+  gtk_week_start = dgettext ("gtk40", GTK_WEEK_START);
 
   if (strncmp (gtk_week_start, "calendar:week_start:", 20) == 0)
     week_start = *(gtk_week_start + 20) - '0';
@@ -353,48 +356,6 @@ shell_util_create_pixbuf_from_data (const guchar      *data,
 }
 
 typedef const gchar *(*ShellGLGetString) (GLenum);
-
-cairo_surface_t *
-shell_util_composite_capture_images (ClutterCapture  *captures,
-                                     int              n_captures,
-                                     int              x,
-                                     int              y,
-                                     int              target_width,
-                                     int              target_height,
-                                     float            target_scale)
-{
-  int i;
-  cairo_format_t format;
-  cairo_surface_t *image;
-  cairo_t *cr;
-
-  g_assert (n_captures > 0);
-  g_assert (target_scale > 0.0f);
-
-  format = cairo_image_surface_get_format (captures[0].image);
-  image = cairo_image_surface_create (format, target_width, target_height);
-  cairo_surface_set_device_scale (image, target_scale, target_scale);
-
-  cr = cairo_create (image);
-
-  for (i = 0; i < n_captures; i++)
-    {
-      ClutterCapture *capture = &captures[i];
-
-      cairo_save (cr);
-
-      cairo_translate (cr,
-                       capture->rect.x - x,
-                       capture->rect.y - y);
-      cairo_set_source_surface (cr, capture->image, 0, 0);
-      cairo_paint (cr);
-
-      cairo_restore (cr);
-    }
-  cairo_destroy (cr);
-
-  return image;
-}
 
 #ifndef HAVE_FDWALK
 static int
@@ -658,6 +619,7 @@ shell_util_systemd_call (const char           *command,
                          gpointer              user_data)
 {
   g_autoptr (GTask) task = g_task_new (NULL, cancellable, callback, user_data);
+  g_autoptr (GVariant) params_owned = g_variant_ref_sink (g_steal_pointer (&params));
 
 #ifdef HAVE_SYSTEMD
   g_autoptr (GDBusConnection) connection = NULL;
@@ -678,7 +640,8 @@ shell_util_systemd_call (const char           *command,
    */
   res = sd_pid_get_user_unit (getpid (), &self_unit);
 
-  if (res == -ENODATA)
+  if (res == -ENODATA ||
+      (res >= 0 && !g_str_has_prefix (self_unit, "org.gnome.Shell")))
     {
       g_task_return_new_error (task,
                                G_IO_ERROR,
@@ -733,7 +696,7 @@ shell_util_systemd_call (const char           *command,
                           "/org/freedesktop/systemd1",
                           "org.freedesktop.systemd1.Manager",
                           command,
-                          params,
+                          params_owned,
                           G_VARIANT_TYPE ("(o)"),
                           G_DBUS_CALL_FLAGS_NONE,
                           -1, cancellable,
@@ -826,6 +789,7 @@ gboolean
 shell_util_has_x11_display_extension (MetaDisplay *display,
                                       const char  *extension)
 {
+#ifdef HAVE_X11_CLIENT
   MetaX11Display *x11_display;
   Display *xdisplay;
   int op, event, error;
@@ -836,6 +800,9 @@ shell_util_has_x11_display_extension (MetaDisplay *display,
 
   xdisplay = meta_x11_display_get_xdisplay (x11_display);
   return XQueryExtension (xdisplay, extension, &op, &event, &error);
+#else
+  return FALSE;
+#endif
 }
 
 /**
@@ -851,4 +818,177 @@ char *
 shell_util_get_translated_folder_name (const char *name)
 {
   return shell_app_cache_translate_folder (shell_app_cache_get_default (), name);
+}
+
+static void
+spawn_child_setup (gpointer user_data)
+{
+  MetaContext *meta_context = user_data;
+
+  /* No async-signal-unsafe code should be called here, so we don't either
+   * pass the GError to the function, as it may lead to dynamic allocations.
+   */
+  meta_context_restore_rlimit_nofile (meta_context, NULL);
+}
+
+/**
+ * shell_util_spawn_async_with_pipes_and_fds:
+ * @working_directory: (type filename) (nullable): child's current working
+ *     directory, or %NULL to inherit parent's, in the GLib file name encoding
+ * @argv: (array zero-terminated=1): child's argument
+ *     vector, in the GLib file name encoding; it must be non-empty and %NULL-terminated
+ * @envp: (array zero-terminated=1) (nullable):
+ *     child's environment, or %NULL to inherit parent's, in the GLib file
+ *     name encoding
+ * @flags: flags from #GSpawnFlags
+ * @stdin_fd: file descriptor to use for child's stdin, or `-1`
+ * @stdout_fd: file descriptor to use for child's stdout, or `-1`
+ * @stderr_fd: file descriptor to use for child's stderr, or `-1`
+ * @source_fds: (array length=n_fds) (nullable): array of FDs from the parent
+ *    process to make available in the child process
+ * @target_fds: (array length=n_fds) (nullable): array of FDs to remap
+ *    @source_fds to in the child process
+ * @n_fds: number of FDs in @source_fds and @target_fds
+ * @stdin_pipe_out: (out) (optional): return location for file descriptor to write to child's stdin, or %NULL
+ * @stdout_pipe_out: (out) (optional): return location for file descriptor to read child's stdout, or %NULL
+ * @stderr_pipe_out: (out) (optional): return location for file descriptor to read child's stderr, or %NULL
+ * @error: return location for error
+ *
+ * A wrapper around g_spawn_async_with_pipes_and_fds() with async-signal-safe
+ * implementation of #GSpawnChildSetupFunc to launch a child program
+ * asynchronously resetting the rlimit nofile on child setup.
+ *
+ * Returns: the PID of the child on success, 0 if error is set
+ **/
+GPid
+shell_util_spawn_async_with_pipes_and_fds (const char          *working_directory,
+                                           const char * const  *argv,
+                                           const char * const  *envp,
+                                           GSpawnFlags          flags,
+                                           int                  stdin_fd,
+                                           int                  stdout_fd,
+                                           int                  stderr_fd,
+                                           const int           *source_fds,
+                                           const int           *target_fds,
+                                           size_t               n_fds,
+                                           int                 *stdin_pipe_out,
+                                           int                 *stdout_pipe_out,
+                                           int                 *stderr_pipe_out,
+                                           GError             **error)
+{
+  ShellGlobal *shell_global = shell_global_get ();
+  GPid child_pid = 0;
+
+  if (!g_spawn_async_with_pipes_and_fds (working_directory, argv, envp, flags,
+                                         spawn_child_setup,
+                                         shell_global_get_context (shell_global),
+                                         stdin_fd, stdout_fd, stderr_fd,
+                                         source_fds, target_fds, n_fds,
+                                         &child_pid,
+                                         stdin_pipe_out, stdout_pipe_out, stderr_pipe_out,
+                                         error))
+    return 0;
+
+  return child_pid;
+}
+
+/**
+ * shell_util_spawn_async_with_pipes:
+ * @working_directory: (type filename) (nullable): child's current working
+ *     directory, or %NULL to inherit parent's
+ * @argv: (array zero-terminated=1):
+ *     child's argument vector
+ * @envp: (array zero-terminated=1) (nullable):
+ *     child's environment, or %NULL to inherit parent's
+ * @flags: flags from #GSpawnFlags
+ * @standard_input: (out) (optional): return location for file descriptor to write to child's stdin, or %NULL
+ * @standard_output: (out) (optional): return location for file descriptor to read child's stdout, or %NULL
+ * @standard_error: (out) (optional): return location for file descriptor to read child's stderr, or %NULL
+ * @error: return location for error
+ *
+ * A wrapper around g_spawn_async_with_pipes() with async-signal-safe
+ * implementation of #GSpawnChildSetupFunc to launch a child program
+ * asynchronously resetting the rlimit nofile on child setup.
+ *
+ * Returns: the PID of the child on success, 0 if error is set
+ **/
+GPid
+shell_util_spawn_async_with_pipes (const char          *working_directory,
+                                   const char * const  *argv,
+                                   const char * const  *envp,
+                                   GSpawnFlags          flags,
+                                   int                 *standard_input,
+                                   int                 *standard_output,
+                                   int                 *standard_error,
+                                   GError             **error)
+{
+  return shell_util_spawn_async_with_pipes_and_fds (working_directory, argv, envp, flags,
+                                                    -1, -1, -1, NULL, NULL, 0,
+                                                    standard_input, standard_output, standard_error,
+                                                    error);
+}
+
+/**
+ * shell_util_spawn_async_with_fds:
+ * @working_directory: (type filename) (nullable): child's current working
+ *     directory, or %NULL to inherit parent's
+ * @argv: (array zero-terminated=1):
+ *     child's argument vector
+ * @envp: (array zero-terminated=1) (nullable):
+ *     child's environment, or %NULL to inherit parent's
+ * @flags: flags from #GSpawnFlags
+ * @stdin_fd: file descriptor to use for child's stdin, or `-1`
+ * @stdout_fd: file descriptor to use for child's stdout, or `-1`
+ * @stderr_fd: file descriptor to use for child's stderr, or `-1`
+ * @error: return location for error
+ *
+ * A wrapper around g_spawn_async_with_fds() with async-signal-safe
+ * implementation of #GSpawnChildSetupFunc to launch a child program
+ * asynchronously resetting the rlimit nofile on child setup.
+ *
+ * Returns: the PID of the child on success, 0 if error is set
+ **/
+GPid
+shell_util_spawn_async_with_fds (const char          *working_directory,
+                                 const char * const  *argv,
+                                 const char * const  *envp,
+                                 GSpawnFlags          flags,
+                                 int                  stdin_fd,
+                                 int                  stdout_fd,
+                                 int                  stderr_fd,
+                                 GError             **error)
+{
+  return shell_util_spawn_async_with_pipes_and_fds (working_directory, argv, envp, flags,
+                                                    stdin_fd, stdout_fd, stderr_fd,
+                                                    NULL, NULL, 0,
+                                                    NULL, NULL, NULL,
+                                                    error);
+}
+
+/**
+ * shell_util_spawn_async:
+ * @working_directory: (type filename) (nullable): child's current working
+ *     directory, or %NULL to inherit parent's
+ * @argv: (array zero-terminated=1):
+ *     child's argument vector
+ * @envp: (array zero-terminated=1) (nullable):
+ *     child's environment, or %NULL to inherit parent's
+ * @flags: flags from #GSpawnFlags
+ * @error: return location for error
+ *
+ * A wrapper around g_spawn_async() with async-signal-safe implementation of
+ * #GSpawnChildSetupFunc to launch a child program asynchronously resetting the
+ * rlimit nofile on child setup.
+ *
+ * Returns: the PID of the child on success, 0 if error is set
+ **/
+GPid
+shell_util_spawn_async (const char          *working_directory,
+                        const char * const  *argv,
+                        const char * const  *envp,
+                        GSpawnFlags          flags,
+                        GError             **error)
+{
+  return shell_util_spawn_async_with_pipes (working_directory, argv, envp,
+                                            flags, NULL, NULL, NULL, error);
 }

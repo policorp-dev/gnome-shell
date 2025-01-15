@@ -1,17 +1,16 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported NotificationDaemon */
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 
-const { Gio, GLib } = imports.gi;
+import {ServiceImplementation} from './dbusService.js';
 
-const { loadInterfaceXML } = imports.misc.dbusUtils;
-const { ServiceImplementation } = imports.dbusService;
+import {loadInterfaceXML} from './misc/dbusUtils.js';
 
 const NotificationsIface = loadInterfaceXML('org.freedesktop.Notifications');
 const NotificationsProxy = Gio.DBusProxy.makeProxyWrapper(NotificationsIface);
 
 Gio._promisify(Gio.DBusConnection.prototype, 'call');
 
-var NotificationDaemon = class extends ServiceImplementation {
+export const NotificationDaemon = class extends ServiceImplementation {
     constructor() {
         super(NotificationsIface, '/org/freedesktop/Notifications');
 
@@ -27,6 +26,14 @@ var NotificationDaemon = class extends ServiceImplementation {
                     log(error.message);
             });
 
+        this._proxy.connectSignal('ActivationToken',
+            (proxy, sender, params) => {
+                const [id] = params;
+                this._emitSignal(
+                    this._activeNotifications.get(id),
+                    'ActivationToken',
+                    new GLib.Variant('(us)', params));
+            });
         this._proxy.connectSignal('ActionInvoked',
             (proxy, sender, params) => {
                 const [id] = params;
@@ -100,7 +107,8 @@ var NotificationDaemon = class extends ServiceImplementation {
 
         params[6] = {
             ...hints,
-            'sender-pid': new GLib.Variant('u', pid),
+            'x-shell-sender-pid': new GLib.Variant('u', pid),
+            'x-shell-sender': new GLib.Variant('s', sender),
         };
 
         try {

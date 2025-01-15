@@ -1,10 +1,12 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
-#ifndef __SHELL_SCREENSHOT_H__
-#define __SHELL_SCREENSHOT_H__
+#pragma once
+
+#include <mtk/mtk.h>
 
 /**
- * SECTION:shell-screenshot
- * @short_description: Grabs screenshots of areas and/or windows
+ * ShellScreenshot:
+ *
+ * Grabs screenshots of areas and/or windows
  *
  * The #ShellScreenshot object is used to take screenshots of screen
  * areas or windows and write them out as png files.
@@ -24,10 +26,10 @@ void    shell_screenshot_screenshot_area      (ShellScreenshot      *screenshot,
                                                GOutputStream        *stream,
                                                GAsyncReadyCallback   callback,
                                                gpointer              user_data);
-gboolean shell_screenshot_screenshot_area_finish (ShellScreenshot       *screenshot,
-                                                  GAsyncResult          *result,
-                                                  cairo_rectangle_int_t **area,
-                                                  GError                **error);
+gboolean shell_screenshot_screenshot_area_finish (ShellScreenshot  *screenshot,
+                                                  GAsyncResult     *result,
+                                                  MtkRectangle    **area,
+                                                  GError          **error);
 
 void    shell_screenshot_screenshot_window    (ShellScreenshot     *screenshot,
                                                gboolean             include_frame,
@@ -35,20 +37,20 @@ void    shell_screenshot_screenshot_window    (ShellScreenshot     *screenshot,
                                                GOutputStream       *stream,
                                                GAsyncReadyCallback  callback,
                                                gpointer             user_data);
-gboolean shell_screenshot_screenshot_window_finish (ShellScreenshot        *screenshot,
-                                                    GAsyncResult           *result,
-                                                    cairo_rectangle_int_t **area,
-                                                    GError                **error);
+gboolean shell_screenshot_screenshot_window_finish (ShellScreenshot  *screenshot,
+                                                    GAsyncResult     *result,
+                                                    MtkRectangle    **area,
+                                                    GError          **error);
 
 void    shell_screenshot_screenshot           (ShellScreenshot     *screenshot,
                                                gboolean             include_cursor,
                                                GOutputStream       *stream,
                                                GAsyncReadyCallback  callback,
                                                gpointer             user_data);
-gboolean shell_screenshot_screenshot_finish   (ShellScreenshot        *screenshot,
-                                               GAsyncResult           *result,
-                                               cairo_rectangle_int_t **area,
-                                               GError                **error);
+gboolean shell_screenshot_screenshot_finish   (ShellScreenshot  *screenshot,
+                                               GAsyncResult     *result,
+                                               MtkRectangle    **area,
+                                               GError          **error);
 
 void     shell_screenshot_screenshot_stage_to_content (ShellScreenshot     *screenshot,
                                                        GAsyncReadyCallback  callback,
@@ -68,7 +70,7 @@ void     shell_screenshot_pick_color        (ShellScreenshot      *screenshot,
                                              gpointer              user_data);
 gboolean shell_screenshot_pick_color_finish (ShellScreenshot      *screenshot,
                                              GAsyncResult         *result,
-                                             ClutterColor         *color,
+                                             CoglColor            *color,
                                              GError              **error);
 
 void shell_screenshot_composite_to_stream (CoglTexture         *texture,
@@ -86,5 +88,3 @@ void shell_screenshot_composite_to_stream (CoglTexture         *texture,
                                            gpointer             user_data);
 GdkPixbuf *shell_screenshot_composite_to_stream_finish (GAsyncResult  *result,
                                                         GError       **error);
-
-#endif /* ___SHELL_SCREENSHOT_H__ */
