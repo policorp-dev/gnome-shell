@@ -1,10 +1,21 @@
+src_builddir = meson.current_build_dir()
+
 service_data = configuration_data()
 service_data.set('libexecdir', libexecdir)
+
+introspection_common = {
+  'install_dir_gir': pkgdatadir,
+  'install_dir_typelib': pkglibdir,
+  'install': true,
+  'fatal_warnings': get_option('werror'),
+}
 
 subdir('calendar-server')
 subdir('hotplug-sniffer')
 subdir('st')
-subdir('tray')
+if have_x11_client
+  subdir('tray')
+endif
 
 script_data = configuration_data()
 script_data.set('bindir', bindir)
@@ -16,24 +27,26 @@ script_data.set('pkglibdir', pkglibdir)
 script_data.set('PYTHON', python.full_path())
 script_data.set('VERSION', meson.project_version())
 
-script_tools = ['gnome-shell-perf-tool']
+test_tool = configure_file(
+  input: 'gnome-shell-test-tool.in',
+  output: 'gnome-shell-test-tool',
+  configuration: script_data,
+  install_dir: bindir
+)
 
 if get_option('extensions_tool')
-  script_tools += 'gnome-shell-extension-tool'
-endif
-
-foreach tool : script_tools
   configure_file(
-    input: tool + '.in',
-    output: tool,
+    input: 'gnome-shell-extension-tool.in',
+    output: 'gnome-shell-extension-tool',
     configuration: script_data,
     install_dir: bindir
   )
-endforeach
+endif
 
-install_data('gnome-shell-extension-prefs',
-  install_dir: bindir
-)
+typelib_cflags = [
+  '-DMUTTER_TYPELIB_DIR="@0@"'.format(mutter_typelibdir),
+  '-DSHELL_TYPELIB_DIR="@0@"'.format(pkglibdir),
+]
 
 gnome_shell_cflags = [
   '-DCLUTTER_ENABLE_EXPERIMENTAL_API',
@@ -51,18 +64,22 @@ install_rpath = ':'.join([mutter_typelibdir, pkglibdir])
 gnome_shell_deps = [
   gio_unix_dep,
   libxml_dep,
-  gtk_dep,
   atk_bridge_dep,
+  gdk_pixbuf_dep,
   gjs_dep,
-  gdk_x11_dep,
+  mtk_dep,
   clutter_dep,
   cogl_pango_dep,
-  startup_dep,
   gi_dep,
   polkit_dep,
   gcr_dep,
-  libsystemd_dep
+  libsystemd_dep,
+  libpipewire_dep,
 ]
+
+if have_x11_client
+  gnome_shell_deps += x11_dep
+endif
 
 gnome_shell_deps += nm_deps
 
@@ -80,7 +97,7 @@ libshell_menu_sources = [
 
 libshell_menu = library('gnome-shell-menu',
   sources: libshell_menu_sources,
-  dependencies: [gio_dep, clutter_dep],
+  dependencies: [gio_dep, clutter_dep, mtk_dep],
   include_directories: conf_inc,
   build_rpath: mutter_typelibdir,
   install_rpath: mutter_typelibdir,
@@ -95,9 +112,8 @@ libshell_public_headers = [
   'shell-app-system.h',
   'shell-app-usage.h',
   'shell-blur-effect.h',
-  'shell-embedded-window.h',
+  'shell-camera-monitor.h',
   'shell-glsl-effect.h',
-  'shell-gtk-embed.h',
   'shell-global.h',
   'shell-invert-lightness-effect.h',
   'shell-action-modes.h',
@@ -106,8 +122,6 @@ libshell_public_headers = [
   'shell-screenshot.h',
   'shell-square-bin.h',
   'shell-stack.h',
-  'shell-tray-icon.h',
-  'shell-tray-manager.h',
   'shell-util.h',
   'shell-window-preview.h',
   'shell-window-preview-layout.h',
@@ -115,6 +129,13 @@ libshell_public_headers = [
   'shell-wm.h',
   'shell-workspace-background.h'
 ]
+
+if have_x11_client
+  libshell_public_headers += [
+    'shell-tray-icon.h',
+    'shell-tray-manager.h',
+  ]
+endif
 
 if have_networkmanager
   libshell_public_headers += 'shell-network-agent.h'
@@ -129,17 +150,21 @@ libshell_private_headers = [
   'shell-wm-private.h'
 ]
 
+if have_x11_client
+  libshell_private_headers += [
+    'shell-tray-icon-private.h',
+  ]
+endif
+
 libshell_sources = [
   'gnome-shell-plugin.c',
   'shell-app.c',
   'shell-app-system.c',
   'shell-app-usage.c',
   'shell-blur-effect.c',
-  'shell-embedded-window.c',
-  'shell-embedded-window-private.h',
+  'shell-camera-monitor.c',
   'shell-global.c',
   'shell-glsl-effect.c',
-  'shell-gtk-embed.c',
   'shell-invert-lightness-effect.c',
   'shell-keyring-prompt.c',
   'shell-keyring-prompt.h',
@@ -152,8 +177,6 @@ libshell_sources = [
   'shell-secure-text-buffer.h',
   'shell-square-bin.c',
   'shell-stack.c',
-  'shell-tray-icon.c',
-  'shell-tray-manager.c',
   'shell-util.c',
   'shell-window-preview.c',
   'shell-window-preview-layout.c',
@@ -161,6 +184,13 @@ libshell_sources = [
   'shell-wm.c',
   'shell-workspace-background.c'
 ]
+
+if have_x11_client
+  libshell_sources += [
+    'shell-tray-icon.c',
+    'shell-tray-manager.c',
+  ]
+endif
 
 if have_networkmanager
   libshell_sources += 'shell-network-agent.c'
@@ -198,12 +228,17 @@ dbus_generated += gnome.gdbus_codegen('switcheroo-control',
 
 libshell_no_gir_sources += dbus_generated
 
-libshell = library('gnome-shell',
+libshell_link_with = []
+if have_x11_client
+  libshell_link_with += [libtray]
+endif
+
+libshell = library('shell-' + mutter_api_version,
   sources: libshell_gir_sources + libshell_no_gir_sources,
   dependencies: gnome_shell_deps + [libshell_menu_dep, libst_dep, mutter_dep, gnome_desktop_dep, m_dep],
   include_directories: [conf_inc, st_inc, include_directories('tray')],
   c_args: gnome_shell_cflags,
-  link_with: [libtray],
+  link_with: libshell_link_with,
   build_rpath: mutter_typelibdir,
   install_rpath: install_rpath,
   install_dir: pkglibdir,
@@ -216,7 +251,8 @@ libshell_gir_includes = [
   'Clutter-@0@'.format(mutter_api_version),
   'Meta-@0@'.format(mutter_api_version),
   'Gcr-4',
-  'PolkitAgent-1.0'
+  'PolkitAgent-1.0',
+  'GdkPixbuf-2.0'
 ]
 
 if have_networkmanager
@@ -228,21 +264,17 @@ libshell_gir_includes += [
   libst_gir[0]
 ]
 
-gnome.generate_gir(libshell,
+libshell_gir = gnome.generate_gir(libshell,
   sources: libshell_gir_sources,
-  nsversion: '0.1',
+  nsversion: mutter_api_version,
   namespace: 'Shell',
   includes: libshell_gir_includes,
   extra_args: ['--quiet'],
-  install_dir_gir: pkgdatadir,
-  install_dir_typelib: pkglibdir,
-  install: true
+  kwargs: introspection_common,
 )
 
 executable('gnome-shell', 'main.c',
-  c_args: gnome_shell_cflags + [
-    '-DMUTTER_TYPELIB_DIR="@0@"'.format(mutter_typelibdir)
-  ],
+  c_args: gnome_shell_cflags + typelib_cflags,
   dependencies: gnome_shell_deps + [libshell_dep, libst_dep, mutter_dep],
   include_directories: [conf_inc, st_inc, include_directories('tray')],
   build_rpath: mutter_typelibdir,
@@ -250,7 +282,7 @@ executable('gnome-shell', 'main.c',
   install: true
 )
 
-if have_networkmanager
+if have_portal_helper
   executable('gnome-shell-portal-helper',
     'gnome-shell-portal-helper.c', portal_resources,
     c_args: tools_cflags,
@@ -261,15 +293,16 @@ if have_networkmanager
   )
 endif
 
-executable('gnome-shell-perf-helper', 'shell-perf-helper.c',
+executable('gnome-shell-perf-helper', 'shell-perf-helper.c', js_resources,
   dependencies: [gtk_dep, gio_dep, m_dep],
   include_directories: [conf_inc],
   install_dir: libexecdir,
   install: true
 )
 
-executable('run-js-test', 'run-js-test.c',
-  dependencies: [mutter_dep, gio_dep, gi_dep, gjs_dep],
+run_test = executable('run-js-test', 'run-js-test.c',
+  dependencies: [mutter_dep, mtk_dep, gdk_pixbuf_dep, gio_dep, gi_dep, gjs_dep],
+  c_args: typelib_cflags,
   include_directories: [conf_inc],
   link_with: libshell,
   build_rpath: mutter_typelibdir,

@@ -1,7 +1,7 @@
 project('gnome-shell', 'c',
-  version: '43.9',
+  version: '47.2',
   meson_version: '>= 0.58.0',
-  license: 'GPLv2+'
+  license: 'GPL-2.0-or-later',
 )
 
 split_version = meson.project_version().split('.')
@@ -10,27 +10,29 @@ split_version = meson.project_version().split('.')
 # the Cogl and Clutter libraries also use this API version.
 # The API version is increased each development cycle,
 # starting with 0 in 3.23.x
-mutter_api_version = '11'
+mutter_api_version = '15'
 
 clutter_pc = 'mutter-clutter-' + mutter_api_version
 cogl_pc = 'mutter-cogl-' + mutter_api_version
 cogl_pango_pc = 'mutter-cogl-pango-' + mutter_api_version
+mtk_pc = 'mutter-mtk-' + mutter_api_version
 libmutter_pc = 'libmutter-' + mutter_api_version
 libmutter_test_pc = 'libmutter-test-' + mutter_api_version
 
 ecal_req = '>= 3.33.1'
 eds_req = '>= 3.33.1'
 gcr_req = '>= 3.90.0'
-gio_req = '>= 2.56.0'
+gio_req = '>= 2.79.2'
 gi_req = '>= 1.49.1'
 gjs_req = '>= 1.73.1'
-gtk_req = '>= 3.15.0'
-mutter_req = '>= 43.0'
+gtk_req = '>= 4.0'
+mutter_req = '>= 47.0'
 polkit_req = '>= 0.100'
-schemas_req = '>= 42.beta'
-startup_req = '>= 0.11'
+schemas_req = '>= 47.alpha'
+systemd_req = '>= 246'
 ibus_req = '>= 1.5.19'
-gnome_desktop_req = '>= 3.35.90'
+gnome_desktop_req = '>= 40'
+pipewire_req = '>= 0.3.49'
 
 nm_req = '>= 1.10.4'
 secret_req = '>= 0.18'
@@ -57,7 +59,6 @@ icondir = join_paths(datadir, 'icons')
 ifacedir = join_paths(datadir, 'dbus-1', 'interfaces')
 localedir = join_paths(datadir, 'locale')
 metainfodir = join_paths(datadir, 'metainfo')
-portaldir = join_paths(datadir, 'xdg-desktop-portal', 'portals')
 schemadir = join_paths(datadir, 'glib-2.0', 'schemas')
 servicedir = join_paths(datadir, 'dbus-1', 'services')
 
@@ -72,24 +73,29 @@ atk_bridge_dep = dependency('atk-bridge-2.0')
 ecal_dep = dependency('libecal-2.0', version: ecal_req)
 eds_dep = dependency('libedataserver-1.2', version: eds_req)
 gcr_dep = dependency('gcr-4', version: gcr_req)
-gdk_x11_dep = dependency('gdk-x11-3.0')
 gdk_pixbuf_dep = dependency('gdk-pixbuf-2.0')
 gi_dep = dependency('gobject-introspection-1.0', version: gi_req)
 gio_dep = dependency('gio-2.0', version: gio_req)
 gio_unix_dep = dependency('gio-unix-2.0', version: gio_req)
 gjs_dep = dependency('gjs-1.0', version: gjs_req)
-gtk_dep = dependency('gtk+-3.0', version: gtk_req)
+gtk_dep = dependency('gtk4', version: gtk_req)
 libxml_dep = dependency('libxml-2.0')
 clutter_dep = dependency(clutter_pc, version: mutter_req)
+mtk_dep = dependency(mtk_pc, version: mutter_req)
 cogl_dep = dependency(cogl_pc, version: mutter_req)
 cogl_pango_dep = dependency(cogl_pango_pc, version: mutter_req)
 mutter_dep = dependency(libmutter_pc, version: mutter_req)
 polkit_dep = dependency('polkit-agent-1', version: polkit_req)
-startup_dep = dependency('libstartup-notification-1.0', version: startup_req)
 ibus_dep = dependency('ibus-1.0', version: ibus_req)
-x11_dep = dependency('x11')
 schemas_dep = dependency('gsettings-desktop-schemas', version: schemas_req)
-gnome_desktop_dep = dependency('gnome-desktop-3.0', version: gnome_desktop_req)
+gnome_desktop_dep = dependency('gnome-desktop-4', version: gnome_desktop_req)
+
+have_x11 = mutter_dep.get_variable('have_x11') == 'true'
+have_x11_client = mutter_dep.get_variable('have_x11_client') == 'true'
+if have_x11_client or have_x11
+  x11_dep = dependency('x11')
+endif
+
 
 nm_deps = []
 if get_option('networkmanager')
@@ -101,9 +107,22 @@ else
   have_networkmanager = false
 endif
 
+have_portal_helper = get_option('portal_helper')
+if have_portal_helper and not have_networkmanager
+  error('Portal helper requires networkmanager support')
+endif
+
+if get_option('camera_monitor')
+  libpipewire_dep = dependency('libpipewire-0.3', version: pipewire_req)
+  have_pipewire = true
+else
+  libpipewire_dep = []
+  have_pipewire = false
+endif
+
 if get_option('systemd')
-  libsystemd_dep = dependency('libsystemd')
-  systemd_dep = dependency('systemd')
+  libsystemd_dep = dependency('libsystemd', version: systemd_req)
+  systemd_dep = dependency('systemd', version: systemd_req)
   systemduserunitdir = systemd_dep.get_variable('systemduserunitdir',
     pkgconfig_define: ['prefix', prefix])
   have_systemd = true
@@ -112,15 +131,9 @@ else
   have_systemd = false
 endif
 
-have_soup2 = get_option('soup2')
-
 if get_option('man')
-  if fs.exists('man/gnome-shell.1')
-    install_man('man/gnome-shell.1')
-  else
-    a2x = find_program('a2x')
-    subdir('man')
-  endif
+  rst2man = find_program('rst2man')
+  subdir('man')
 endif
 
 mutter_typelibdir = mutter_dep.get_variable('typelibdir')
@@ -137,17 +150,17 @@ cdata.set_quoted('VERSION', meson.project_version())
 cdata.set_quoted('PACKAGE_VERSION', meson.project_version())
 
 cdata.set('HAVE_NETWORKMANAGER', have_networkmanager)
+cdata.set('HAVE_PIPEWIRE', have_pipewire)
 cdata.set('HAVE_SYSTEMD', have_systemd)
+cdata.set('HAVE_X11', have_x11)
+cdata.set('HAVE_X11_CLIENT', have_x11_client)
 
-# New API added in glib-2.57.2
-cdata.set('HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS',
-          cc.has_function('g_desktop_app_info_launch_uris_as_manager_with_fds',
-                          dependencies : gio_dep)
-)
 cdata.set('HAVE_FDWALK', cc.has_function('fdwalk'))
 cdata.set('HAVE_MALLINFO', cc.has_function('mallinfo'))
 cdata.set('HAVE_MALLINFO2', cc.has_function('mallinfo2'))
 cdata.set('HAVE_SYS_RESOURCE_H', cc.has_header('sys/resource.h'))
+cdata.set('HAVE_EXE_INTROSPECTION',
+  cc.has_header('elf.h') and cc.has_header('link.h'))
 cdata.set('HAVE__NL_TIME_FIRST_WEEKDAY',
   cc.has_header_symbol('langinfo.h', '_NL_TIME_FIRST_WEEKDAY')
 )
@@ -167,7 +180,9 @@ cdata.set('HAVE_POLKIT_AUTOCLEANUP', polkit_has_autocleanup)
 
 buildtype = get_option('buildtype')
 if buildtype != 'plain'
-  all_warnings = [
+  gs_c_args = [
+    '-fno-omit-frame-pointer',
+    '-mno-omit-leaf-frame-pointer',
     '-fno-strict-aliasing',
     '-Wpointer-arith',
     '-Wmissing-declarations',
@@ -204,17 +219,16 @@ if buildtype != 'plain'
     '-Werror=empty-body',
     '-Werror=write-strings',
   ]
-  supported_warnings = cc.get_supported_arguments(all_warnings)
-  add_project_arguments(supported_warnings, language: 'c')
-endif
 
-if get_option('debug')
-  debug_c_args = [
-    '-DG_ENABLE_DEBUG',
-    '-fno-omit-frame-pointer'
-  ]
-  supported_debug_c_args = cc.get_supported_arguments(debug_c_args)
-  add_project_arguments(supported_debug_c_args, language: 'c')
+
+  if get_option('debug')
+    gs_c_args += [
+      '-DG_ENABLE_DEBUG',
+    ]
+  endif
+
+  supported_gs_c_args = cc.get_supported_arguments(gs_c_args)
+  add_project_arguments(supported_gs_c_args, language: 'c')
 endif
 
 config_h = configure_file(
@@ -274,6 +288,19 @@ if get_option('extensions_app')
   )
 endif
 
+if get_option('tests')
+  common_test_env = environment()
+  common_test_env.set('GSETTINGS_SCHEMA_DIR', meson.project_build_root() / 'data')
+  common_test_env.set('GSETTINGS_BACKEND', 'memory')
+  common_test_env.set('XDG_CURRENT_DESKTOP', '')
+
+  jasmine = find_program('jasmine')
+
+  add_test_setup('default',
+    is_default: true,
+    env: common_test_env,
+  )
+endif
 
 po_dir = join_paths(meson.current_source_dir(), 'po')
 
@@ -281,9 +308,8 @@ subdir('js')
 subdir('src')
 subdir('po')
 subdir('data')
-subdir('tools')
 
-if get_option('tests')
+if get_option('tests') and have_x11_client
   subdir('tests')
 endif
 
@@ -296,11 +322,13 @@ gnome.post_install(
   gtk_update_icon_cache: true
 )
 
-meson.add_dist_script('meson/generate-manpages.py')
 meson.add_dist_script('meson/generate-stylesheets.py')
 meson.add_dist_script('meson/check-version.py', meson.project_version(), 'NEWS')
 
 summary_options = {
+  'x11': have_x11,
+  'x11_client': have_x11_client,
+  'camera_monitor': get_option('camera_monitor'),
   'networkmanager': get_option('networkmanager'),
   'systemd': get_option('systemd'),
   'extensions_app': get_option('extensions_app'),

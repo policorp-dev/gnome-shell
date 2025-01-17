@@ -20,8 +20,9 @@
  */
 
 /**
- * SECTION:st-label
- * @short_description: Widget for displaying text
+ * StLabel:
+ *
+ * Widget for displaying text
  *
  * #StLabel is a simple widget for displaying text. It derives from
  * #StWidget to add extra style and placement functionality over
@@ -29,9 +30,7 @@
  * applications to set further properties.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -71,7 +70,10 @@ struct _StLabelPrivate
 
 G_DEFINE_TYPE_WITH_PRIVATE (StLabel, st_label, ST_TYPE_WIDGET);
 
-static GType st_label_accessible_get_type (void) G_GNUC_CONST;
+G_DECLARE_FINAL_TYPE (StLabelAccessible,
+                      st_label_accessible,
+                      ST, LABEL_ACCESSIBLE,
+                      StWidgetAccessible)
 
 static void
 st_label_set_property (GObject      *gobject,
@@ -130,7 +132,7 @@ st_label_style_changed (StWidget *self)
   if (!priv->shadow_spec || !shadow_spec ||
       !st_shadow_equal (shadow_spec, priv->shadow_spec))
     {
-      g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
+      g_clear_object (&priv->text_shadow_pipeline);
 
       g_clear_pointer (&priv->shadow_spec, st_shadow_unref);
       if (shadow_spec)
@@ -199,18 +201,19 @@ st_label_dispose (GObject   *object)
   StLabelPrivate *priv = ST_LABEL (object)->priv;
 
   priv->label = NULL;
-  g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
+  g_clear_object (&priv->text_shadow_pipeline);
 
   G_OBJECT_CLASS (st_label_parent_class)->dispose (object);
 }
 
 static void
-st_label_paint (ClutterActor        *actor,
-                ClutterPaintContext *paint_context)
+st_label_paint_node (ClutterActor        *actor,
+                     ClutterPaintNode    *node,
+                     ClutterPaintContext *paint_context)
 {
   StLabelPrivate *priv = ST_LABEL (actor)->priv;
 
-  st_widget_paint_background (ST_WIDGET (actor), paint_context);
+  st_widget_paint_background (ST_WIDGET (actor), node, paint_context);
 
   if (priv->shadow_spec)
     {
@@ -230,30 +233,25 @@ st_label_paint (ClutterActor        *actor,
           width != priv->shadow_width ||
           height != priv->shadow_height)
         {
-          g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
+          g_clear_object (&priv->text_shadow_pipeline);
 
           priv->shadow_width = width;
           priv->shadow_height = height;
           priv->text_shadow_pipeline =
             _st_create_shadow_pipeline_from_actor (priv->shadow_spec,
-                                                   priv->label);
+                                                   priv->label,
+                                                   paint_context);
         }
 
       if (priv->text_shadow_pipeline != NULL)
         {
-          CoglFramebuffer *framebuffer;
-
-          framebuffer =
-            clutter_paint_context_get_framebuffer (paint_context);
           _st_paint_shadow_with_opacity (priv->shadow_spec,
-                                         framebuffer,
+                                         node,
                                          priv->text_shadow_pipeline,
                                          &allocation,
                                          clutter_actor_get_paint_opacity (priv->label));
         }
     }
-
-  clutter_actor_paint (priv->label, paint_context);
 }
 
 static void
@@ -261,7 +259,7 @@ st_label_resource_scale_changed (ClutterActor *actor)
 {
   StLabelPrivate *priv = ST_LABEL (actor)->priv;
 
-  g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
+  g_clear_object (&priv->text_shadow_pipeline);
 
   if (CLUTTER_ACTOR_CLASS (st_label_parent_class)->resource_scale_changed)
     CLUTTER_ACTOR_CLASS (st_label_parent_class)->resource_scale_changed (actor);
@@ -278,14 +276,14 @@ st_label_class_init (StLabelClass *klass)
   gobject_class->get_property = st_label_get_property;
   gobject_class->dispose = st_label_dispose;
 
-  actor_class->paint = st_label_paint;
+  actor_class->get_accessible_type = st_label_accessible_get_type;
+  actor_class->paint_node = st_label_paint_node;
   actor_class->allocate = st_label_allocate;
   actor_class->get_preferred_width = st_label_get_preferred_width;
   actor_class->get_preferred_height = st_label_get_preferred_height;
   actor_class->resource_scale_changed = st_label_resource_scale_changed;
 
   widget_class->style_changed = st_label_style_changed;
-  widget_class->get_accessible_type = st_label_accessible_get_type;
 
   /**
    * StLabel:clutter-text:
@@ -293,9 +291,7 @@ st_label_class_init (StLabelClass *klass)
    * The internal #ClutterText actor supporting the label
    */
   props[PROP_CLUTTER_TEXT] =
-      g_param_spec_object ("clutter-text",
-                           "Clutter Text",
-                           "Internal ClutterText actor",
+      g_param_spec_object ("clutter-text", NULL, NULL,
                            CLUTTER_TYPE_TEXT,
                            ST_PARAM_READABLE);
 
@@ -305,9 +301,7 @@ st_label_class_init (StLabelClass *klass)
    * The current text being display in the #StLabel.
    */
   props[PROP_TEXT] =
-      g_param_spec_string ("text",
-                           "Text",
-                           "Text of the label",
+      g_param_spec_string ("text", NULL, NULL,
                            NULL,
                            ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -321,7 +315,7 @@ invalidate_shadow_pipeline (GObject    *object,
 {
   StLabelPrivate *priv = st_label_get_instance_private (label);
 
-  g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
+  g_clear_object (&priv->text_shadow_pipeline);
 }
 
 static void
@@ -416,7 +410,7 @@ st_label_set_text (StLabel     *label,
   if (clutter_text_get_editable (ctext) ||
       g_strcmp0 (clutter_text_get_text (ctext), text) != 0)
     {
-      g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
+      g_clear_object (&priv->text_shadow_pipeline);
 
       clutter_text_set_text (ctext, text);
 
@@ -449,45 +443,16 @@ st_label_get_clutter_text (StLabel *label)
 
 #define ST_TYPE_LABEL_ACCESSIBLE st_label_accessible_get_type ()
 
-#define ST_LABEL_ACCESSIBLE(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  ST_TYPE_LABEL_ACCESSIBLE, StLabelAccessible))
-
-#define ST_IS_LABEL_ACCESSIBLE(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  ST_TYPE_LABEL_ACCESSIBLE))
-
-#define ST_LABEL_ACCESSIBLE_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  ST_TYPE_LABEL_ACCESSIBLE, StLabelAccessibleClass))
-
-#define ST_IS_LABEL_ACCESSIBLE_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  ST_TYPE_LABEL_ACCESSIBLE))
-
-#define ST_LABEL_ACCESSIBLE_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  ST_TYPE_LABEL_ACCESSIBLE, StLabelAccessibleClass))
-
-typedef struct _StLabelAccessible  StLabelAccessible;
-typedef struct _StLabelAccessibleClass  StLabelAccessibleClass;
-
-struct _StLabelAccessible
-{
-  StWidgetAccessible parent;
-};
-
-struct _StLabelAccessibleClass
-{
-  StWidgetAccessibleClass parent_class;
-};
-
 /* AtkObject */
 static void          st_label_accessible_initialize (AtkObject *obj,
                                                      gpointer   data);
 static const gchar * st_label_accessible_get_name   (AtkObject *obj);
 
-G_DEFINE_TYPE (StLabelAccessible, st_label_accessible, ST_TYPE_WIDGET_ACCESSIBLE)
+typedef struct _StLabelAccessible {
+  StWidgetAccessible parent_class;
+} StLabelAccessible;
+
+G_DEFINE_FINAL_TYPE (StLabelAccessible, st_label_accessible, ST_TYPE_WIDGET_ACCESSIBLE)
 
 static void
 st_label_accessible_class_init (StLabelAccessibleClass *klass)

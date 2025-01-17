@@ -1,9 +1,7 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported ObjectManager */
-
-const { Gio, GLib } = imports.gi;
-const Params = imports.misc.params;
-const Signals = imports.misc.signals;
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import * as Params from './params.js';
+import * as Signals from './signals.js';
 
 // Specified in the D-Bus specification here:
 // http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-objectmanager
@@ -26,7 +24,7 @@ const ObjectManagerIface = `
 
 const ObjectManagerInfo = Gio.DBusInterfaceInfo.new_for_xml(ObjectManagerIface);
 
-var ObjectManager = class extends Signals.EventEmitter {
+export class ObjectManager extends Signals.EventEmitter {
     constructor(params) {
         super();
 
@@ -258,4 +256,4 @@ var ObjectManager = class extends Signals.EventEmitter {
 
         return proxies;
     }
-};
+}

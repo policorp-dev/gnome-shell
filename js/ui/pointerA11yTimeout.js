@@ -1,14 +1,16 @@
-/* exported PointerA11yTimeout */
-const { Clutter, GObject, Meta, St } = imports.gi;
-const Main = imports.ui.main;
-const Cairo = imports.cairo;
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import Meta from 'gi://Meta';
+import St from 'gi://St';
+import * as Main from './main.js';
+import Cairo from 'gi://cairo';
 
 const SUCCESS_ZOOM_OUT_DURATION = 150;
 
-var PieTimer = GObject.registerClass({
+const PieTimer = GObject.registerClass({
     Properties: {
         'angle': GObject.ParamSpec.double(
-            'angle', 'angle', 'angle',
+            'angle', null, null,
             GObject.ParamFlags.READWRITE,
             0, 2 * Math.PI, 0),
     },
@@ -31,7 +33,7 @@ var PieTimer = GObject.registerClass({
     }
 
     set angle(angle) {
-        if (this._angle == angle)
+        if (this._angle === angle)
             return;
 
         this._angle = angle;
@@ -66,11 +68,11 @@ var PieTimer = GObject.registerClass({
         cr.closePath();
 
         cr.setLineWidth(0);
-        Clutter.cairo_set_source_color(cr, backgroundColor);
+        cr.setSourceColor(backgroundColor);
         cr.fillPreserve();
 
         cr.setLineWidth(borderWidth);
-        Clutter.cairo_set_source_color(cr, borderColor);
+        cr.setSourceColor(borderColor);
         cr.stroke();
 
         cr.$dispose();
@@ -106,7 +108,7 @@ var PieTimer = GObject.registerClass({
     }
 });
 
-var PointerA11yTimeout = class PointerA11yTimeout {
+export class PointerA11yTimeout {
     constructor() {
         let seat = Clutter.get_default_backend().get_default_seat();
 
@@ -114,12 +116,12 @@ var PointerA11yTimeout = class PointerA11yTimeout {
             let [x, y] = global.get_pointer();
 
             this._pieTimer = new PieTimer();
-            Main.uiGroup.add_actor(this._pieTimer);
+            Main.uiGroup.add_child(this._pieTimer);
             Main.uiGroup.set_child_above_sibling(this._pieTimer, null);
 
             this._pieTimer.start(x, y, timeout);
 
-            if (type == Clutter.PointerA11yTimeoutType.GESTURE)
+            if (type === Clutter.PointerA11yTimeoutType.GESTURE)
                 global.display.set_cursor(Meta.Cursor.CROSSHAIR);
         });
 
@@ -127,8 +129,8 @@ var PointerA11yTimeout = class PointerA11yTimeout {
             if (!clicked)
                 this._pieTimer.destroy();
 
-            if (type == Clutter.PointerA11yTimeoutType.GESTURE)
+            if (type === Clutter.PointerA11yTimeoutType.GESTURE)
                 global.display.set_cursor(Meta.Cursor.DEFAULT);
         });
     }
-};
+}

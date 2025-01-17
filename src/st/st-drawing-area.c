@@ -19,16 +19,17 @@
  */
 
 /**
- * SECTION:st-drawing-area
- * @short_description: A dynamically-sized Cairo drawing area
+ * StDrawingArea:
+ *
+ * A dynamically-sized Cairo drawing area
  *
  * #StDrawingArea allows drawing via Cairo; the primary difference is that
- * it is dynamically sized. To use, connect to the #StDrawingArea::repaint
+ * it is dynamically sized. To use, connect to the [signal@St.DrawingArea::repaint]
  * signal, and inside the signal handler, call
- * st_drawing_area_get_context() to get the Cairo context to draw to.  The
- * #StDrawingArea::repaint signal will be emitted by default when the area is
+ * [method@St.DrawingArea.get_context] to get the Cairo context to draw to.  The
+ * [signal@St.DrawingArea::repaint] signal will be emitted by default when the area is
  * resized or the CSS style changes; you can use the
- * st_drawing_area_queue_repaint() as well.
+ * [method@St.DrawingArea.queue_repaint] as well.
  */
 
 #include "st-drawing-area.h"
@@ -39,6 +40,15 @@
 typedef struct _StDrawingAreaPrivate StDrawingAreaPrivate;
 struct _StDrawingAreaPrivate {
   cairo_t *context;
+
+  int width;
+  int height;
+  float scale_factor;
+
+  CoglTexture *texture;
+  CoglBitmap *buffer;
+
+  gboolean dirty;
   guint in_repaint : 1;
 };
 
@@ -53,48 +63,53 @@ enum
 
 static guint st_drawing_area_signals [LAST_SIGNAL] = { 0 };
 
-static gboolean
-draw_content (ClutterCanvas *canvas,
-              cairo_t       *cr,
-              int            width,
-              int            height,
-              gpointer       user_data)
-{
-  StDrawingArea *area = ST_DRAWING_AREA (user_data);
-  StDrawingAreaPrivate *priv = st_drawing_area_get_instance_private (area);
-
-  priv->context = cr;
-  priv->in_repaint = TRUE;
-
-  clutter_cairo_clear (cr);
-  g_signal_emit (area, st_drawing_area_signals[REPAINT], 0);
-
-  priv->context = NULL;
-  priv->in_repaint = FALSE;
-
-  return TRUE;
-}
-
 static void
 st_drawing_area_allocate (ClutterActor          *self,
                           const ClutterActorBox *box)
 {
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
-  ClutterContent *content = clutter_actor_get_content (self);
+  StDrawingAreaPrivate *priv =
+      st_drawing_area_get_instance_private (ST_DRAWING_AREA (self));
   ClutterActorBox content_box;
-  int width, height;
-  float resource_scale;
 
-  resource_scale = clutter_actor_get_resource_scale (self);
+  priv->scale_factor = clutter_actor_get_resource_scale (self);
 
   clutter_actor_set_allocation (self, box);
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
-  width = (int)(0.5 + content_box.x2 - content_box.x1);
-  height = (int)(0.5 + content_box.y2 - content_box.y1);
+  priv->width = (int)(0.5 + content_box.x2 - content_box.x1);
+  priv->height = (int)(0.5 + content_box.y2 - content_box.y1);
 
-  clutter_canvas_set_scale_factor (CLUTTER_CANVAS (content), resource_scale);
-  clutter_canvas_set_size (CLUTTER_CANVAS (content), width, height);
+  st_drawing_area_queue_repaint (ST_DRAWING_AREA (self));
+}
+
+static void
+st_drawing_area_paint_node (ClutterActor        *actor,
+                            ClutterPaintNode    *root,
+                            ClutterPaintContext *paint_context)
+{
+  StDrawingArea *area = ST_DRAWING_AREA (actor);
+  StDrawingAreaPrivate *priv = st_drawing_area_get_instance_private (area);
+  ClutterPaintNode *node;
+
+  if (priv->buffer == NULL)
+    return;
+
+  if (priv->dirty)
+    g_clear_object (&priv->texture);
+
+  if (priv->texture == NULL)
+    priv->texture = cogl_texture_2d_new_from_bitmap (priv->buffer);
+
+  if (priv->texture == NULL)
+    return;
+
+  node = clutter_actor_create_texture_paint_node (actor, priv->texture);
+  clutter_paint_node_set_static_name (node, "Canvas Content");
+  clutter_paint_node_add_child (root, node);
+  clutter_paint_node_unref (node);
+
+  priv->dirty = FALSE;
 }
 
 static void
@@ -108,23 +123,44 @@ st_drawing_area_style_changed (StWidget  *self)
 static void
 st_drawing_area_resource_scale_changed (ClutterActor *self)
 {
+  StDrawingArea *area = ST_DRAWING_AREA (self);
+  StDrawingAreaPrivate *priv = st_drawing_area_get_instance_private (area);
   float resource_scale;
-  ClutterContent *content = clutter_actor_get_content (self);
 
   resource_scale = clutter_actor_get_resource_scale (self);
-  clutter_canvas_set_scale_factor (CLUTTER_CANVAS (content), resource_scale);
+  if (priv->scale_factor != resource_scale)
+    {
+      priv->scale_factor = resource_scale;
 
-  if (CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class)->resource_scale_changed)
-    CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class)->resource_scale_changed (self);
+      st_drawing_area_queue_repaint (area);
+
+      if (CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class)->resource_scale_changed)
+        CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class)->resource_scale_changed (self);
+    }
+}
+
+static void
+st_drawing_area_finalize (GObject *self)
+{
+  StDrawingAreaPrivate *priv =
+      st_drawing_area_get_instance_private (ST_DRAWING_AREA (self));
+
+  g_clear_object (&priv->buffer);
+  g_clear_object (&priv->texture);
+
+  G_OBJECT_CLASS (st_drawing_area_parent_class)->finalize (self);
 }
 
 static void
 st_drawing_area_class_init (StDrawingAreaClass *klass)
 {
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
 
+  gobject_class->finalize = st_drawing_area_finalize;
   actor_class->allocate = st_drawing_area_allocate;
+  actor_class->paint_node = st_drawing_area_paint_node;
   widget_class->style_changed = st_drawing_area_style_changed;
   actor_class->resource_scale_changed = st_drawing_area_resource_scale_changed;
 
@@ -140,17 +176,111 @@ st_drawing_area_class_init (StDrawingAreaClass *klass)
 static void
 st_drawing_area_init (StDrawingArea *area)
 {
-  ClutterContent *content = clutter_canvas_new ();
-  g_signal_connect (content, "draw", G_CALLBACK (draw_content), area);
-  clutter_actor_set_content (CLUTTER_ACTOR (area), content);
-  g_object_unref (content);
+  StDrawingAreaPrivate *priv = st_drawing_area_get_instance_private (area);
+
+  priv->width = -1;
+  priv->height = -1;
+  priv->scale_factor = 1.0f;
+}
+
+static void
+st_drawing_area_emit_repaint (StDrawingArea *area)
+{
+  StDrawingAreaPrivate *priv = st_drawing_area_get_instance_private (area);
+  int real_width, real_height;
+  cairo_surface_t *surface;
+  gboolean mapped_buffer;
+  unsigned char *data;
+  CoglBuffer *buffer;
+  cairo_t *cr;
+
+  g_assert (priv->height > 0 && priv->width > 0);
+
+  priv->dirty = TRUE;
+
+  real_width = ceilf (priv->width * priv->scale_factor);
+  real_height = ceilf (priv->height * priv->scale_factor);
+
+  if (priv->buffer == NULL)
+    {
+      CoglContext *ctx;
+
+      ctx = clutter_backend_get_cogl_context (clutter_get_default_backend ());
+      priv->buffer = cogl_bitmap_new_with_size (ctx,
+                                                real_width,
+                                                real_height,
+                                                COGL_PIXEL_FORMAT_CAIRO_ARGB32_COMPAT);
+    }
+
+  buffer = COGL_BUFFER (cogl_bitmap_get_buffer (priv->buffer));
+  if (buffer == NULL)
+    return;
+
+  cogl_buffer_set_update_hint (buffer, COGL_BUFFER_UPDATE_HINT_DYNAMIC);
+
+  data = cogl_buffer_map (buffer,
+                          COGL_BUFFER_ACCESS_READ_WRITE,
+                          COGL_BUFFER_MAP_HINT_DISCARD);
+
+  if (data != NULL)
+    {
+      int bitmap_stride = cogl_bitmap_get_rowstride (priv->buffer);
+
+      surface = cairo_image_surface_create_for_data (data,
+                                                     CAIRO_FORMAT_ARGB32,
+                                                     real_width,
+                                                     real_height,
+                                                     bitmap_stride);
+      mapped_buffer = TRUE;
+    }
+  else
+    {
+      surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
+                                            real_width,
+                                            real_height);
+
+      mapped_buffer = FALSE;
+    }
+
+  cairo_surface_set_device_scale (surface,
+                                  priv->scale_factor,
+                                  priv->scale_factor);
+
+  priv->context = cr = cairo_create (surface);
+
+  priv->in_repaint = TRUE;
+
+  cairo_save (priv->context);
+  cairo_set_operator (priv->context, CAIRO_OPERATOR_CLEAR);
+  cairo_paint (priv->context);
+  cairo_restore (priv->context);
+
+  g_signal_emit (area, st_drawing_area_signals[REPAINT], 0);
+
+  priv->context = NULL;
+  priv->in_repaint = FALSE;
+
+  cairo_destroy (cr);
+
+  if (mapped_buffer)
+    cogl_buffer_unmap (buffer);
+  else
+    {
+      int size = cairo_image_surface_get_stride (surface) * priv->height;
+      cogl_buffer_set_data (buffer,
+                            0,
+                            cairo_image_surface_get_data (surface),
+                            size);
+    }
+
+  cairo_surface_destroy (surface);
 }
 
 /**
  * st_drawing_area_queue_repaint:
  * @area: the #StDrawingArea
  *
- * Will cause the actor to emit a #StDrawingArea::repaint signal before it is
+ * Will cause the actor to emit a [signal@St.DrawingArea::repaint] signal before it is
  * next drawn to the scene. Useful if some parameters for the area being
  * drawn other than the size or style have changed. Note that
  * clutter_actor_queue_redraw() will simply result in the same
@@ -159,9 +289,19 @@ st_drawing_area_init (StDrawingArea *area)
 void
 st_drawing_area_queue_repaint (StDrawingArea *area)
 {
+  StDrawingAreaPrivate *priv;
+
   g_return_if_fail (ST_IS_DRAWING_AREA (area));
 
-  clutter_content_invalidate (clutter_actor_get_content (CLUTTER_ACTOR (area)));
+  priv = st_drawing_area_get_instance_private (area);
+
+  g_clear_object (&priv->buffer);
+
+  if (priv->width <= 0 || priv->height <= 0)
+    return;
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (area));
+  st_drawing_area_emit_repaint (area);
 }
 
 /**
@@ -169,13 +309,13 @@ st_drawing_area_queue_repaint (StDrawingArea *area)
  * @area: the #StDrawingArea
  *
  * Gets the Cairo context to paint to. This function must only be called
- * from a signal handler or virtual function for the #StDrawingArea::repaint
+ * from a signal handler or virtual function for the [signal@St.DrawingArea::repaint]
  * signal.
  *
  * JavaScript code must call the special dispose function before returning from
  * the signal handler or virtual function to avoid leaking memory:
  *
- * |[<!-- language="JavaScript" -->
+ * ```js
  * function onRepaint(area) {
  *     let cr = area.get_context();
  *
@@ -186,7 +326,7 @@ st_drawing_area_queue_repaint (StDrawingArea *area)
  *
  * let area = new St.DrawingArea();
  * area.connect('repaint', onRepaint);
- * ]|
+ * ```
  *
  * Returns: (transfer none): the Cairo context for the paint operation
  */
@@ -219,24 +359,14 @@ st_drawing_area_get_surface_size (StDrawingArea *area,
                                   guint         *height)
 {
   StDrawingAreaPrivate *priv;
-  ClutterContent *content;
-  float w, h, resource_scale;
 
   g_return_if_fail (ST_IS_DRAWING_AREA (area));
 
   priv = st_drawing_area_get_instance_private (area);
   g_return_if_fail (priv->in_repaint);
 
-  content = clutter_actor_get_content (CLUTTER_ACTOR (area));
-  clutter_content_get_preferred_size (content, &w, &h);
-
-  resource_scale = clutter_actor_get_resource_scale (CLUTTER_ACTOR (area));
-
-  w /= resource_scale;
-  h /= resource_scale;
-
   if (width)
-    *width = ceilf (w);
+    *width = priv->width;
   if (height)
-    *height = ceilf (h);
+    *height = priv->height;
 }

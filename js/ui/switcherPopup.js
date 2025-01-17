@@ -1,24 +1,29 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported SwitcherPopup, SwitcherList */
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
 
-const { Clutter, GLib, GObject, St } = imports.gi;
+import * as Main from './main.js';
 
-const Main = imports.ui.main;
+const POPUP_DELAY_TIMEOUT = 150; // milliseconds
 
-var POPUP_DELAY_TIMEOUT = 150; // milliseconds
+const POPUP_SCROLL_TIME = 100; // milliseconds
+const POPUP_FADE_OUT_TIME = 100; // milliseconds
 
-var POPUP_SCROLL_TIME = 100; // milliseconds
-var POPUP_FADE_OUT_TIME = 100; // milliseconds
+const DISABLE_HOVER_TIMEOUT = 500; // milliseconds
+const NO_MODS_TIMEOUT = 1500; // milliseconds
 
-var DISABLE_HOVER_TIMEOUT = 500; // milliseconds
-var NO_MODS_TIMEOUT = 1500; // milliseconds
-
-function mod(a, b) {
+/**
+ * @param {number} a
+ * @param {number} b
+ * @returns {number}
+ */
+export function mod(a, b) {
     return (a + b) % b;
 }
 
 function primaryModifier(mask) {
-    if (mask == 0)
+    if (mask === 0)
         return 0;
 
     let primary = 1;
@@ -29,7 +34,7 @@ function primaryModifier(mask) {
     return primary;
 }
 
-var SwitcherPopup = GObject.registerClass({
+export const SwitcherPopup = GObject.registerClass({
     GTypeFlags: GObject.TypeFlags.ABSTRACT,
 }, class SwitcherPopup extends St.Widget {
     _init(items) {
@@ -46,7 +51,7 @@ var SwitcherPopup = GObject.registerClass({
 
         this.connect('destroy', this._onDestroy.bind(this));
 
-        Main.uiGroup.add_actor(this);
+        Main.uiGroup.add_child(this);
 
         Main.layoutManager.connectObject(
             'system-modal-opened', () => this.destroy(), this);
@@ -92,14 +97,14 @@ var SwitcherPopup = GObject.registerClass({
     _initialSelection(backward, _binding) {
         if (backward)
             this._select(this._items.length - 1);
-        else if (this._items.length == 1)
+        else if (this._items.length === 1)
             this._select(0);
         else
             this._select(1);
     }
 
     show(backward, binding, mask) {
-        if (this._items.length == 0)
+        if (this._items.length === 0)
             return false;
 
         let grab = Main.pushModal(this);
@@ -112,7 +117,7 @@ var SwitcherPopup = GObject.registerClass({
         this._haveModal = true;
         this._modifierMask = primaryModifier(mask);
 
-        this.add_actor(this._switcherList);
+        this.add_child(this._switcherList);
         this._switcherList.connect('item-activated', this._itemActivated.bind(this));
         this._switcherList.connect('item-entered', this._itemEntered.bind(this));
         this._switcherList.connect('item-removed', this._itemRemoved.bind(this));
@@ -176,14 +181,14 @@ var SwitcherPopup = GObject.registerClass({
         throw new GObject.NotImplementedError(`_keyPressHandler in ${this.constructor.name}`);
     }
 
-    vfunc_key_press_event(keyEvent) {
-        let keysym = keyEvent.keyval;
+    vfunc_key_press_event(event) {
+        let keysym = event.get_key_symbol();
         let action = global.display.get_keybinding_action(
-            keyEvent.hardware_keycode, keyEvent.modifier_state);
+            event.get_key_code(), event.get_state());
 
         this._disableHover();
 
-        if (this._keyPressHandler(keysym, action) != Clutter.EVENT_PROPAGATE) {
+        if (this._keyPressHandler(keysym, action) !== Clutter.EVENT_PROPAGATE) {
             this._showImmediately();
             return Clutter.EVENT_STOP;
         }
@@ -199,18 +204,18 @@ var SwitcherPopup = GObject.registerClass({
             keysym === Clutter.KEY_Return ||
             keysym === Clutter.KEY_KP_Enter ||
             keysym === Clutter.KEY_ISO_Enter)
-            this._finish(keyEvent.time);
+            this._finish(event.get_time());
 
         return Clutter.EVENT_STOP;
     }
 
-    vfunc_key_release_event(keyEvent) {
+    vfunc_key_release_event(event) {
         if (this._modifierMask) {
             let [x_, y_, mods] = global.get_pointer();
             let state = mods & this._modifierMask;
 
-            if (state == 0)
-                this._finish(keyEvent.time);
+            if (state === 0)
+                this._finish(event.get_time());
         } else {
             this._resetNoModsTimeout();
         }
@@ -225,16 +230,16 @@ var SwitcherPopup = GObject.registerClass({
     }
 
     _scrollHandler(direction) {
-        if (direction == Clutter.ScrollDirection.UP)
+        if (direction === Clutter.ScrollDirection.UP)
             this._select(this._previous());
-        else if (direction == Clutter.ScrollDirection.DOWN)
+        else if (direction === Clutter.ScrollDirection.DOWN)
             this._select(this._next());
     }
 
-    vfunc_scroll_event(scrollEvent) {
+    vfunc_scroll_event(event) {
         this._disableHover();
 
-        this._scrollHandler(scrollEvent.direction);
+        this._scrollHandler(event.get_scroll_direction());
         return Clutter.EVENT_PROPAGATE;
     }
 
@@ -281,7 +286,7 @@ var SwitcherPopup = GObject.registerClass({
     _disableHover() {
         this.mouseActive = false;
 
-        if (this._motionTimeoutId != 0)
+        if (this._motionTimeoutId !== 0)
             GLib.source_remove(this._motionTimeoutId);
 
         this._motionTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, DISABLE_HOVER_TIMEOUT, this._mouseTimedOut.bind(this));
@@ -295,7 +300,7 @@ var SwitcherPopup = GObject.registerClass({
     }
 
     _resetNoModsTimeout() {
-        if (this._noModsTimeoutId != 0)
+        if (this._noModsTimeoutId !== 0)
             GLib.source_remove(this._noModsTimeoutId);
 
         this._noModsTimeoutId = GLib.timeout_add(
@@ -337,11 +342,11 @@ var SwitcherPopup = GObject.registerClass({
     _onDestroy() {
         this._popModal();
 
-        if (this._motionTimeoutId != 0)
+        if (this._motionTimeoutId !== 0)
             GLib.source_remove(this._motionTimeoutId);
-        if (this._initialDelayTimeoutId != 0)
+        if (this._initialDelayTimeoutId !== 0)
             GLib.source_remove(this._initialDelayTimeoutId);
-        if (this._noModsTimeoutId != 0)
+        if (this._noModsTimeoutId !== 0)
             GLib.source_remove(this._noModsTimeoutId);
 
         // Make sure the SwitcherList is always destroyed, it may not be
@@ -356,7 +361,7 @@ var SwitcherPopup = GObject.registerClass({
     }
 });
 
-var SwitcherButton = GObject.registerClass(
+const SwitcherButton = GObject.registerClass(
 class SwitcherButton extends St.Button {
     _init(square) {
         super._init({
@@ -375,15 +380,15 @@ class SwitcherButton extends St.Button {
     }
 });
 
-var SwitcherList = GObject.registerClass({
+export const SwitcherList = GObject.registerClass({
     Signals: {
-        'item-activated': { param_types: [GObject.TYPE_INT] },
-        'item-entered': { param_types: [GObject.TYPE_INT] },
-        'item-removed': { param_types: [GObject.TYPE_INT] },
+        'item-activated': {param_types: [GObject.TYPE_INT]},
+        'item-entered': {param_types: [GObject.TYPE_INT]},
+        'item-removed': {param_types: [GObject.TYPE_INT]},
     },
 }, class SwitcherList extends St.Widget {
     _init(squareItems) {
-        super._init({ style_class: 'switcher-list' });
+        super._init({style_class: 'switcher-list'});
 
         this._list = new St.BoxLayout({
             style_class: 'switcher-list-item-container',
@@ -402,11 +407,12 @@ var SwitcherList = GObject.registerClass({
         this._scrollView = new St.ScrollView({
             style_class: 'hfade',
             enable_mouse_scrolling: false,
+            hscrollbar_policy: St.PolicyType.NEVER,
+            vscrollbar_policy: St.PolicyType.NEVER,
+            child: this._list,
         });
-        this._scrollView.set_policy(St.PolicyType.NEVER, St.PolicyType.NEVER);
 
-        this._scrollView.add_actor(this._list);
-        this.add_actor(this._scrollView);
+        this.add_child(this._scrollView);
 
         // Those arrows indicate whether scrolling in one direction is possible
         this._leftArrow = new St.DrawingArea({
@@ -424,8 +430,8 @@ var SwitcherList = GObject.registerClass({
             drawArrow(this._rightArrow, St.Side.RIGHT);
         });
 
-        this.add_actor(this._leftArrow);
-        this.add_actor(this._rightArrow);
+        this.add_child(this._leftArrow);
+        this.add_child(this._rightArrow);
 
         this._items = [];
         this._highlighted = -1;
@@ -440,7 +446,7 @@ var SwitcherList = GObject.registerClass({
         let bbox = new SwitcherButton(this._squareItems);
 
         bbox.set_child(item);
-        this._list.add_actor(bbox);
+        this._list.add_child(bbox);
 
         bbox.connect('clicked', () => this._onItemClicked(bbox));
         bbox.connect('motion-event', () => this._onItemMotion(bbox));
@@ -480,20 +486,20 @@ var SwitcherList = GObject.registerClass({
 
     highlight(index, justOutline) {
         if (this._items[this._highlighted]) {
-            this._items[this._highlighted].remove_style_pseudo_class('outlined');
             this._items[this._highlighted].remove_style_pseudo_class('selected');
+            this._items[this._highlighted].remove_style_pseudo_class('highlighted');
         }
 
         if (this._items[index]) {
             if (justOutline)
-                this._items[index].add_style_pseudo_class('outlined');
+                this._items[index].add_style_pseudo_class('highlighted');
             else
                 this._items[index].add_style_pseudo_class('selected');
         }
 
         this._highlighted = index;
 
-        let adjustment = this._scrollView.hscroll.adjustment;
+        const adjustment = this._scrollView.hadjustment;
         let [value] = adjustment.get_values();
         let [absItemX] = this._items[index].get_transformed_position();
         let [result_, posX, posY_] = this.transform_stage_point(absItemX, 0);
@@ -505,7 +511,7 @@ var SwitcherList = GObject.registerClass({
     }
 
     _scrollToLeft(index) {
-        let adjustment = this._scrollView.hscroll.adjustment;
+        const adjustment = this._scrollView.hadjustment;
         let [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
 
         let item = this._items[index];
@@ -528,7 +534,7 @@ var SwitcherList = GObject.registerClass({
     }
 
     _scrollToRight(index) {
-        let adjustment = this._scrollView.hscroll.adjustment;
+        const adjustment = this._scrollView.hadjustment;
         let [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
 
         let item = this._items[index];
@@ -642,7 +648,11 @@ var SwitcherList = GObject.registerClass({
     }
 });
 
-function drawArrow(area, side) {
+/**
+ * @param {St.DrawingArrow} area
+ * @param {St.Side} side
+ */
+export function drawArrow(area, side) {
     let themeNode = area.get_theme_node();
     let borderColor = themeNode.get_border_color(side);
     let bodyColor = themeNode.get_foreground_color();
@@ -651,7 +661,7 @@ function drawArrow(area, side) {
     let cr = area.get_context();
 
     cr.setLineWidth(1.0);
-    Clutter.cairo_set_source_color(cr, borderColor);
+    cr.setSourceColor(borderColor);
 
     switch (side) {
     case St.Side.TOP:
@@ -681,7 +691,7 @@ function drawArrow(area, side) {
 
     cr.strokePreserve();
 
-    Clutter.cairo_set_source_color(cr, bodyColor);
+    cr.setSourceColor(bodyColor);
     cr.fill();
     cr.$dispose();
 }

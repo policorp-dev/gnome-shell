@@ -1,16 +1,15 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported Ripples */
-
-const { Clutter, St } = imports.gi;
+import Clutter from 'gi://Clutter';
+import St from 'gi://St';
 
 // Shamelessly copied from the layout "hotcorner" ripples implementation
-var Ripples = class Ripples {
-    constructor(px, py, styleClass) {
+export class Ripples {
+    constructor(px, py, styleClass, animationRequired = false) {
         this._x = 0;
         this._y = 0;
 
         this._px = px;
         this._py = py;
+        this._animationRequired = animationRequired;
 
         this._ripple1 = new St.BoxLayout({
             style_class: styleClass,
@@ -60,11 +59,13 @@ var Ripples = class Ripples {
         ripple.opacity = 255 * Math.sqrt(startOpacity);
         ripple.scale_x = ripple.scale_y = startScale;
         ripple.set_translation(-this._px * ripple.width, -this._py * ripple.height, 0.0);
+        const animationRequired = this._animationRequired;
 
         ripple.ease({
             opacity: 0,
             delay,
             duration,
+            animationRequired,
             mode: Clutter.AnimationMode.EASE_IN_QUAD,
         });
         ripple.ease({
@@ -72,6 +73,7 @@ var Ripples = class Ripples {
             scale_y: finalScale,
             delay,
             duration,
+            animationRequired,
             mode: Clutter.AnimationMode.LINEAR,
             onComplete: () => (ripple.visible = false),
         });
@@ -82,9 +84,9 @@ var Ripples = class Ripples {
             throw new Error('Ripples already added');
 
         this._stage = stage;
-        this._stage.add_actor(this._ripple1);
-        this._stage.add_actor(this._ripple2);
-        this._stage.add_actor(this._ripple3);
+        this._stage.add_child(this._ripple1);
+        this._stage.add_child(this._ripple2);
+        this._stage.add_child(this._ripple3);
     }
 
     playAnimation(x, y) {
@@ -107,4 +109,4 @@ var Ripples = class Ripples {
         this._animRipple(this._ripple2,  50,   1000,   0.0,   0.7,     1.25);
         this._animRipple(this._ripple3, 350,   1000,   0.0,   0.3,     1);
     }
-};
+}

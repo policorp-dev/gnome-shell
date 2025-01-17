@@ -22,8 +22,7 @@
 #error "Only <st/st.h> can be included directly.h"
 #endif
 
-#ifndef _ST_BOX_LAYOUT_H
-#define _ST_BOX_LAYOUT_H
+#pragma once
 
 #include <st/st-widget.h>
 #include <st/st-viewport.h>
@@ -36,12 +35,6 @@ G_DECLARE_FINAL_TYPE (StBoxLayout, st_box_layout, ST, BOX_LAYOUT, StViewport)
 typedef struct _StBoxLayout StBoxLayout;
 typedef struct _StBoxLayoutPrivate StBoxLayoutPrivate;
 
-/**
- * StBoxLayout:
- *
- * The contents of this structure are private and should only be accessed
- * through the public API.
- */
 struct _StBoxLayout
 {
   /*< private >*/
@@ -61,5 +54,3 @@ void     st_box_layout_set_pack_start (StBoxLayout *box,
 gboolean st_box_layout_get_pack_start (StBoxLayout *box);
 
 G_END_DECLS
-
-#endif /* _ST_BOX_LAYOUT_H */

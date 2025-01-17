@@ -1,20 +1,23 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
-#ifndef __SHELL_GLOBAL_H__
-#define __SHELL_GLOBAL_H__
+#pragma once
 
 #include <clutter/clutter.h>
 #include <glib-object.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include <gtk/gtk.h>
 #include <meta/meta-plugin.h>
 
 G_BEGIN_DECLS
+
+#include "shell-window-tracker.h"
+#include "shell-app-system.h"
+#include "shell-app-usage.h"
 
 #define SHELL_TYPE_GLOBAL (shell_global_get_type ())
 G_DECLARE_FINAL_TYPE (ShellGlobal, shell_global, SHELL, GLOBAL, GObject)
 
 ShellGlobal          *shell_global_get                       (void);
 
+MetaContext          *shell_global_get_context               (ShellGlobal *global);
 ClutterStage         *shell_global_get_stage                 (ShellGlobal *global);
 MetaDisplay          *shell_global_get_display               (ShellGlobal *global);
 GList                *shell_global_get_window_actors         (ShellGlobal *global);
@@ -89,6 +92,10 @@ GVariant * shell_global_get_persistent_state    (ShellGlobal  *global,
                                                  const char   *property_type,
                                                  const char   *property_name);
 
-G_END_DECLS
+ShellWindowTracker * shell_global_get_window_tracker (ShellGlobal *global);
 
-#endif /* __SHELL_GLOBAL_H__ */
+ShellAppSystem *     shell_global_get_app_system     (ShellGlobal *global);
+
+ShellAppUsage *      shell_global_get_app_usage      (ShellGlobal *global);
+
+G_END_DECLS

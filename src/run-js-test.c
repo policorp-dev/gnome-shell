@@ -36,13 +36,6 @@
 #include "shell-global.h"
 #include "shell-global-private.h"
 
-static char *command = NULL;
-
-static GOptionEntry entries[] = {
-  { "command", 'c', 0, G_OPTION_ARG_STRING, &command, "Program passed in as a string", "COMMAND" },
-  { NULL }
-};
-
 int
 main(int argc, char **argv)
 {
@@ -50,18 +43,15 @@ main(int argc, char **argv)
   GError *error = NULL;
   ShellGlobal *global;
   GjsContext *js_context;
-  char *script;
   const char *filename;
   char *title;
-  gsize len;
-  int code;
+  uint8_t code;
 
   context = g_option_context_new (NULL);
 
   /* pass unknown through to the JS script */
   g_option_context_set_ignore_unknown_options (context, TRUE);
 
-  g_option_context_add_main_entries (context, entries, NULL);
   if (!g_option_context_parse (context, &argc, &argv, &error))
     g_error ("option parsing failed: %s", error->message);
 
@@ -71,6 +61,9 @@ main(int argc, char **argv)
   global = shell_global_get ();
   js_context = _shell_global_get_gjs_context (global);
 
+  g_irepository_prepend_search_path (MUTTER_TYPELIB_DIR);
+  g_irepository_prepend_search_path (SHELL_TYPELIB_DIR);
+
   /* prepare command line arguments */
   if (!gjs_context_define_string_array (js_context, "ARGV",
                                         argc - 2, (const char**)argv + 2,
@@ -79,32 +72,21 @@ main(int argc, char **argv)
     exit (1);
   }
 
-  if (command != NULL) {
-    script = command;
-    len = strlen (script);
-    filename = "<command line>";
-  } else if (argc <= 1) {
-    script = g_strdup ("const Console = imports.console; Console.interact();");
-    len = strlen (script);
-    filename = "<stdin>";
-  } else /*if (argc >= 2)*/ {
-    error = NULL;
-    if (!g_file_get_contents (argv[1], &script, &len, &error)) {
-      g_printerr ("%s\n", error->message);
-      exit (1);
-    }
-    filename = argv[1];
+  if (argc < 2) {
+    g_printerr ("Missing filename");
+    exit(1);
   }
 
+  filename = argv[1];
   title = g_filename_display_basename (filename);
   g_set_prgname (title);
   g_free (title);
 
-  /* evaluate the script */
   error = NULL;
-  if (!gjs_context_eval (js_context, script, len,
-                         filename, &code, &error)) {
-    g_free (script);
+
+  /* evaluate the script */
+  bool success = gjs_context_eval_module_file(js_context, filename, &code, &error);
+  if (!success) {
     g_printerr ("%s\n", error->message);
     exit (1);
   }
@@ -113,6 +95,5 @@ main(int argc, char **argv)
   gjs_context_gc (js_context);
 
   g_object_unref (js_context);
-  g_free (script);
   exit (code);
 }

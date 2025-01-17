@@ -18,8 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "st-image-content.h"
+#include "st-image-content-private.h"
 #include "st-private.h"
+
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
 struct _StImageContent
 {
@@ -32,6 +34,7 @@ struct _StImageContentPrivate
 {
   int width;
   int height;
+  gboolean is_symbolic;
 };
 
 enum
@@ -130,16 +133,12 @@ st_image_content_class_init (StImageContentClass *klass)
   object_class->get_property = st_image_content_get_property;
   object_class->set_property = st_image_content_set_property;
 
-  pspec = g_param_spec_int ("preferred-width",
-                            "Preferred Width",
-                            "Preferred Width of the Content when painted",
+  pspec = g_param_spec_int ("preferred-width", NULL, NULL,
                              -1, G_MAXINT, -1,
                              G_PARAM_CONSTRUCT_ONLY | ST_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PREFERRED_WIDTH, pspec);
 
-  pspec = g_param_spec_int ("preferred-height",
-                            "Preferred Height",
-                            "Preferred Height of the Content when painted",
+  pspec = g_param_spec_int ("preferred-height", NULL, NULL,
                              -1, G_MAXINT, -1,
                              G_PARAM_CONSTRUCT_ONLY | ST_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PREFERRED_HEIGHT, pspec);
@@ -343,4 +342,27 @@ st_image_content_new_with_preferred_size (int width,
                        "preferred-width", width,
                        "preferred-height", height,
                        NULL);
+}
+
+void
+st_image_content_set_is_symbolic (StImageContent *content,
+                                  gboolean        is_symbolic)
+{
+  StImageContentPrivate *priv;
+
+  g_return_if_fail (ST_IS_IMAGE_CONTENT (content));
+
+  priv = st_image_content_get_instance_private (content);
+  priv->is_symbolic = is_symbolic;
+}
+
+gboolean
+st_image_content_get_is_symbolic (StImageContent *content)
+{
+  StImageContentPrivate *priv;
+
+  g_return_val_if_fail (ST_IS_IMAGE_CONTENT (content), FALSE);
+
+  priv = st_image_content_get_instance_private (content);
+  return priv->is_symbolic;
 }

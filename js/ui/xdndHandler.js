@@ -1,13 +1,10 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported XdndHandler */
+import Clutter from 'gi://Clutter';
+import * as Signals from '../misc/signals.js';
 
-const { Clutter } = imports.gi;
-const Signals = imports.misc.signals;
+import * as DND from './dnd.js';
+import * as Main from './main.js';
 
-const DND = imports.ui.dnd;
-const Main = imports.ui.main;
-
-var XdndHandler = class extends Signals.EventEmitter {
+export class XdndHandler extends Signals.EventEmitter {
     constructor() {
         super();
 
@@ -16,8 +13,8 @@ var XdndHandler = class extends Signals.EventEmitter {
         this._cursorWindowClone = null;
 
         // Used as a drag actor in case we don't have a cursor window clone
-        this._dummy = new Clutter.Actor({ width: 1, height: 1, opacity: 0 });
-        Main.uiGroup.add_actor(this._dummy);
+        this._dummy = new Clutter.Actor({width: 1, height: 1, opacity: 0});
+        Main.uiGroup.add_child(this._dummy);
         this._dummy.hide();
 
         var dnd = global.backend.get_dnd();
@@ -61,8 +58,8 @@ var XdndHandler = class extends Signals.EventEmitter {
                 source: cursorWindow,
             });
 
-            this._cursorWindowClone = new Clutter.Clone({ source: cursorWindow });
-            Main.uiGroup.add_actor(this._cursorWindowClone);
+            this._cursorWindowClone = new Clutter.Clone({source: cursorWindow});
+            Main.uiGroup.add_child(this._cursorWindowClone);
 
             // Make sure that the clone has the same position as the source
             this._cursorWindowClone.add_constraint(constraintPosition);
@@ -94,7 +91,7 @@ var XdndHandler = class extends Signals.EventEmitter {
             let motionFunc = DND.dragMonitors[i].dragMotion;
             if (motionFunc) {
                 let result = motionFunc(dragEvent);
-                if (result != DND.DragMotionResult.CONTINUE)
+                if (result !== DND.DragMotionResult.CONTINUE)
                     return;
             }
         }
@@ -103,14 +100,14 @@ var XdndHandler = class extends Signals.EventEmitter {
             if (pickedActor._delegate && pickedActor._delegate.handleDragOver) {
                 let [r_, targX, targY] = pickedActor.transform_stage_point(x, y);
                 let result = pickedActor._delegate.handleDragOver(this,
-                                                                  dragEvent.dragActor,
-                                                                  targX,
-                                                                  targY,
-                                                                  global.get_current_time());
-                if (result != DND.DragMotionResult.CONTINUE)
+                    dragEvent.dragActor,
+                    targX,
+                    targY,
+                    global.get_current_time());
+                if (result !== DND.DragMotionResult.CONTINUE)
                     return;
             }
             pickedActor = pickedActor.get_parent();
         }
     }
-};
+}

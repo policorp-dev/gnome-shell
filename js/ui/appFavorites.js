@@ -1,11 +1,7 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported getAppFavorites */
-
-const Shell = imports.gi.Shell;
-const ParentalControlsManager = imports.misc.parentalControlsManager;
-const Signals = imports.misc.signals;
-
-const Main = imports.ui.main;
+import * as MessageTray from './messageTray.js';
+import Shell from 'gi://Shell';
+import * as ParentalControlsManager from '../misc/parentalControlsManager.js';
+import * as Signals from '../misc/signals.js';
 
 // In alphabetical order
 const RENAMED_DESKTOP_IDS = {
@@ -59,6 +55,7 @@ const RENAMED_DESKTOP_IDS = {
     'polari.desktop': 'org.gnome.Polari.desktop',
     'seahorse.desktop': 'org.gnome.seahorse.Application.desktop',
     'shotwell.desktop': 'org.gnome.Shotwell.desktop',
+    'simple-scan.desktop': 'org.gnome.SimpleScan.desktop',
     'tali.desktop': 'org.gnome.Tali.desktop',
     'totem.desktop': 'org.gnome.Totem.desktop',
     'evince.desktop': 'org.gnome.Evince.desktop',
@@ -149,7 +146,7 @@ class AppFavorites extends Signals.EventEmitter {
             return false;
 
         let ids = this._getIds();
-        if (pos == -1)
+        if (pos === -1)
             ids.push(appId);
         else
             ids.splice(pos, 0, appId);
@@ -161,13 +158,11 @@ class AppFavorites extends Signals.EventEmitter {
         if (!this._addFavorite(appId, pos))
             return;
 
-        let app = Shell.AppSystem.get_default().lookup_app(appId);
+        const app = Shell.AppSystem.get_default().lookup_app(appId);
 
-        let msg = _('%s has been pinned to the dash.').format(app.get_name());
-        Main.overview.setMessage(msg, {
-            forFeedback: true,
-            undoCallback: () => this._removeFavorite(appId),
-        });
+        this._showNotification(_('%s has been pinned to the dash.').format(app.get_name()),
+            null,
+            () => this._removeFavorite(appId));
     }
 
     addFavorite(appId) {
@@ -183,7 +178,7 @@ class AppFavorites extends Signals.EventEmitter {
         if (!(appId in this._favorites))
             return false;
 
-        let ids = this._getIds().filter(id => id != appId);
+        let ids = this._getIds().filter(id => id !== appId);
         global.settings.set_strv(this.FAVORITE_APPS_KEY, ids);
         return true;
     }
@@ -196,16 +191,31 @@ class AppFavorites extends Signals.EventEmitter {
         if (!this._removeFavorite(appId))
             return;
 
-        let msg = _('%s has been unpinned from the dash.').format(app.get_name());
-        Main.overview.setMessage(msg, {
+        this._showNotification(_('%s has been unpinned from the dash.').format(app.get_name()),
+            null,
+            () => this._addFavorite(appId, pos));
+    }
+
+    _showNotification(title, body, undoCallback) {
+        const source = MessageTray.getSystemSource();
+        const notification = new MessageTray.Notification({
+            source,
+            title,
+            body,
+            isTransient: true,
             forFeedback: true,
-            undoCallback: () => this._addFavorite(appId, pos),
         });
+        notification.addAction(_('Undo'), () => undoCallback());
+        source.addNotification(notification);
     }
 }
 
 var appFavoritesInstance = null;
-function getAppFavorites() {
+
+/**
+ * @returns {AppFavorites}
+ */
+export function getAppFavorites() {
     if (appFavoritesInstance == null)
         appFavoritesInstance = new AppFavorites();
     return appFavoritesInstance;

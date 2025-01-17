@@ -1,11 +1,10 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported Indicator */
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
 
-const {Gio, GLib, GObject} = imports.gi;
+import {QuickToggle, SystemIndicator} from '../quickSettings.js';
 
-const {QuickToggle, SystemIndicator} = imports.ui.quickSettings;
-
-const {loadInterfaceXML} = imports.misc.fileUtils;
+import {loadInterfaceXML} from '../../misc/fileUtils.js';
 
 const BUS_NAME = 'org.gnome.SettingsDaemon.Rfkill';
 const OBJECT_PATH = '/org/gnome/SettingsDaemon/Rfkill';
@@ -16,15 +15,15 @@ const rfkillManagerInfo = Gio.DBusInterfaceInfo.new_for_xml(RfkillManagerInterfa
 const RfkillManager = GObject.registerClass({
     Properties: {
         'airplane-mode': GObject.ParamSpec.boolean(
-            'airplane-mode', '', '',
+            'airplane-mode', null, null,
             GObject.ParamFlags.READWRITE,
             false),
         'hw-airplane-mode': GObject.ParamSpec.boolean(
-            'hw-airplane-mode', '', '',
+            'hw-airplane-mode', null, null,
             GObject.ParamFlags.READABLE,
             false),
         'show-airplane-mode': GObject.ParamSpec.boolean(
-            'show-airplane-mode', '', '',
+            'show-airplane-mode', null, null,
             GObject.ParamFlags.READABLE,
             false),
     },
@@ -80,8 +79,12 @@ const RfkillManager = GObject.registerClass({
     }
 });
 
-var _manager;
-function getRfkillManager() {
+let _manager;
+
+/**
+ * @returns {RfkillManager}
+ */
+export function getRfkillManager() {
     if (_manager != null)
         return _manager;
 
@@ -93,7 +96,7 @@ const RfkillToggle = GObject.registerClass(
 class RfkillToggle extends QuickToggle {
     _init() {
         super._init({
-            label: _('Airplane Mode'),
+            title: _('Airplane Mode'),
             iconName: 'airplane-mode-symbolic',
         });
 
@@ -110,7 +113,7 @@ class RfkillToggle extends QuickToggle {
     }
 });
 
-var Indicator = GObject.registerClass(
+export const Indicator = GObject.registerClass(
 class Indicator extends SystemIndicator {
     _init() {
         super._init();

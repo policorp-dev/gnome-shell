@@ -1,10 +1,12 @@
+data_builddir = meson.current_build_dir()
+
 desktop_files = [
   'org.gnome.Shell.desktop',
   'org.gnome.Shell.Extensions.desktop',
 ]
 service_files = []
 
-if have_networkmanager
+if have_portal_helper
   desktop_files += 'org.gnome.Shell.PortalHelper.desktop'
   service_files += 'org.gnome.Shell.PortalHelper.service'
 endif
@@ -83,7 +85,6 @@ keybinding_files = [
   '50-gnome-shell-system.xml',
 ]
 
-install_data('gnome-shell.portal', install_dir: portaldir)
 install_data(keybinding_files, install_dir: keysdir)
 
 
@@ -97,25 +98,19 @@ schema = configure_file(
 )
 install_data('00_org.gnome.shell.gschema.override', install_dir: schemadir)
 
-overrides_migration_conf = configuration_data()
-overrides_migration_conf.set('libexecdir', libexecdir)
-overrides_migration = configure_file(
-  input: 'gnome-shell-overrides-migration.desktop.in',
-  output: 'gnome-shell-overrides-migration.desktop',
-  configuration: overrides_migration_conf,
-  install_dir: autostartdir
-)
-
 if have_systemd
   unitconf = configuration_data()
   unitconf.set('bindir', bindir)
-
-  configure_file(
-    input: 'org.gnome.Shell@x11.service.in',
-    output: 'org.gnome.Shell@x11.service',
-    configuration: unitconf,
-    install_dir: systemduserunitdir
-  )
+  supported_sessions = ['wayland']
+  if have_x11
+    configure_file(
+      input: 'org.gnome.Shell@x11.service.in',
+      output: 'org.gnome.Shell@x11.service',
+      configuration: unitconf,
+      install_dir: systemduserunitdir
+    )
+    supported_sessions += ['x11']
+  endif
 
   configure_file(
     input: 'org.gnome.Shell@wayland.service.in',
@@ -124,8 +119,20 @@ if have_systemd
     install_dir: systemduserunitdir
   )
 
-  units = files('org.gnome.Shell.target',
-                'org.gnome.Shell-disable-extensions.service')
+
+  units = files('org.gnome.Shell-disable-extensions.service')
+  targetconf = configuration_data()
+  sessions_wants = []
+  foreach session: supported_sessions
+    sessions_wants += 'org.gnome.Shell@' + session + '.service'
+  endforeach
+  targetconf.set('SUPPORTED_SESSIONS', ' '.join(sessions_wants))
+  target = configure_file(
+    input: 'org.gnome.Shell.target.in',
+    output: 'org.gnome.Shell.target',
+    configuration: targetconf
+  )
+  units += target
 
   install_data(units, install_dir: systemduserunitdir)
 endif
@@ -134,5 +141,5 @@ endif
 custom_target('compile-schemas',
   input: schema,
   output: 'gschemas.compiled',
-  command: [find_program('glib-compile-schemas'), meson.current_build_dir()],
+  command: [find_program('glib-compile-schemas'), '--strict', data_builddir],
   build_by_default: true)

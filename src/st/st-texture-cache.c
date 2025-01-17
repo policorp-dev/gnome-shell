@@ -21,11 +21,11 @@
 
 #include "config.h"
 
-#include "st-image-content.h"
+#include "st-image-content-private.h"
 #include "st-texture-cache.h"
 #include "st-private.h"
 #include "st-settings.h"
-#include <gtk/gtk.h>
+#include "st-icon-theme.h"
 #include <math.h>
 #include <string.h>
 #include <glib.h>
@@ -36,8 +36,7 @@
 
 struct _StTextureCachePrivate
 {
-  GtkIconTheme *icon_theme;
-  GSettings *settings;
+  StIconTheme *icon_theme;
 
   /* Things that were loaded with a cache policy != NONE */
   GHashTable *keyed_cache; /* char * -> ClutterImage* */
@@ -153,26 +152,8 @@ st_texture_cache_evict_icons (StTextureCache *cache)
 }
 
 static void
-on_icon_theme_changed (StSettings     *settings,
-                       GParamSpec     *pspec,
-                       StTextureCache *cache)
-{
-  g_autofree gchar *theme = NULL;
-
-  g_cancellable_cancel (cache->priv->cancellable);
-  g_cancellable_reset (cache->priv->cancellable);
-
-  st_texture_cache_evict_icons (cache);
-
-  g_object_get (settings, "gtk-icon-theme", &theme, NULL);
-  gtk_icon_theme_set_custom_theme (cache->priv->icon_theme, theme);
-
-  g_signal_emit (cache, signals[ICON_THEME_CHANGED], 0);
-}
-
-static void
-on_gtk_icon_theme_changed (GtkIconTheme   *icon_theme,
-                           StTextureCache *self)
+on_icon_theme_changed (StIconTheme    *icon_theme,
+                       StTextureCache *self)
 {
   st_texture_cache_evict_icons (self);
   g_signal_emit (self, signals[ICON_THEME_CHANGED], 0);
@@ -181,18 +162,12 @@ on_gtk_icon_theme_changed (GtkIconTheme   *icon_theme,
 static void
 st_texture_cache_init (StTextureCache *self)
 {
-  StSettings *settings;
-
   self->priv = g_new0 (StTextureCachePrivate, 1);
 
-  self->priv->icon_theme = gtk_icon_theme_new ();
-  gtk_icon_theme_add_resource_path (self->priv->icon_theme,
-                                    "/org/gnome/shell/icons");
+  self->priv->icon_theme = st_icon_theme_new ();
+  st_icon_theme_add_resource_path (self->priv->icon_theme,
+                                   "/org/gnome/shell/icons");
   g_signal_connect (self->priv->icon_theme, "changed",
-                    G_CALLBACK (on_gtk_icon_theme_changed), self);
-
-  settings = st_settings_get ();
-  g_signal_connect (settings, "notify::gtk-icon-theme",
                     G_CALLBACK (on_icon_theme_changed), self);
 
   self->priv->keyed_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -209,8 +184,6 @@ st_texture_cache_init (StTextureCache *self)
                                                      g_object_unref, g_object_unref);
 
   self->priv->cancellable = g_cancellable_new ();
-
-  on_icon_theme_changed (settings, NULL, self);
 }
 
 static void
@@ -220,7 +193,6 @@ st_texture_cache_dispose (GObject *object)
 
   g_cancellable_cancel (self->priv->cancellable);
 
-  g_clear_object (&self->priv->settings);
   g_clear_object (&self->priv->icon_theme);
   g_clear_object (&self->priv->cancellable);
 
@@ -297,16 +269,6 @@ compute_pixbuf_scale (gint      width,
     }
 }
 
-static void
-rgba_from_clutter (GdkRGBA      *rgba,
-                   ClutterColor *color)
-{
-  rgba->red = color->red / 255.;
-  rgba->green = color->green / 255.;
-  rgba->blue = color->blue / 255.;
-  rgba->alpha = color->alpha / 255.;
-}
-
 /* A private structure for keeping width, height and scale. */
 typedef struct {
   int width;
@@ -328,7 +290,7 @@ typedef struct {
   gfloat resource_scale;
   GSList *actors;
 
-  GtkIconInfo *icon_info;
+  StIconInfo *icon_info;
   StIconColors *colors;
   GFile *file;
 } AsyncTextureLoadData;
@@ -579,6 +541,121 @@ pixbuf_to_st_content_image (GdkPixbuf *pixbuf,
   return image;
 }
 
+static void
+util_cairo_surface_paint_pixbuf (cairo_surface_t *surface,
+                                 const GdkPixbuf *pixbuf)
+{
+  int width, height;
+  guchar *gdk_pixels, *cairo_pixels;
+  int gdk_rowstride, cairo_stride;
+  int n_channels;
+  int j;
+
+  if (cairo_surface_status (surface) != CAIRO_STATUS_SUCCESS)
+    return;
+
+  /* This function can't just copy any pixbuf to any surface, be
+   * sure to read the invariants here before calling it */
+  g_assert (cairo_surface_get_type (surface) == CAIRO_SURFACE_TYPE_IMAGE);
+  g_assert (cairo_image_surface_get_format (surface) == CAIRO_FORMAT_RGB24 ||
+            cairo_image_surface_get_format (surface) == CAIRO_FORMAT_ARGB32);
+  g_assert (cairo_image_surface_get_width (surface) == gdk_pixbuf_get_width (pixbuf));
+  g_assert (cairo_image_surface_get_height (surface) == gdk_pixbuf_get_height (pixbuf));
+
+  cairo_surface_flush (surface);
+
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+  gdk_pixels = gdk_pixbuf_get_pixels (pixbuf);
+  gdk_rowstride = gdk_pixbuf_get_rowstride (pixbuf);
+  n_channels = gdk_pixbuf_get_n_channels (pixbuf);
+  cairo_stride = cairo_image_surface_get_stride (surface);
+  cairo_pixels = cairo_image_surface_get_data (surface);
+
+  for (j = height; j; j--)
+    {
+      guchar *p = gdk_pixels;
+      guchar *q = cairo_pixels;
+
+      if (n_channels == 3)
+        {
+          guchar *end = p + 3 * width;
+
+          while (p < end)
+            {
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+              q[0] = p[2];
+              q[1] = p[1];
+              q[2] = p[0];
+#else
+              q[1] = p[0];
+              q[2] = p[1];
+              q[3] = p[2];
+#endif
+              p += 3;
+              q += 4;
+            }
+        }
+      else
+        {
+          guchar *end = p + 4 * width;
+          guint t1,t2,t3;
+
+#define MULT(d,c,a,t) G_STMT_START { t = c * a + 0x80; d = ((t >> 8) + t) >> 8; } G_STMT_END
+
+          while (p < end)
+            {
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+              MULT(q[0], p[2], p[3], t1);
+              MULT(q[1], p[1], p[3], t2);
+              MULT(q[2], p[0], p[3], t3);
+              q[3] = p[3];
+#else
+              q[0] = p[3];
+              MULT(q[1], p[0], p[3], t1);
+              MULT(q[2], p[1], p[3], t2);
+              MULT(q[3], p[2], p[3], t3);
+#endif
+
+              p += 4;
+              q += 4;
+            }
+
+#undef MULT
+        }
+
+      gdk_pixels += gdk_rowstride;
+      cairo_pixels += cairo_stride;
+    }
+
+  cairo_surface_mark_dirty (surface);
+}
+
+static void
+util_cairo_set_source_pixbuf (cairo_t         *cr,
+                              const GdkPixbuf *pixbuf,
+                              gdouble          pixbuf_x,
+                              gdouble          pixbuf_y)
+{
+  cairo_format_t format;
+  cairo_surface_t *surface;
+
+  if (gdk_pixbuf_get_n_channels (pixbuf) == 3)
+    format = CAIRO_FORMAT_RGB24;
+  else
+    format = CAIRO_FORMAT_ARGB32;
+
+  surface = cairo_surface_create_similar_image (cairo_get_target (cr),
+                                                format,
+                                                gdk_pixbuf_get_width (pixbuf),
+                                                gdk_pixbuf_get_height (pixbuf));
+
+  util_cairo_surface_paint_pixbuf (surface, pixbuf);
+
+  cairo_set_source_surface (cr, surface, pixbuf_x, pixbuf_y);
+  cairo_surface_destroy (surface);
+}
+
 static cairo_surface_t *
 pixbuf_to_cairo_surface (GdkPixbuf *pixbuf)
 {
@@ -590,7 +667,7 @@ pixbuf_to_cairo_surface (GdkPixbuf *pixbuf)
   dummy_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 1, 1);
 
   cr = cairo_create (dummy_surface);
-  gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
+  util_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
   pattern = cairo_get_source (cr);
   cairo_pattern_get_surface (pattern, &surface);
   cairo_surface_reference (surface);
@@ -647,6 +724,10 @@ finish_texture_load (AsyncTextureLoadData *data,
         goto out;
     }
 
+  if (data->icon_info)
+    st_image_content_set_is_symbolic (ST_IMAGE_CONTENT (image),
+                                      st_icon_info_is_symbolic (data->icon_info));
+
   for (iter = data->actors; iter; iter = iter->next)
     {
       ClutterActor *actor = iter->data;
@@ -663,7 +744,7 @@ on_symbolic_icon_loaded (GObject      *source,
                          gpointer      user_data)
 {
   GdkPixbuf *pixbuf;
-  pixbuf = gtk_icon_info_load_symbolic_finish (GTK_ICON_INFO (source), result, NULL, NULL);
+  pixbuf = st_icon_info_load_symbolic_finish (ST_ICON_INFO (source), result, NULL, NULL);
   finish_texture_load (user_data, pixbuf);
   g_clear_object (&pixbuf);
 }
@@ -674,7 +755,7 @@ on_icon_loaded (GObject      *source,
                 gpointer      user_data)
 {
   GdkPixbuf *pixbuf;
-  pixbuf = gtk_icon_info_load_icon_finish (GTK_ICON_INFO (source), result, NULL);
+  pixbuf = st_icon_info_load_icon_finish (ST_ICON_INFO (source), result, NULL);
   finish_texture_load (user_data, pixbuf);
   g_clear_object (&pixbuf);
 }
@@ -706,40 +787,21 @@ load_texture_async (StTextureCache       *cache,
       StIconColors *colors = data->colors;
       if (colors)
         {
-          GdkRGBA foreground_color;
-          GdkRGBA success_color;
-          GdkRGBA warning_color;
-          GdkRGBA error_color;
-
-          rgba_from_clutter (&foreground_color, &colors->foreground);
-          rgba_from_clutter (&success_color, &colors->success);
-          rgba_from_clutter (&warning_color, &colors->warning);
-          rgba_from_clutter (&error_color, &colors->error);
-
-          gtk_icon_info_load_symbolic_async (data->icon_info,
-                                             &foreground_color, &success_color,
-                                             &warning_color, &error_color,
-                                             cache->priv->cancellable,
-                                             on_symbolic_icon_loaded, data);
+          st_icon_info_load_symbolic_async (data->icon_info,
+                                            data->colors,
+                                            cache->priv->cancellable,
+                                            on_symbolic_icon_loaded, data);
         }
       else
         {
-          gtk_icon_info_load_icon_async (data->icon_info,
-                                         cache->priv->cancellable,
-                                         on_icon_loaded, data);
+          st_icon_info_load_icon_async (data->icon_info,
+                                        cache->priv->cancellable,
+                                        on_icon_loaded, data);
         }
     }
   else
     g_assert_not_reached ();
 }
-
-typedef struct {
-  StTextureCache *cache;
-  ClutterContent *image;
-  GObject *source;
-  gulong notify_signal_id;
-  gboolean weakref_active;
-} StTextureCachePropertyBind;
 
 static void
 st_texture_cache_load_surface (ClutterContent  **image,
@@ -778,84 +840,6 @@ st_texture_cache_load_surface (ClutterContent  **image,
     {
       *image = st_image_content_new_with_preferred_size (0, 0);
     }
-}
-
-static void
-st_texture_cache_reset_texture (StTextureCachePropertyBind *bind,
-                                const char                 *propname)
-{
-  cairo_surface_t *surface;
-
-  g_object_get (bind->source, propname, &surface, NULL);
-
-  st_texture_cache_load_surface (&bind->image, surface);
-}
-
-static void
-st_texture_cache_on_pixbuf_notify (GObject           *object,
-                                   GParamSpec        *paramspec,
-                                   gpointer           data)
-{
-  StTextureCachePropertyBind *bind = data;
-  st_texture_cache_reset_texture (bind, paramspec->name);
-}
-
-static void
-st_texture_cache_bind_weak_notify (gpointer     data,
-                                   GObject     *source_location)
-{
-  StTextureCachePropertyBind *bind = data;
-  bind->weakref_active = FALSE;
-  g_signal_handler_disconnect (bind->source, bind->notify_signal_id);
-}
-
-static void
-st_texture_cache_free_bind (gpointer data)
-{
-  StTextureCachePropertyBind *bind = data;
-  if (bind->weakref_active)
-    g_object_weak_unref (G_OBJECT (bind->image), st_texture_cache_bind_weak_notify, bind);
-  g_free (bind);
-}
-
-/**
- * st_texture_cache_bind_cairo_surface_property:
- * @cache: A #StTextureCache
- * @object: A #GObject with a property @property_name of type #cairo_surface_t
- * @property_name: Name of a property
- *
- * Create a #GIcon which tracks the #cairo_surface_t value of a GObject property
- * named by @property_name.  Unlike other methods in StTextureCache, the underlying
- * #CoglTexture is not shared by default with other invocations to this method.
- *
- * If the source object is destroyed, the texture will continue to show the last
- * value of the property.
- *
- * Returns: (transfer full): A new #GIcon
- */
-GIcon *
-st_texture_cache_bind_cairo_surface_property (StTextureCache    *cache,
-                                              GObject           *object,
-                                              const char        *property_name)
-{
-  gchar *notify_key;
-  StTextureCachePropertyBind *bind;
-
-  bind = g_new0 (StTextureCachePropertyBind, 1);
-  bind->cache = cache;
-  bind->source = object;
-
-  st_texture_cache_reset_texture (bind, property_name);
-
-  g_object_weak_ref (G_OBJECT (bind->image), st_texture_cache_bind_weak_notify, bind);
-  bind->weakref_active = TRUE;
-
-  notify_key = g_strdup_printf ("notify::%s", property_name);
-  bind->notify_signal_id = g_signal_connect_data (object, notify_key, G_CALLBACK(st_texture_cache_on_pixbuf_notify),
-                                                  bind, (GClosureNotify)st_texture_cache_free_bind, 0);
-  g_free (notify_key);
-
-  return G_ICON (bind->image);
 }
 
 /**
@@ -912,7 +896,7 @@ st_texture_cache_load (StTextureCache       *cache,
     }
 
   if (texture && policy == ST_TEXTURE_CACHE_POLICY_FOREVER)
-    cogl_object_ref (texture);
+    g_object_ref (texture);
 
   return texture;
 }
@@ -1000,11 +984,11 @@ st_texture_cache_load_gicon (StTextureCache    *cache,
   char *gicon_string;
   g_autofree char *key = NULL;
   float actor_size;
-  GtkIconTheme *theme;
+  StIconTheme *theme;
   StTextureCachePolicy policy;
   StIconColors *colors = NULL;
   StIconStyle icon_style = ST_ICON_STYLE_REQUESTED;
-  GtkIconLookupFlags lookup_flags;
+  StIconLookupFlags lookup_flags;
 
   actor_size = size * paint_scale;
 
@@ -1036,17 +1020,17 @@ st_texture_cache_load_gicon (StTextureCache    *cache,
   /* Do theme lookups in the main thread to avoid thread-unsafety */
   theme = cache->priv->icon_theme;
 
-  lookup_flags = GTK_ICON_LOOKUP_USE_BUILTIN;
+  lookup_flags = 0;
 
   if (icon_style == ST_ICON_STYLE_REGULAR)
-    lookup_flags |= GTK_ICON_LOOKUP_FORCE_REGULAR;
+    lookup_flags |= ST_ICON_LOOKUP_FORCE_REGULAR;
   else if (icon_style == ST_ICON_STYLE_SYMBOLIC)
-    lookup_flags |= GTK_ICON_LOOKUP_FORCE_SYMBOLIC;
+    lookup_flags |= ST_ICON_LOOKUP_FORCE_SYMBOLIC;
 
   if (clutter_get_default_text_direction () == CLUTTER_TEXT_DIRECTION_RTL)
-    lookup_flags |= GTK_ICON_LOOKUP_DIR_RTL;
+    lookup_flags |= ST_ICON_LOOKUP_DIR_RTL;
   else
-    lookup_flags |= GTK_ICON_LOOKUP_DIR_LTR;
+    lookup_flags |= ST_ICON_LOOKUP_DIR_LTR;
 
   scale = ceilf (paint_scale * resource_scale);
 
@@ -1080,11 +1064,11 @@ st_texture_cache_load_gicon (StTextureCache    *cache,
   if (!ensure_request (cache, key, policy, &request, actor))
     {
       /* Else, make a new request */
-      GtkIconInfo *info;
+      StIconInfo *info;
 
-      info = gtk_icon_theme_lookup_by_gicon_for_scale (theme, icon,
-                                                       size, scale,
-                                                       lookup_flags);
+      info = st_icon_theme_lookup_by_gicon_for_scale (theme, icon,
+                                                      size, scale,
+                                                      lookup_flags);
       if (info == NULL)
         {
           g_hash_table_remove (cache->priv->outstanding_requests, key);
@@ -1255,6 +1239,12 @@ on_sliced_image_loaded (GObject *source_object,
   if (g_task_had_error (task) || g_cancellable_is_cancelled (data->cancellable))
     return;
 
+  clutter_actor_set_layout_manager (data->actor,
+                                    g_object_new (CLUTTER_TYPE_BIN_LAYOUT, NULL));
+  /* stop propagation of child expand flags */
+  clutter_actor_set_x_expand (data->actor, FALSE);
+  clutter_actor_set_y_expand (data->actor, FALSE);
+
   pixbufs = g_task_propagate_pointer (task, NULL);
 
   for (list = pixbufs; list; list = list->next)
@@ -1262,6 +1252,10 @@ on_sliced_image_loaded (GObject *source_object,
       ClutterActor *actor = load_from_pixbuf (GDK_PIXBUF (list->data),
                                               data->paint_scale,
                                               data->resource_scale);
+      clutter_actor_set_x_expand (actor, TRUE);
+      clutter_actor_set_y_expand (actor, TRUE);
+      clutter_actor_set_x_align (actor, CLUTTER_ACTOR_ALIGN_FILL);
+      clutter_actor_set_y_align (actor, CLUTTER_ACTOR_ALIGN_FILL);
       clutter_actor_hide (actor);
       clutter_actor_add_child (data->actor, actor);
     }
@@ -1305,7 +1299,7 @@ load_sliced_image (GTask        *result,
   GdkPixbuf *pix;
   gint width, height, y, x;
   gint scale_factor;
-  GdkPixbufLoader *loader;
+  GdkPixbufLoader *loader = NULL;
   GError *error = NULL;
   gchar *buffer = NULL;
   gsize length;
@@ -1315,14 +1309,14 @@ load_sliced_image (GTask        *result,
   data = task_data;
   g_assert (data);
 
-  loader = gdk_pixbuf_loader_new ();
-  g_signal_connect (loader, "size-prepared", G_CALLBACK (on_loader_size_prepared), data);
-
   if (!g_file_load_contents (data->gfile, cancellable, &buffer, &length, NULL, &error))
     {
       g_warning ("Failed to open sliced image: %s", error->message);
       goto out;
     }
+
+  loader = gdk_pixbuf_loader_new ();
+  g_signal_connect (loader, "size-prepared", G_CALLBACK (on_loader_size_prepared), data);
 
   if (!gdk_pixbuf_loader_write (loader, (const guchar *) buffer, length, &error))
     {
@@ -1352,7 +1346,7 @@ load_sliced_image (GTask        *result,
  out:
   /* We don't need the original pixbuf anymore, which is owned by the loader,
    * though the subpixbufs will hold a reference. */
-  g_object_unref (loader);
+  g_clear_object (&loader);
   g_free (buffer);
   g_clear_pointer (&error, g_error_free);
   g_task_return_pointer (result, res, free_glist_unref_gobjects);
@@ -1528,7 +1522,7 @@ st_texture_cache_load_file_sync_to_cogl_texture (StTextureCache *cache,
    * clutter_image_set_data(), so it's safe to use the texture
    * of ClutterImage here. */
   texdata = clutter_image_get_texture (CLUTTER_IMAGE (image));
-  cogl_object_ref (texdata);
+  g_object_ref (texdata);
 
   ensure_monitor_for_file (cache, file);
 
@@ -1684,5 +1678,5 @@ st_texture_cache_rescan_icon_theme (StTextureCache *cache)
 {
   StTextureCachePrivate *priv = cache->priv;
 
-  return gtk_icon_theme_rescan_if_needed (priv->icon_theme);
+  return st_icon_theme_rescan_if_needed (priv->icon_theme);
 }

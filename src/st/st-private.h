@@ -20,8 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ST_PRIVATE_H__
-#define __ST_PRIVATE_H__
+#pragma once
 
 #include <glib.h>
 #include <cairo.h>
@@ -58,18 +57,18 @@ void _st_set_text_from_style (ClutterText *text,
 CoglPipeline * _st_create_texture_pipeline (CoglTexture *src_texture);
 
 /* Helper for widgets which need to draw additional shadows */
-CoglPipeline * _st_create_shadow_pipeline (StShadow    *shadow_spec,
-                                           CoglTexture *src_texture,
-                                           float        resource_scale);
-CoglPipeline * _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
-                                                      ClutterActor *actor);
+CoglPipeline * _st_create_shadow_pipeline (StShadow            *shadow_spec,
+                                           ClutterPaintContext *paint_context,
+                                           CoglTexture         *src_texture,
+                                           float                resource_scale);
+CoglPipeline * _st_create_shadow_pipeline_from_actor (StShadow            *shadow_spec,
+                                                      ClutterActor        *actor,
+                                                      ClutterPaintContext *paint_context);
 cairo_pattern_t *_st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
                                                   cairo_pattern_t *src_pattern);
 
-void _st_paint_shadow_with_opacity (StShadow        *shadow_spec,
-                                    CoglFramebuffer *framebuffer,
-                                    CoglPipeline    *shadow_pipeline,
-                                    ClutterActorBox *box,
-                                    guint8           paint_opacity);
-
-#endif /* __ST_PRIVATE_H__ */
+void _st_paint_shadow_with_opacity (StShadow         *shadow_spec,
+                                    ClutterPaintNode *node,
+                                    CoglPipeline     *shadow_pipeline,
+                                    ClutterActorBox  *box,
+                                    guint8            paint_opacity);

@@ -19,15 +19,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ST_TEXTURE_CACHE_H__
-#define __ST_TEXTURE_CACHE_H__
+#pragma once
 
 #if !defined(ST_H_INSIDE) && !defined(ST_COMPILATION)
 #error "Only <st/st.h> can be included directly.h"
 #endif
 
 #include <gio/gio.h>
-#include <gtk/gtk.h>
 #include <clutter/clutter.h>
 
 #include <st/st-types.h>
@@ -64,9 +62,6 @@ st_texture_cache_load_sliced_image (StTextureCache *cache,
                                     GFunc           load_callback,
                                     gpointer        user_data);
 
-GIcon *st_texture_cache_bind_cairo_surface_property (StTextureCache    *cache,
-                                                     GObject           *object,
-                                                     const char *property_name);
 GIcon *
 st_texture_cache_load_cairo_surface_to_gicon (StTextureCache  *cache,
                                               cairo_surface_t *surface);
@@ -116,5 +111,3 @@ CoglTexture * st_texture_cache_load (StTextureCache       *cache,
                                      GError              **error);
 
 gboolean st_texture_cache_rescan_icon_theme (StTextureCache *cache);
-
-#endif /* __ST_TEXTURE_CACHE_H__ */

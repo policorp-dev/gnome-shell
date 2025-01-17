@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:st-icon
- * @short_description: a simple styled icon actor
+ * StIcon:
+ *
+ * A simple styled icon actor
  *
  * #StIcon is a simple styled texture actor that displays an image from
  * a stylesheet.
@@ -31,6 +32,7 @@
 #include "st-texture-cache.h"
 #include "st-theme-context.h"
 #include "st-private.h"
+#include "st-image-content-private.h"
 
 enum
 {
@@ -43,6 +45,8 @@ enum
   PROP_ICON_SIZE,
   PROP_FALLBACK_ICON_NAME,
 
+  PROP_IS_SYMBOLIC,
+
   N_PROPS
 };
 
@@ -53,6 +57,7 @@ struct _StIconPrivate
   ClutterActor    *icon_texture;
   ClutterActor    *pending_texture;
   gulong           opacity_handler_id;
+  gulong           icon_theme_changed_id;
 
   GIcon           *gicon;
   gint             prop_icon_size;  /* icon size set as property */
@@ -60,6 +65,8 @@ struct _StIconPrivate
   gint             icon_size;       /* icon size we are using */
   GIcon           *fallback_gicon;
   gboolean         needs_update;
+  gboolean         is_themed;
+  gboolean         is_symbolic;
 
   StIconColors     *colors;
 
@@ -72,13 +79,21 @@ G_DEFINE_TYPE_WITH_PRIVATE (StIcon, st_icon, ST_TYPE_WIDGET)
 
 static void st_icon_update               (StIcon *icon);
 static gboolean st_icon_update_icon_size (StIcon *icon);
-static void st_icon_update_shadow_pipeline (StIcon *icon);
+static void st_icon_update_shadow_pipeline (StIcon              *icon,
+                                            ClutterPaintContext *paint_context);
 static void st_icon_clear_shadow_pipeline (StIcon *icon);
 
 static GIcon *default_gicon = NULL;
 
 #define IMAGE_MISSING_ICON_NAME "image-missing"
 #define DEFAULT_ICON_SIZE 48
+
+static void
+on_icon_theme_changed (StIcon *icon)
+{
+  if (icon->priv->is_themed)
+    st_icon_update (icon);
+}
 
 static void
 st_icon_set_property (GObject      *gobject,
@@ -146,6 +161,10 @@ st_icon_get_property (GObject    *gobject,
       g_value_set_string (value, st_icon_get_fallback_icon_name (icon));
       break;
 
+    case PROP_IS_SYMBOLIC:
+      g_value_set_boolean (value, st_icon_get_is_symbolic (icon));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -170,43 +189,43 @@ st_icon_dispose (GObject *gobject)
       priv->pending_texture = NULL;
     }
 
+  g_clear_signal_handler (&priv->icon_theme_changed_id,
+                          st_texture_cache_get_default ());
+
   g_clear_object (&priv->gicon);
   g_clear_object (&priv->fallback_gicon);
   g_clear_pointer (&priv->colors, st_icon_colors_unref);
-  g_clear_pointer (&priv->shadow_pipeline, cogl_object_unref);
+  g_clear_object (&priv->shadow_pipeline);
   g_clear_pointer (&priv->shadow_spec, st_shadow_unref);
 
   G_OBJECT_CLASS (st_icon_parent_class)->dispose (gobject);
 }
 
 static void
-st_icon_paint (ClutterActor        *actor,
-               ClutterPaintContext *paint_context)
+st_icon_paint_node (ClutterActor        *actor,
+                    ClutterPaintNode    *node,
+                    ClutterPaintContext *paint_context)
 {
   StIcon *icon = ST_ICON (actor);
   StIconPrivate *priv = icon->priv;
 
-  st_widget_paint_background (ST_WIDGET (actor), paint_context);
+  st_widget_paint_background (ST_WIDGET (actor), node, paint_context);
 
   if (priv->icon_texture)
     {
-      st_icon_update_shadow_pipeline (icon);
+      st_icon_update_shadow_pipeline (icon, paint_context);
 
       if (priv->shadow_pipeline)
         {
           ClutterActorBox allocation;
-          CoglFramebuffer *framebuffer;
 
           clutter_actor_get_allocation_box (priv->icon_texture, &allocation);
-          framebuffer = clutter_paint_context_get_framebuffer (paint_context);
           _st_paint_shadow_with_opacity (priv->shadow_spec,
-                                         framebuffer,
+                                         node,
                                          priv->shadow_pipeline,
                                          &allocation,
                                          clutter_actor_get_paint_opacity (priv->icon_texture));
         }
-
-      clutter_actor_paint (priv->icon_texture, paint_context);
     }
 }
 
@@ -280,7 +299,7 @@ st_icon_class_init (StIconClass *klass)
   object_class->set_property = st_icon_set_property;
   object_class->dispose = st_icon_dispose;
 
-  actor_class->paint = st_icon_paint;
+  actor_class->paint_node = st_icon_paint_node;
 
   widget_class->style_changed = st_icon_style_changed;
   actor_class->resource_scale_changed = st_icon_resource_scale_changed;
@@ -291,9 +310,7 @@ st_icon_class_init (StIconClass *klass)
    * The #GIcon being displayed by this #StIcon.
    */
   props[PROP_GICON] =
-    g_param_spec_object ("gicon",
-                         "GIcon",
-                         "The GIcon shown by this icon actor",
+    g_param_spec_object ("gicon", NULL, NULL,
                          G_TYPE_ICON,
                          ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -303,9 +320,7 @@ st_icon_class_init (StIconClass *klass)
    * The fallback #GIcon to display if #StIcon:gicon fails to load.
    */
   props[PROP_FALLBACK_GICON] =
-    g_param_spec_object ("fallback-gicon",
-                         "Fallback GIcon",
-                         "The fallback GIcon shown if the normal icon fails to load",
+    g_param_spec_object ("fallback-gicon", NULL, NULL,
                          G_TYPE_ICON,
                          ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -315,22 +330,18 @@ st_icon_class_init (StIconClass *klass)
    * The name of the icon if the icon being displayed is a #GThemedIcon.
    */
   props[PROP_ICON_NAME] =
-    g_param_spec_string ("icon-name",
-                         "Icon name",
-                         "An icon name",
+    g_param_spec_string ("icon-name", NULL, NULL,
                          NULL,
                          ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
   /**
    * StIcon:icon-size:
    *
-   * The size of the icon, if greater than `0`. Other the icon size is derived
+   * The size of the icon, if greater than `0`. Otherwise the icon size is derived
    * from the current style.
    */
   props[PROP_ICON_SIZE] =
-    g_param_spec_int ("icon-size",
-                      "Icon size",
-                      "The size if the icon, if positive. Otherwise the size will be derived from the current style",
+    g_param_spec_int ("icon-size", NULL, NULL,
                       -1, G_MAXINT, -1,
                       ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -341,11 +352,19 @@ st_icon_class_init (StIconClass *klass)
    * for details.
    */
   props[PROP_FALLBACK_ICON_NAME] =
-    g_param_spec_string ("fallback-icon-name",
-                         "Fallback icon name",
-                         "A fallback icon name",
+    g_param_spec_string ("fallback-icon-name", NULL, NULL,
                          NULL,
                          ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+
+  /**
+   * StIcon:symbolic:
+   *
+   * Whether the #StIcon is symbolic.
+   */
+  props[PROP_IS_SYMBOLIC] =
+    g_param_spec_boolean ("is-symbolic", NULL, NULL,
+                          FALSE,
+                          ST_PARAM_READABLE | G_PARAM_EXPLICIT_NOTIFY);
 
   g_object_class_install_properties (object_class, N_PROPS, props);
 }
@@ -354,15 +373,20 @@ static void
 st_icon_init (StIcon *self)
 {
   ClutterLayoutManager *layout_manager;
+  StTextureCache *texture_cache;
 
   if (G_UNLIKELY (default_gicon == NULL))
     default_gicon = g_themed_icon_new (IMAGE_MISSING_ICON_NAME);
 
   self->priv = st_icon_get_instance_private (self);
 
-  layout_manager = clutter_bin_layout_new (CLUTTER_BIN_ALIGNMENT_FILL,
-                                           CLUTTER_BIN_ALIGNMENT_FILL);
+  layout_manager = clutter_bin_layout_new ();
   clutter_actor_set_layout_manager (CLUTTER_ACTOR (self), layout_manager);
+
+  texture_cache = st_texture_cache_get_default ();
+  self->priv->icon_theme_changed_id =
+    g_signal_connect_swapped (texture_cache, "icon-theme-changed",
+                              G_CALLBACK (on_icon_theme_changed), self);
 
   /* Set the icon size to -1 here to make sure we apply the scale to the
    * default size on the first "style-changed" signal. */
@@ -377,12 +401,13 @@ st_icon_clear_shadow_pipeline (StIcon *icon)
 {
   StIconPrivate *priv = icon->priv;
 
-  g_clear_pointer (&priv->shadow_pipeline, cogl_object_unref);
+  g_clear_object (&priv->shadow_pipeline);
   graphene_size_init (&priv->shadow_size, 0, 0);
 }
 
 static void
-st_icon_update_shadow_pipeline (StIcon *icon)
+st_icon_update_shadow_pipeline (StIcon              *icon,
+                                ClutterPaintContext *paint_context)
 {
   StIconPrivate *priv = icon->priv;
 
@@ -403,11 +428,32 @@ st_icon_update_shadow_pipeline (StIcon *icon)
 
           priv->shadow_pipeline =
             _st_create_shadow_pipeline_from_actor (priv->shadow_spec,
-                                                   priv->icon_texture);
+                                                   priv->icon_texture,
+                                                   paint_context);
 
           if (priv->shadow_pipeline)
             graphene_size_init (&priv->shadow_size, width, height);
         }
+    }
+}
+
+static void
+st_icon_update_is_symbolic (StIcon *icon)
+{
+  StIconPrivate *priv = icon->priv;
+  gboolean is_symbolic = FALSE;
+  ClutterContent *content = NULL;
+
+  if (priv->icon_texture)
+    content = clutter_actor_get_content (priv->icon_texture);
+
+  if (ST_IS_IMAGE_CONTENT (content))
+    is_symbolic = st_image_content_get_is_symbolic (ST_IMAGE_CONTENT (content));
+
+  if (priv->is_symbolic != is_symbolic)
+    {
+      priv->is_symbolic = is_symbolic;
+      g_object_notify_by_pspec (G_OBJECT (icon), props[PROP_IS_SYMBOLIC]);
     }
 }
 
@@ -417,6 +463,7 @@ on_content_changed (ClutterActor *actor,
                     StIcon       *icon)
 {
   st_icon_clear_shadow_pipeline (icon);
+  st_icon_update_is_symbolic (icon);
 }
 
 static void
@@ -442,6 +489,7 @@ st_icon_finish_update (StIcon *icon)
       g_object_unref (priv->icon_texture);
 
       st_icon_clear_shadow_pipeline (icon);
+      st_icon_update_is_symbolic (icon);
 
       g_signal_connect_object (priv->icon_texture, "notify::content",
                                G_CALLBACK (on_content_changed), icon, 0);
@@ -461,6 +509,32 @@ opacity_changed_cb (GObject *object,
   g_clear_signal_handler (&priv->opacity_handler_id, priv->pending_texture);
 
   st_icon_finish_update (icon);
+}
+
+static ClutterActor *
+load_gicon (StTextureCache *cache,
+            StThemeNode    *theme_node,
+            GIcon          *gicon,
+            int             size,
+            int             paint_scale,
+            float           resource_scale,
+            gboolean       *is_themed)
+{
+  ClutterActor *texture;
+
+  g_assert (is_themed != NULL);
+
+  texture = st_texture_cache_load_gicon (cache,
+                                         theme_node,
+                                         gicon,
+                                         size,
+                                         paint_scale,
+                                         resource_scale);
+
+
+  if (texture)
+    *is_themed = G_IS_THEMED_ICON (gicon);
+  return texture;
 }
 
 static void
@@ -505,29 +579,34 @@ st_icon_update (StIcon *icon)
 
   cache = st_texture_cache_get_default ();
 
+  priv->is_themed = FALSE;
+
   if (priv->gicon != NULL)
-    priv->pending_texture = st_texture_cache_load_gicon (cache,
-                                                         theme_node,
-                                                         priv->gicon,
-                                                         priv->icon_size / paint_scale,
-                                                         paint_scale,
-                                                         resource_scale);
+    priv->pending_texture = load_gicon (cache,
+                                        theme_node,
+                                        priv->gicon,
+                                        priv->icon_size / paint_scale,
+                                        paint_scale,
+                                        resource_scale,
+                                        &priv->is_themed);
 
   if (priv->pending_texture == NULL && priv->fallback_gicon != NULL)
-    priv->pending_texture = st_texture_cache_load_gicon (cache,
-                                                         theme_node,
-                                                         priv->fallback_gicon,
-                                                         priv->icon_size / paint_scale,
-                                                         paint_scale,
-                                                         resource_scale);
+    priv->pending_texture = load_gicon (cache,
+                                        theme_node,
+                                        priv->fallback_gicon,
+                                        priv->icon_size / paint_scale,
+                                        paint_scale,
+                                        resource_scale,
+                                        &priv->is_themed);
 
   if (priv->pending_texture == NULL)
-    priv->pending_texture = st_texture_cache_load_gicon (cache,
-                                                         theme_node,
-                                                         default_gicon,
-                                                         priv->icon_size / paint_scale,
-                                                         paint_scale,
-                                                         resource_scale);
+    priv->pending_texture = load_gicon (cache,
+                                        theme_node,
+                                        default_gicon,
+                                        priv->icon_size / paint_scale,
+                                        paint_scale,
+                                        resource_scale,
+                                        &priv->is_themed);
   priv->needs_update = FALSE;
 
   if (priv->pending_texture)
@@ -602,7 +681,7 @@ st_icon_new (void)
  * @icon: an #StIcon
  *
  * This is a convenience method to get the icon name of the current icon, if it
- * is currenyly a #GThemedIcon, or %NULL otherwise.
+ * is currently a #GThemedIcon, or %NULL otherwise.
  *
  * Returns: (transfer none) (nullable): The name of the icon or %NULL
  */
@@ -830,4 +909,18 @@ st_icon_set_fallback_icon_name (StIcon      *icon,
   g_object_notify_by_pspec (G_OBJECT (icon), props[PROP_FALLBACK_ICON_NAME]);
 
   g_object_thaw_notify (G_OBJECT (icon));
+}
+
+/**
+ * st_icon_get_is_symbolic:
+ * @icon: an #StIcon
+ *
+ * Returns: Whether the displayed icon is symbolic
+ */
+gboolean
+st_icon_get_is_symbolic (StIcon *icon)
+{
+  g_return_val_if_fail (ST_IS_ICON (icon), FALSE);
+
+  return icon->priv->is_symbolic;
 }

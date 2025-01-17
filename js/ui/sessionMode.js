@@ -1,18 +1,17 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported SessionMode, listModes */
+import GLib from 'gi://GLib';
+import * as Signals from '../misc/signals.js';
 
-const GLib = imports.gi.GLib;
-const Signals = imports.misc.signals;
+import * as FileUtils from '../misc/fileUtils.js';
 
-const FileUtils = imports.misc.fileUtils;
-const Params = imports.misc.params;
+import {LoginDialog}  from '../gdm/loginDialog.js';
+import {UnlockDialog} from '../ui/unlockDialog.js';
 
-const Config = imports.misc.config;
+import * as Config from '../misc/config.js';
 
 const DEFAULT_MODE = 'restrictive';
 
 const USER_SESSION_COMPONENTS = [
-    'polkitAgent', 'telepathyClient', 'keyring',
+    'polkitAgent', 'keyring',
     'autorunManager', 'automountManager',
 ];
 
@@ -23,6 +22,7 @@ const _modes = {
     'restrictive': {
         parentMode: null,
         stylesheetName: 'gnome-shell.css',
+        colorScheme: 'prefer-dark',
         themeResourceName: 'gnome-shell-theme.gresource',
         hasOverview: false,
         showCalendarEvents: false,
@@ -52,7 +52,7 @@ const _modes = {
         hasNotifications: true,
         isGreeter: true,
         isPrimary: true,
-        unlockDialog: imports.gdm.loginDialog.LoginDialog,
+        unlockDialog: LoginDialog,
         components: Config.HAVE_NETWORKMANAGER
             ? ['networkAgent', 'polkitAgent']
             : ['polkitAgent'],
@@ -67,7 +67,7 @@ const _modes = {
     'unlock-dialog': {
         isLocked: true,
         unlockDialog: undefined,
-        components: ['polkitAgent', 'telepathyClient'],
+        components: ['polkitAgent'],
         panel: {
             left: [],
             center: [],
@@ -89,10 +89,10 @@ const _modes = {
         hasNotifications: true,
         isLocked: false,
         isPrimary: true,
-        unlockDialog: imports.ui.unlockDialog.UnlockDialog,
+        unlockDialog: UnlockDialog,
         components: USER_SESSION_COMPONENTS,
         panel: {
-            left: ['activities', 'appMenu'],
+            left: ['activities'],
             center: ['dateMenu'],
             right: ['screenRecording', 'screenSharing', 'dwellClick', 'a11y', 'keyboard', 'quickSettings'],
         },
@@ -102,7 +102,7 @@ const _modes = {
 function _loadMode(file, info) {
     let name = info.get_name();
     let suffix = name.indexOf('.json');
-    let modeName = suffix == -1 ? name : name.slice(name, suffix);
+    let modeName = suffix === -1 ? name : name.slice(name, suffix);
 
     if (Object.prototype.hasOwnProperty.call(_modes, modeName))
         return;
@@ -126,11 +126,15 @@ function _loadMode(file, info) {
     _modes[modeName]['isPrimary'] = true;
 }
 
+/**
+ * Loads external session modes from the system data directories.
+ */
 function _loadModes() {
-    FileUtils.collectFromDatadirs('modes', false, _loadMode);
+    for (const {dir, info} of FileUtils.collectFromDatadirs('modes', false))
+        _loadMode(dir, info);
 }
 
-function listModes() {
+export function listModes() {
     _loadModes();
     let loop = new GLib.MainLoop(null, false);
     let id = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
@@ -145,7 +149,7 @@ function listModes() {
     loop.run();
 }
 
-var SessionMode = class extends Signals.EventEmitter {
+export class SessionMode extends Signals.EventEmitter {
     constructor() {
         super();
 
@@ -164,8 +168,8 @@ var SessionMode = class extends Signals.EventEmitter {
     }
 
     popMode(mode) {
-        if (this.currentMode != mode || this._modeStack.length === 1)
-            throw new Error("Invalid SessionMode.popMode");
+        if (this.currentMode !== mode || this._modeStack.length === 1)
+            throw new Error('Invalid SessionMode.popMode');
 
         console.debug(`sessionMode: Popping mode ${mode}`);
         this._modeStack.pop();
@@ -173,7 +177,7 @@ var SessionMode = class extends Signals.EventEmitter {
     }
 
     switchMode(to) {
-        if (this.currentMode == to)
+        if (this.currentMode === to)
             return;
         this._modeStack[this._modeStack.length - 1] = to;
         this._sync();
@@ -184,15 +188,12 @@ var SessionMode = class extends Signals.EventEmitter {
     }
 
     _sync() {
-        let params = _modes[this.currentMode];
-        let defaults;
-        if (params.parentMode) {
-            defaults = Params.parse(_modes[params.parentMode],
-                                    _modes[DEFAULT_MODE]);
-        } else {
-            defaults = _modes[DEFAULT_MODE];
-        }
-        params = Params.parse(params, defaults);
+        const current = _modes[this.currentMode];
+        const parent = current.parentMode
+            ? {..._modes[DEFAULT_MODE], ..._modes[current.parentMode]}
+            : {..._modes[DEFAULT_MODE]};
+
+        const params = {...parent, ...current};
 
         // A simplified version of Lang.copyProperties, handles
         // undefined as a special case for "no change / inherit from previous mode"
@@ -203,4 +204,4 @@ var SessionMode = class extends Signals.EventEmitter {
 
         this.emit('updated');
     }
-};
+}

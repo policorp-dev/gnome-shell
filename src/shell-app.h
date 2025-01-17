@@ -1,6 +1,5 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
-#ifndef __SHELL_APP_H__
-#define __SHELL_APP_H__
+#pragma once
 
 #include <clutter/clutter.h>
 #include <gio/gio.h>
@@ -69,6 +68,19 @@ void shell_app_launch_action (ShellApp        *app,
                               guint            timestamp,
                               int              workspace);
 
+void shell_app_activate_action (ShellApp            *app,
+                                const char          *action_name,
+                                GVariant            *parameter,
+                                guint                timestamp,
+                                int                  workspace,
+                                GCancellable        *cancellable,
+                                GAsyncReadyCallback  callback,
+                                gpointer             user_data);
+gboolean
+shell_app_activate_action_finish (ShellApp      *app,
+                                  GAsyncResult  *result,
+                                  GError       **error);
+
 int shell_app_compare_by_name (ShellApp *app, ShellApp *other);
 
 int shell_app_compare (ShellApp *app, ShellApp *other);
@@ -79,5 +91,3 @@ void shell_app_update_app_actions    (ShellApp *app, MetaWindow *window);
 gboolean shell_app_get_busy          (ShellApp *app);
 
 G_END_DECLS
-
-#endif /* __SHELL_APP_H__ */

@@ -9,7 +9,6 @@
 #include <meta/display.h>
 #include <meta/meta-context.h>
 #include <meta/meta-workspace-manager.h>
-#include <meta/meta-x11-display.h>
 
 #include "shell-app-private.h"
 #include "shell-enum-types.h"
@@ -58,8 +57,9 @@ typedef struct {
 } ShellAppRunningState;
 
 /**
- * SECTION:shell-app
- * @short_description: Object representing an application
+ * ShellApp:
+ *
+ * Object representing an application
  *
  * This object wraps a #GDesktopAppInfo, providing methods and signals
  * primarily useful for running applications.
@@ -80,7 +80,6 @@ struct _ShellApp
                           * the way shell-window-tracker.c works).
                           */
   GIcon *fallback_icon;
-  MetaWindow *fallback_icon_window;
 
   ShellAppRunningState *running_state;
 
@@ -191,35 +190,6 @@ window_backed_app_get_window (ShellApp     *app)
     return NULL;
 }
 
-static GIcon *
-x11_window_create_fallback_gicon (MetaWindow *window)
-{
-  StTextureCache *texture_cache;
-  cairo_surface_t *surface;
-
-  g_object_get (window, "icon", &surface, NULL);
-
-  texture_cache = st_texture_cache_get_default ();
-  return st_texture_cache_load_cairo_surface_to_gicon (texture_cache, surface);
-}
-
-static void
-on_window_icon_changed (GObject          *object,
-                        const GParamSpec *pspec,
-                        gpointer          user_data)
-{
-  MetaWindow *window = META_WINDOW (object);
-  ShellApp *app = user_data;
-
-  g_clear_object (&app->fallback_icon);
-  app->fallback_icon = x11_window_create_fallback_gicon (window);
-
-  if (!app->fallback_icon)
-    app->fallback_icon = g_themed_icon_new ("application-x-executable");
-
-  g_object_notify_by_pspec (G_OBJECT (app), props[PROP_ICON]);
-}
-
 /**
  * shell_app_get_icon:
  *
@@ -230,35 +200,13 @@ on_window_icon_changed (GObject          *object,
 GIcon *
 shell_app_get_icon (ShellApp *app)
 {
-  MetaWindow *window = NULL;
-
   g_return_val_if_fail (SHELL_IS_APP (app), NULL);
 
   if (app->info)
     return g_app_info_get_icon (G_APP_INFO (app->info));
 
-  if (app->fallback_icon)
-    return app->fallback_icon;
-
-  /* During a state transition from running to not-running for
-   * window-backend apps, it's possible we get a request for the icon.
-   * Avoid asserting here and just return a fallback icon
-   */
-  if (app->running_state != NULL)
-    window = window_backed_app_get_window (app);
-
-  if (window &&
-      meta_window_get_client_type (window) == META_WINDOW_CLIENT_TYPE_X11)
-    {
-      app->fallback_icon_window = window;
-      app->fallback_icon = x11_window_create_fallback_gicon (window);
-      g_signal_connect (G_OBJECT (window),
-                        "notify::icon", G_CALLBACK (on_window_icon_changed), app);
-    }
-  else
-    {
-      app->fallback_icon = g_themed_icon_new ("application-x-executable");
-    }
+  if (!app->fallback_icon)
+    app->fallback_icon = g_themed_icon_new ("application-x-executable");
 
   return app->fallback_icon;
 }
@@ -458,8 +406,8 @@ shell_app_activate_window (ShellApp     *app,
         {
           MetaWindow *other_window = iter->data;
 
-          if (other_window != window && meta_window_get_workspace (other_window) == workspace)
-            meta_window_raise (other_window);
+          if (other_window != window)
+            meta_window_raise_and_make_recent_on_workspace (other_window, workspace);
         }
       g_slist_free (windows_reversed);
 
@@ -1170,15 +1118,6 @@ _shell_app_remove_window (ShellApp   *app,
 
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(shell_app_on_user_time_changed), app);
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(shell_app_on_skip_taskbar_changed), app);
-  if (window == app->fallback_icon_window)
-    {
-      g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_window_icon_changed), app);
-      app->fallback_icon_window = NULL;
-
-      /* Select a new icon from a different window. */
-      g_clear_object (&app->fallback_icon);
-      g_object_notify_by_pspec (G_OBJECT (app), props[PROP_ICON]);
-    }
 
   g_object_unref (window);
 
@@ -1297,38 +1236,10 @@ static void
 child_context_setup (gpointer user_data)
 {
   ShellGlobal *shell_global = user_data;
-  MetaContext *meta_context;
+  MetaContext *meta_context = shell_global_get_context (shell_global);
 
-  g_object_get (shell_global, "context", &meta_context, NULL);
   meta_context_restore_rlimit_nofile (meta_context, NULL);
 }
-
-#if !defined(HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS) && defined(HAVE_SYSTEMD)
-/* This sets up the launched application to log to the journal
- * using its own identifier, instead of just "gnome-session".
- */
-static void
-app_child_setup (gpointer user_data)
-{
-  const char *appid = user_data;
-  int res;
-  int journalfd = sd_journal_stream_fd (appid, LOG_INFO, FALSE);
-  ShellGlobal *shell_global = shell_global_get ();
-
-  if (journalfd >= 0)
-    {
-      do
-        res = dup2 (journalfd, 1);
-      while (G_UNLIKELY (res == -1 && errno == EINTR));
-      do
-        res = dup2 (journalfd, 2);
-      while (G_UNLIKELY (res == -1 && errno == EINTR));
-      (void) close (journalfd);
-    }
-
-  child_context_setup (shell_global);
-}
-#endif
 
 static void
 wait_pid (GDesktopAppInfo *appinfo,
@@ -1443,7 +1354,6 @@ shell_app_launch (ShellApp           *app,
   flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD |
           G_SPAWN_LEAVE_DESCRIPTORS_OPEN;
 
-#ifdef HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS
   /* Optimized spawn path, avoiding a child_setup function */
   {
     int journalfd = -1;
@@ -1465,18 +1375,6 @@ shell_app_launch (ShellApp           *app,
     if (journalfd >= 0)
       (void) close (journalfd);
   }
-#else /* !HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS */
-  ret = g_desktop_app_info_launch_uris_as_manager (app->info, NULL,
-                                                   context,
-                                                   flags,
-#ifdef HAVE_SYSTEMD
-                                                   app_child_setup, (gpointer)shell_app_get_id (app),
-#else
-                                                   child_context_setup, shell_global,
-#endif
-                                                   wait_pid, NULL,
-                                                   error);
-#endif /* HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS */
   g_object_unref (context);
 
   return ret;
@@ -1506,6 +1404,196 @@ shell_app_launch_action (ShellApp        *app,
                                     action_name, context);
 
   g_object_unref (context);
+}
+
+static gchar *
+object_path_from_app_id (const gchar *app_id)
+{
+  gchar *app_id_path, *iter;
+
+  app_id_path = g_strconcat ("/", app_id, NULL);
+  for (iter = app_id_path; *iter; iter++)
+    {
+      if (*iter == '.')
+        *iter = '/';
+
+      if (*iter == '-')
+        *iter = '_';
+    }
+
+  return app_id_path;
+}
+
+static GVariant *
+get_platform_data (ShellApp *app,
+                   guint     timestamp,
+                   int       workspace)
+{
+  GVariantBuilder builder;
+  ShellGlobal *global;
+  g_autoptr (GAppLaunchContext) context = NULL;
+  gchar *startup_id;
+
+  g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+  if (!app->info)
+    return g_variant_builder_end (&builder);
+
+  global = shell_global_get ();
+  context = shell_global_create_app_launch_context (global, timestamp, workspace);
+
+  if (!context)
+    return g_variant_builder_end (&builder);
+
+  startup_id = g_app_launch_context_get_startup_notify_id (context, G_APP_INFO (app->info), NULL);
+
+  if (!startup_id)
+    return g_variant_builder_end (&builder);
+
+
+  g_variant_builder_add (&builder, "{sv}",
+      "desktop-startup-id", g_variant_new_string (startup_id));
+  g_variant_builder_add (&builder, "{sv}",
+      "activation-token", g_variant_new_take_string (g_steal_pointer (&startup_id)));
+
+  return g_variant_builder_end (&builder);
+}
+
+static void
+on_activate_action_cb (GObject      *source,
+                       GAsyncResult *res,
+                       gpointer      user_data)
+{
+  GTask *task = G_TASK (user_data);
+  g_autoptr (GVariant) value = NULL;
+  g_autoptr (GError) error = NULL;
+
+  value = g_dbus_connection_call_finish (G_DBUS_CONNECTION (source),
+                                         res, &error);
+
+  if (error)
+      g_task_return_error (task, g_steal_pointer (&error));
+  else
+      g_task_return_boolean (task, TRUE);
+}
+
+static void
+activate_action_get_bus_cb (GObject      *object,
+                            GAsyncResult *result,
+                            gpointer      user_data)
+{
+  GTask *task = G_TASK (user_data);
+  ShellApp *app = NULL;
+  g_autoptr (GDBusConnection) session_bus = NULL;
+  g_autoptr (GError) error = NULL;
+  g_autofree gchar *object_path = NULL;
+  g_autofree gchar *app_id = NULL;
+  gchar *last_dot;
+
+  session_bus = g_bus_get_finish (result, &error);
+
+  if (error)
+    {
+      g_task_return_error (task, g_steal_pointer (&error));
+      return;
+    }
+
+  app = SHELL_APP (g_task_get_source_object (task));
+
+  app_id = g_strdup (g_app_info_get_id (G_APP_INFO (app->info)));
+  last_dot = strrchr (app_id, '.');
+  if (last_dot && g_str_equal (last_dot, ".desktop"))
+      *last_dot = '\0';
+
+  object_path = object_path_from_app_id (app_id);
+
+  g_dbus_connection_call (session_bus,
+                           app_id, object_path,
+                           "org.freedesktop.Application", "ActivateAction",
+                           g_task_get_task_data (task),
+                           NULL, G_DBUS_CALL_FLAGS_NONE, -1,
+                           g_task_get_cancellable (task),
+                           on_activate_action_cb, task);
+}
+
+
+/**
+ * shell_app_activate_action
+ * @app: the #ShellApp
+ * @action_name: the name of an action to activate
+ * @parameter: (nullable): the parameter to the activation
+ * @timestamp: Event timestamp, or 0 for current event timestamp
+ * @workspace: Start on this workspace, or -1 for default
+ * @cancellable: (nullable): a #GCancellable or %NULL
+ * @callback: (scope async): A #GAsyncReadyCallback to call when the request is satisfied.
+ * @user_data: (nullable): User data to pass to @callback
+ *
+ * This activates an action using 'org.freedesktop.Application' DBus interface.
+ *
+ * This function will fail if this #ShellApp doesn't have a valid #GDesktopAppInfo
+ * with a valid id.
+ */
+void
+shell_app_activate_action (ShellApp            *app,
+                           const char          *action_name,
+                           GVariant            *parameter,
+                           guint                timestamp,
+                           int                  workspace,
+                           GCancellable        *cancellable,
+                           GAsyncReadyCallback  callback,
+                           gpointer             user_data)
+{
+  g_autoptr (GTask) task = NULL;
+  g_autoptr (GVariant) task_data = NULL;
+
+  g_return_if_fail (SHELL_IS_APP (app));
+  g_return_if_fail (G_IS_DESKTOP_APP_INFO (app->info));
+  g_return_if_fail (g_application_id_is_valid (g_app_info_get_id (G_APP_INFO (app->info))));
+  g_return_if_fail (action_name != NULL && action_name[0] != '\0');
+  g_return_if_fail (parameter == NULL || g_variant_is_of_type (parameter,  G_VARIANT_TYPE ("av")));
+  g_return_if_fail (timestamp >= 0);
+  g_return_if_fail (workspace >= -1);
+  g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+
+  task = g_task_new (app, cancellable, callback, user_data);
+  g_task_set_source_tag (task, shell_app_activate_action);
+
+  if (!parameter)
+    parameter = g_variant_new("av", NULL);
+
+  task_data = g_variant_ref_sink (g_variant_new ("(s@av@a{sv})", action_name, parameter,
+                                                 get_platform_data (app, timestamp, workspace)));
+
+  g_task_set_task_data (task, g_steal_pointer (&task_data), (GDestroyNotify) g_variant_unref);
+
+  g_bus_get (G_BUS_TYPE_SESSION, cancellable, activate_action_get_bus_cb, g_steal_pointer (&task));
+}
+
+/**
+ * shell_app_activate_action_finish:
+ * @app: the #ShellApp
+ * @error: #GError for error reporting
+ *
+ * Finish the asynchronous operation started by shell_app_activate_action()
+ * and obtain its result.
+ *
+ * Returns: whether the operation was successful
+ *
+ */
+gboolean
+shell_app_activate_action_finish (ShellApp      *app,
+                                  GAsyncResult  *result,
+                                  GError       **error)
+{
+  g_return_val_if_fail (SHELL_IS_APP (app), FALSE);
+  g_return_val_if_fail (G_IS_TASK (result), FALSE);
+  g_return_val_if_fail (g_async_result_is_tagged (result,
+                                                  shell_app_activate_action),
+                        FALSE);
+
+  if (!g_task_propagate_boolean (G_TASK (result), error))
+    return FALSE;
+
+  return TRUE;
 }
 
 /**
@@ -1683,9 +1771,7 @@ shell_app_class_init(ShellAppClass *klass)
    * running or not, or transitioning between those states.
    */
   props[PROP_STATE] =
-    g_param_spec_enum ("state",
-                       "State",
-                       "Application state",
+    g_param_spec_enum ("state", NULL, NULL,
                        SHELL_TYPE_APP_STATE,
                        SHELL_APP_STATE_STOPPED,
                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
@@ -1696,9 +1782,7 @@ shell_app_class_init(ShellAppClass *klass)
    * Whether the application has marked itself as busy.
    */
   props[PROP_BUSY] =
-    g_param_spec_boolean ("busy",
-                          "Busy",
-                          "Busy state",
+    g_param_spec_boolean ("busy", NULL, NULL,
                           FALSE,
                           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
@@ -1709,9 +1793,7 @@ shell_app_class_init(ShellAppClass *klass)
    * like window:0xabcd1234)
    */
   props[PROP_ID] =
-    g_param_spec_string ("id",
-                         "Application id",
-                         "The desktop file id of this ShellApp",
+    g_param_spec_string ("id", NULL, NULL,
                          NULL,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
@@ -1721,9 +1803,7 @@ shell_app_class_init(ShellAppClass *klass)
    * The #GIcon representing this ShellApp
    */
   props[PROP_ICON] =
-    g_param_spec_object ("icon",
-                         "GIcon",
-                         "The GIcon representing this app",
+    g_param_spec_object ("icon", NULL, NULL,
                          G_TYPE_ICON,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
@@ -1734,9 +1814,7 @@ shell_app_class_init(ShellAppClass *klass)
    * documentation of #GApplication and #GActionGroup for details.
    */
   props[PROP_ACTION_GROUP] =
-    g_param_spec_object ("action-group",
-                         "Application Action Group",
-                         "The action group exported by the remote application",
+    g_param_spec_object ("action-group", NULL, NULL,
                          G_TYPE_ACTION_GROUP,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
@@ -1746,9 +1824,7 @@ shell_app_class_init(ShellAppClass *klass)
    * The #GDesktopAppInfo associated with this ShellApp, if any.
    */
   props[PROP_APP_INFO] =
-    g_param_spec_object ("app-info",
-                         "DesktopAppInfo",
-                         "The DesktopAppInfo associated with this app",
+    g_param_spec_object ("app-info", NULL, NULL,
                          G_TYPE_DESKTOP_APP_INFO,
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 

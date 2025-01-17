@@ -35,8 +35,9 @@
  */
 
 /**
- * SECTION:st-box-layout
- * @short_description: a layout container arranging children in a single line
+ * StBoxLayout:
+ *
+ * Layout container arranging children in a single line.
  *
  * The #StBoxLayout arranges its children along a single line, where each
  * child can be allocated either its preferred size or larger if the expand
@@ -44,7 +45,6 @@
  * than its requested size. If the fill option is not set, but the expand option
  * is enabled, then the position of the actor within the available space can
  * be determined by the alignment child property.
- *
  */
 
 #include <stdlib.h>
@@ -158,13 +158,9 @@ on_layout_manager_notify (GObject    *object,
   ClutterActor *actor = CLUTTER_ACTOR (object);
   ClutterLayoutManager *layout = clutter_actor_get_layout_manager (actor);
 
-  g_warn_if_fail (CLUTTER_IS_BOX_LAYOUT (layout));
-
   if (layout == NULL)
     return;
 
-  g_signal_connect_swapped (layout, "layout-changed",
-                            G_CALLBACK (clutter_actor_queue_relayout), actor);
   g_signal_connect (layout, "notify", G_CALLBACK (layout_notify), object);
 }
 
@@ -172,6 +168,7 @@ static void
 st_box_layout_class_init (StBoxLayoutClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
 
   object_class->get_property = st_box_layout_get_property;
@@ -186,10 +183,7 @@ st_box_layout_class_init (StBoxLayoutClass *klass)
    * internal layout for #StBoxLayout.
    */
   props[PROP_VERTICAL] =
-    g_param_spec_boolean ("vertical",
-                          "Vertical",
-                          "Whether the layout should be vertical, rather"
-                          "than horizontal",
+    g_param_spec_boolean ("vertical", NULL, NULL,
                           FALSE,
                           ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -200,13 +194,13 @@ st_box_layout_class_init (StBoxLayoutClass *klass)
    * internal layout for #StBoxLayout.
    */
   props[PROP_PACK_START] =
-    g_param_spec_boolean ("pack-start",
-                          "Pack Start",
-                          "Whether to pack items at the start of the box",
+    g_param_spec_boolean ("pack-start", NULL, NULL,
                           FALSE,
                           ST_PARAM_READWRITE | G_PARAM_DEPRECATED);
 
   g_object_class_install_properties (object_class, N_PROPS, props);
+
+  clutter_actor_class_set_layout_manager_type (actor_class, CLUTTER_TYPE_BOX_LAYOUT);
 }
 
 static void
@@ -216,7 +210,6 @@ st_box_layout_init (StBoxLayout *self)
 
   g_signal_connect (self, "notify::layout-manager",
                     G_CALLBACK (on_layout_manager_notify), NULL);
-  clutter_actor_set_layout_manager (CLUTTER_ACTOR (self), clutter_box_layout_new ());
 }
 
 /**

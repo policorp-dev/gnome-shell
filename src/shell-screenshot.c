@@ -54,7 +54,7 @@ struct _ShellScreenshotPrivate
   GDateTime *datetime;
 
   cairo_surface_t *image;
-  cairo_rectangle_int_t screenshot_area;
+  MtkRectangle screenshot_area;
 
   gboolean include_frame;
 
@@ -77,7 +77,7 @@ shell_screenshot_class_init (ShellScreenshotClass *screenshot_class)
                   NULL, NULL, NULL,
                   G_TYPE_NONE,
                   1,
-                  META_TYPE_RECTANGLE);
+                  MTK_TYPE_RECTANGLE);
 }
 
 static void
@@ -104,6 +104,182 @@ on_screenshot_written (GObject      *source,
   g_clear_pointer (&priv->datetime, g_date_time_unref);
 }
 
+static cairo_format_t
+util_cairo_format_for_content (cairo_content_t content)
+{
+  switch (content)
+    {
+    case CAIRO_CONTENT_COLOR:
+      return CAIRO_FORMAT_RGB24;
+    case CAIRO_CONTENT_ALPHA:
+      return CAIRO_FORMAT_A8;
+    case CAIRO_CONTENT_COLOR_ALPHA:
+    default:
+      return CAIRO_FORMAT_ARGB32;
+    }
+}
+
+static cairo_surface_t *
+util_cairo_surface_coerce_to_image (cairo_surface_t *surface,
+                                    cairo_content_t  content,
+                                    int              src_x,
+                                    int              src_y,
+                                    int              width,
+                                    int              height)
+{
+  cairo_surface_t *copy;
+  cairo_t *cr;
+
+  copy = cairo_image_surface_create (util_cairo_format_for_content (content),
+                                     width,
+                                     height);
+
+  cr = cairo_create (copy);
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source_surface (cr, surface, -src_x, -src_y);
+  cairo_paint (cr);
+  cairo_destroy (cr);
+
+  return copy;
+}
+
+static void
+convert_alpha (guchar *dest_data,
+               int     dest_stride,
+               guchar *src_data,
+               int     src_stride,
+               int     src_x,
+               int     src_y,
+               int     width,
+               int     height)
+{
+  int x, y;
+
+  src_data += src_stride * src_y + src_x * 4;
+
+  for (y = 0; y < height; y++)
+    {
+      uint32_t *src = (guint32 *) src_data;
+
+      for (x = 0; x < width; x++)
+        {
+          unsigned int alpha = src[x] >> 24;
+
+          if (alpha == 0)
+            {
+              dest_data[x * 4 + 0] = 0;
+              dest_data[x * 4 + 1] = 0;
+              dest_data[x * 4 + 2] = 0;
+            }
+          else
+            {
+              dest_data[x * 4 + 0] = (((src[x] & 0xff0000) >> 16) * 255 + alpha / 2) / alpha;
+              dest_data[x * 4 + 1] = (((src[x] & 0x00ff00) >>  8) * 255 + alpha / 2) / alpha;
+              dest_data[x * 4 + 2] = (((src[x] & 0x0000ff) >>  0) * 255 + alpha / 2) / alpha;
+            }
+          dest_data[x * 4 + 3] = alpha;
+        }
+
+      src_data += src_stride;
+      dest_data += dest_stride;
+    }
+}
+
+static void
+convert_no_alpha (guchar *dest_data,
+                  int     dest_stride,
+                  guchar *src_data,
+                  int     src_stride,
+                  int     src_x,
+                  int     src_y,
+                  int     width,
+                  int     height)
+{
+  int x, y;
+
+  src_data += src_stride * src_y + src_x * 4;
+
+  for (y = 0; y < height; y++)
+    {
+      uint32_t *src = (uint32_t *) src_data;
+
+      for (x = 0; x < width; x++)
+        {
+          dest_data[x * 3 + 0] = src[x] >> 16;
+          dest_data[x * 3 + 1] = src[x] >>  8;
+          dest_data[x * 3 + 2] = src[x];
+        }
+
+      src_data += src_stride;
+      dest_data += dest_stride;
+    }
+}
+
+static GdkPixbuf *
+util_pixbuf_from_surface (cairo_surface_t *surface,
+                          gint             src_x,
+                          gint             src_y,
+                          gint             width,
+                          gint             height)
+{
+  cairo_content_t content;
+  GdkPixbuf *dest;
+
+  /* General sanity checks */
+  g_return_val_if_fail (surface != NULL, NULL);
+  g_return_val_if_fail (width > 0 && height > 0, NULL);
+
+  content = cairo_surface_get_content (surface) | CAIRO_CONTENT_COLOR;
+  dest = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
+                         !!(content & CAIRO_CONTENT_ALPHA),
+                         8,
+                         width, height);
+
+  if (cairo_surface_get_type (surface) == CAIRO_SURFACE_TYPE_IMAGE &&
+      cairo_image_surface_get_format (surface) == util_cairo_format_for_content (content))
+    {
+      surface = cairo_surface_reference (surface);
+    }
+  else
+    {
+      surface = util_cairo_surface_coerce_to_image (surface, content,
+                                                    src_x, src_y,
+                                                    width, height);
+      src_x = 0;
+      src_y = 0;
+    }
+  cairo_surface_flush (surface);
+  if (cairo_surface_status (surface) || dest == NULL)
+    {
+      cairo_surface_destroy (surface);
+      g_clear_object (&dest);
+      return NULL;
+    }
+
+  if (gdk_pixbuf_get_has_alpha (dest))
+    {
+      convert_alpha (gdk_pixbuf_get_pixels (dest),
+                     gdk_pixbuf_get_rowstride (dest),
+                     cairo_image_surface_get_data (surface),
+                     cairo_image_surface_get_stride (surface),
+                     src_x, src_y,
+                     width, height);
+    }
+  else
+    {
+      convert_no_alpha (gdk_pixbuf_get_pixels (dest),
+                        gdk_pixbuf_get_rowstride (dest),
+                        cairo_image_surface_get_data (surface),
+                        cairo_image_surface_get_stride (surface),
+                        src_x, src_y,
+                        width, height);
+    }
+
+  cairo_surface_destroy (surface);
+
+  return dest;
+}
+
 static void
 write_screenshot_thread (GTask        *result,
                          gpointer      object,
@@ -123,10 +299,10 @@ write_screenshot_thread (GTask        *result,
 
   stream = g_object_ref (priv->stream);
 
-  pixbuf = gdk_pixbuf_get_from_surface (priv->image,
-                                        0, 0,
-                                        cairo_image_surface_get_width (priv->image),
-                                        cairo_image_surface_get_height (priv->image));
+  pixbuf = util_pixbuf_from_surface (priv->image,
+                                     0, 0,
+                                     cairo_image_surface_get_width (priv->image),
+                                     cairo_image_surface_get_height (priv->image));
   creation_time = g_date_time_format (priv->datetime, "%c");
 
   if (!creation_time)
@@ -153,7 +329,7 @@ do_grab_screenshot (ShellScreenshot     *screenshot,
 {
   ShellScreenshotPrivate *priv = screenshot->priv;
   ClutterStage *stage = shell_global_get_stage (priv->global);
-  cairo_rectangle_int_t screenshot_rect = { x, y, width, height };
+  MtkRectangle screenshot_rect = { x, y, width, height };
   int image_width;
   int image_height;
   float scale;
@@ -175,7 +351,7 @@ do_grab_screenshot (ShellScreenshot     *screenshot,
   if (!clutter_stage_paint_to_buffer (stage, &screenshot_rect, scale,
                                       cairo_image_surface_get_data (image),
                                       cairo_image_surface_get_stride (image),
-                                      CLUTTER_CAIRO_FORMAT_ARGB32,
+                                      COGL_PIXEL_FORMAT_CAIRO_ARGB32_COMPAT,
                                       paint_flags,
                                       &error))
     {
@@ -190,8 +366,8 @@ do_grab_screenshot (ShellScreenshot     *screenshot,
 }
 
 static void
-draw_cursor_image (cairo_surface_t       *surface,
-                   cairo_rectangle_int_t  area)
+draw_cursor_image (cairo_surface_t *surface,
+                   MtkRectangle     area)
 {
   CoglTexture *texture;
   int width, height;
@@ -200,7 +376,6 @@ draw_cursor_image (cairo_surface_t       *surface,
   MetaDisplay *display;
   MetaCursorTracker *tracker;
   cairo_surface_t *cursor_surface;
-  cairo_region_t *screenshot_region;
   cairo_t *cr;
   int x, y;
   int xhot, yhot;
@@ -214,23 +389,19 @@ draw_cursor_image (cairo_surface_t       *surface,
   if (!texture)
     return;
 
-  screenshot_region = cairo_region_create_rectangle (&area);
   meta_cursor_tracker_get_pointer (tracker, &point, NULL);
   x = point.x;
   y = point.y;
 
-  if (!cairo_region_contains_point (screenshot_region, point.x, point.y))
-    {
-      cairo_region_destroy (screenshot_region);
-      return;
-    }
+  if (!mtk_rectangle_contains_point (&area, point.x, point.y))
+    return;
 
   meta_cursor_tracker_get_hot (tracker, &xhot, &yhot);
   width = cogl_texture_get_width (texture);
   height = cogl_texture_get_height (texture);
   stride = 4 * width;
   data = g_new (guint8, stride * height);
-  cogl_texture_get_data (texture, CLUTTER_CAIRO_FORMAT_ARGB32, stride, data);
+  cogl_texture_get_data (texture, COGL_PIXEL_FORMAT_CAIRO_ARGB32_COMPAT, stride, data);
 
   /* FIXME: cairo-gl? */
   cursor_surface = cairo_image_surface_create_for_data (data,
@@ -244,7 +415,7 @@ draw_cursor_image (cairo_surface_t       *surface,
     {
       int monitor;
       float monitor_scale;
-      MetaRectangle cursor_rect = {
+      MtkRectangle cursor_rect = {
         .x = x, .y = y, .width = width, .height = height
       };
 
@@ -263,7 +434,6 @@ draw_cursor_image (cairo_surface_t       *surface,
 
   cairo_destroy (cr);
   cairo_surface_destroy (cursor_surface);
-  cairo_region_destroy (screenshot_region);
   g_free (data);
 }
 
@@ -301,7 +471,7 @@ grab_screenshot_content (ShellScreenshot *screenshot,
   ShellScreenshotPrivate *priv = screenshot->priv;
   MetaDisplay *display;
   int width, height;
-  cairo_rectangle_int_t screenshot_rect;
+  MtkRectangle screenshot_rect;
   ClutterStage *stage;
   int image_width;
   int image_height;
@@ -315,7 +485,7 @@ grab_screenshot_content (ShellScreenshot *screenshot,
 
   display = shell_global_get_display (priv->global);
   meta_display_get_size (display, &width, &height);
-  screenshot_rect = (cairo_rectangle_int_t) {
+  screenshot_rect = (MtkRectangle) {
       .x = 0,
       .y = 0,
       .width = width,
@@ -349,7 +519,7 @@ grab_screenshot_content (ShellScreenshot *screenshot,
       unsigned int width, height;
       CoglContext *ctx;
       CoglPipeline *pipeline;
-      CoglTexture2D *texture;
+      CoglTexture *texture;
       CoglOffscreen *offscreen;
       ClutterStageView *view;
 
@@ -372,12 +542,12 @@ grab_screenshot_content (ShellScreenshot *screenshot,
                                                 pipeline,
                                                 -1, 1, 1, -1,
                                                 0, 0, 1, 1);
-      cogl_object_unref (pipeline);
+      g_object_unref (pipeline);
       g_object_unref (offscreen);
 
       priv->cursor_content =
         clutter_texture_content_new_from_texture (texture, NULL);
-      cogl_object_unref (texture);
+      g_object_unref (texture);
 
       priv->cursor_scale = meta_cursor_tracker_get_scale (tracker);
 
@@ -395,7 +565,7 @@ grab_screenshot_content (ShellScreenshot *screenshot,
       // MetaCursorRenderer.
       if (view)
         {
-          cairo_rectangle_int_t view_layout;
+          MtkRectangle view_layout;
           float view_scale;
 
           clutter_stage_view_get_layout (view, &view_layout);
@@ -428,7 +598,7 @@ grab_window_screenshot (ShellScreenshot     *screenshot,
   MetaWindow *window = meta_display_get_focus_window (display);
   ClutterActor *window_actor;
   gfloat actor_x, actor_y;
-  MetaRectangle rect;
+  MtkRectangle rect;
 
   window_actor = CLUTTER_ACTOR (meta_window_get_compositor_private (window));
   clutter_actor_get_position (window_actor, &actor_x, &actor_y);
@@ -474,10 +644,10 @@ grab_window_screenshot (ShellScreenshot     *screenshot,
 }
 
 static gboolean
-finish_screenshot (ShellScreenshot        *screenshot,
-                   GAsyncResult           *result,
-                   cairo_rectangle_int_t **area,
-                   GError                **error)
+finish_screenshot (ShellScreenshot  *screenshot,
+                   GAsyncResult     *result,
+                   MtkRectangle    **area,
+                   GError          **error)
 {
   ShellScreenshotPrivate *priv = screenshot->priv;
 
@@ -493,6 +663,7 @@ finish_screenshot (ShellScreenshot        *screenshot,
 static void
 on_after_paint (ClutterStage     *stage,
                 ClutterStageView *view,
+                ClutterFrame     *frame,
                 GTask            *result)
 {
   ShellScreenshot *screenshot = g_task_get_task_data (result);
@@ -520,7 +691,7 @@ on_after_paint (ClutterStage     *stage,
     }
 
   g_signal_emit (screenshot, signals[SCREENSHOT_TAKEN], 0,
-                 (cairo_rectangle_int_t *) &priv->screenshot_area);
+                 (MtkRectangle *) &priv->screenshot_area);
 
   meta_enable_unredirect_for_display (display);
 }
@@ -582,7 +753,7 @@ shell_screenshot_screenshot (ShellScreenshot     *screenshot,
       grab_screenshot (screenshot, flags, result);
 
       g_signal_emit (screenshot, signals[SCREENSHOT_TAKEN], 0,
-                     (cairo_rectangle_int_t *) &priv->screenshot_area);
+                     (MtkRectangle *) &priv->screenshot_area);
     }
   else
     {
@@ -612,10 +783,10 @@ shell_screenshot_screenshot (ShellScreenshot     *screenshot,
  *
  */
 gboolean
-shell_screenshot_screenshot_finish (ShellScreenshot        *screenshot,
-                                    GAsyncResult           *result,
-                                    cairo_rectangle_int_t **area,
-                                    GError                **error)
+shell_screenshot_screenshot_finish (ShellScreenshot  *screenshot,
+                                    GAsyncResult     *result,
+                                    MtkRectangle    **area,
+                                    GError          **error)
 {
   g_return_val_if_fail (SHELL_IS_SCREENSHOT (screenshot), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
@@ -628,6 +799,7 @@ shell_screenshot_screenshot_finish (ShellScreenshot        *screenshot,
 static void
 screenshot_stage_to_content_on_after_paint (ClutterStage     *stage,
                                             ClutterStageView *view,
+                                            ClutterFrame     *frame,
                                             GTask            *result)
 {
   ShellScreenshot *screenshot = g_task_get_task_data (result);
@@ -811,7 +983,7 @@ shell_screenshot_screenshot_area (ShellScreenshot     *screenshot,
                           SHELL_SCREENSHOT_FLAG_NONE);
 
       g_signal_emit (screenshot, signals[SCREENSHOT_TAKEN], 0,
-                     (cairo_rectangle_int_t *) &priv->screenshot_area);
+                     (MtkRectangle *) &priv->screenshot_area);
 
       task = g_task_new (screenshot, NULL, on_screenshot_written, result);
       g_task_run_in_thread (task, write_screenshot_thread);
@@ -844,10 +1016,10 @@ shell_screenshot_screenshot_area (ShellScreenshot     *screenshot,
  *
  */
 gboolean
-shell_screenshot_screenshot_area_finish (ShellScreenshot        *screenshot,
-                                         GAsyncResult           *result,
-                                         cairo_rectangle_int_t **area,
-                                         GError                **error)
+shell_screenshot_screenshot_area_finish (ShellScreenshot  *screenshot,
+                                         GAsyncResult     *result,
+                                         MtkRectangle    **area,
+                                         GError          **error)
 {
   g_return_val_if_fail (SHELL_IS_SCREENSHOT (screenshot), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
@@ -927,10 +1099,10 @@ shell_screenshot_screenshot_window (ShellScreenshot     *screenshot,
  *
  */
 gboolean
-shell_screenshot_screenshot_window_finish (ShellScreenshot        *screenshot,
-                                           GAsyncResult           *result,
-                                           cairo_rectangle_int_t **area,
-                                           GError                **error)
+shell_screenshot_screenshot_window_finish (ShellScreenshot  *screenshot,
+                                           GAsyncResult     *result,
+                                           MtkRectangle    **area,
+                                           GError          **error)
 {
   g_return_val_if_fail (SHELL_IS_SCREENSHOT (screenshot), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
@@ -948,7 +1120,7 @@ shell_screenshot_screenshot_window_finish (ShellScreenshot        *screenshot,
  * @callback: (scope async): function to call returning success or failure
  * of the async grabbing
  *
- * Picks the pixel at @x, @y and returns its color as #ClutterColor.
+ * Picks the pixel at @x, @y and returns its color as #CoglColor.
  *
  */
 void
@@ -1011,7 +1183,7 @@ shell_screenshot_pick_color (ShellScreenshot     *screenshot,
 gboolean
 shell_screenshot_pick_color_finish (ShellScreenshot  *screenshot,
                                     GAsyncResult     *result,
-                                    ClutterColor     *color,
+                                    CoglColor        *color,
                                     GError          **error)
 {
   ShellScreenshotPrivate *priv;
@@ -1130,12 +1302,12 @@ shell_screenshot_composite_to_stream (CoglTexture         *texture,
                                         cogl_texture_get_width (sub_texture),
                                         cogl_texture_get_height (sub_texture));
 
-  cogl_texture_get_data (sub_texture, CLUTTER_CAIRO_FORMAT_ARGB32,
+  cogl_texture_get_data (sub_texture, COGL_PIXEL_FORMAT_CAIRO_ARGB32_COMPAT,
                          cairo_image_surface_get_stride (surface),
                          cairo_image_surface_get_data (surface));
   cairo_surface_mark_dirty (surface);
 
-  cogl_object_unref (sub_texture);
+  g_object_unref (sub_texture);
 
   cairo_surface_set_device_scale (surface, scale, scale);
 
@@ -1146,7 +1318,7 @@ shell_screenshot_composite_to_stream (CoglTexture         *texture,
         cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
                                     cogl_texture_get_width (cursor),
                                     cogl_texture_get_height (cursor));
-      cogl_texture_get_data (cursor, CLUTTER_CAIRO_FORMAT_ARGB32,
+      cogl_texture_get_data (cursor, COGL_PIXEL_FORMAT_CAIRO_ARGB32_COMPAT,
                              cairo_image_surface_get_stride (cursor_surface),
                              cairo_image_surface_get_data (cursor_surface));
       cairo_surface_mark_dirty (cursor_surface);
@@ -1165,11 +1337,11 @@ shell_screenshot_composite_to_stream (CoglTexture         *texture,
       cairo_surface_destroy (cursor_surface);
     }
 
-  // Save to an image.
-  pixbuf = gdk_pixbuf_get_from_surface (surface,
-                                        0, 0,
-                                        cairo_image_surface_get_width (surface),
-                                        cairo_image_surface_get_height (surface));
+  /* Save to an image. */
+  pixbuf = util_pixbuf_from_surface (surface,
+                                     0, 0,
+                                     cairo_image_surface_get_width (surface),
+                                     cairo_image_surface_get_height (surface));
   cairo_surface_destroy (surface);
 
   date_time = g_date_time_new_now_local ();

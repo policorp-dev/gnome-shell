@@ -1,12 +1,10 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported WindowAttentionHandler */
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
 
-const { GObject, Shell } = imports.gi;
+import * as Main from './main.js';
+import * as MessageTray from './messageTray.js';
 
-const Main = imports.ui.main;
-const MessageTray = imports.ui.messageTray;
-
-var WindowAttentionHandler = class {
+export class WindowAttentionHandler {
     constructor() {
         this._tracker = Shell.WindowTracker.get_default();
         global.display.connectObject(
@@ -17,7 +15,7 @@ var WindowAttentionHandler = class {
 
     _getTitleAndBanner(app, window) {
         let title = app.get_name();
-        let banner = _("“%s” is ready").format(window.get_title());
+        let banner = _('“%s” is ready').format(window.get_title());
         return [title, banner];
     }
 
@@ -37,31 +35,37 @@ var WindowAttentionHandler = class {
         let source = new WindowAttentionSource(app, window);
         Main.messageTray.add(source);
 
-        let [title, banner] = this._getTitleAndBanner(app, window);
+        let [title, body] = this._getTitleAndBanner(app, window);
 
-        let notification = new MessageTray.Notification(source, title, banner);
+        let notification = new MessageTray.Notification({
+            source,
+            title,
+            body,
+            forFeedback: true,
+        });
         notification.connect('activated', () => {
             source.open();
         });
-        notification.setForFeedback(true);
 
-        source.showNotification(notification);
+        source.addNotification(notification);
 
         window.connectObject('notify::title', () => {
-            [title, banner] = this._getTitleAndBanner(app, window);
-            notification.update(title, banner);
+            [title, body] = this._getTitleAndBanner(app, window);
+            notification.set({title, body});
         }, source);
     }
-};
+}
 
-var WindowAttentionSource = GObject.registerClass(
+const WindowAttentionSource = GObject.registerClass(
 class WindowAttentionSource extends MessageTray.Source {
-    _init(app, window) {
+    constructor(app, window) {
+        super({
+            title: app.get_name(),
+            icon: app.get_icon(),
+            policy: MessageTray.NotificationPolicy.newForApp(app),
+        });
+
         this._window = window;
-        this._app = app;
-
-        super._init(app.get_name());
-
         this._window.connectObject(
             'notify::demands-attention', this._sync.bind(this),
             'notify::urgent', this._sync.bind(this),
@@ -73,19 +77,6 @@ class WindowAttentionSource extends MessageTray.Source {
         if (this._window.demands_attention || this._window.urgent)
             return;
         this.destroy();
-    }
-
-    _createPolicy() {
-        if (this._app && this._app.get_app_info()) {
-            let id = this._app.get_id().replace(/\.desktop$/, '');
-            return new MessageTray.NotificationApplicationPolicy(id);
-        } else {
-            return new MessageTray.NotificationGenericPolicy();
-        }
-    }
-
-    createIcon(size) {
-        return this._app.create_icon_texture(size);
     }
 
     destroy(params) {

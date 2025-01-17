@@ -1,32 +1,35 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-/* exported Component */
+import AccountsService from 'gi://AccountsService';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Pango from 'gi://Pango';
+import PolkitAgent from 'gi://PolkitAgent';
+import Polkit from 'gi://Polkit';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
-const {
-    AccountsService, Clutter, GLib, GObject,
-    Pango, PolkitAgent, Polkit, Shell, St,
-} = imports.gi;
+import * as Dialog from '../dialog.js';
+import * as Main from '../main.js';
+import * as ModalDialog from '../modalDialog.js';
+import * as ShellEntry from '../shellEntry.js';
+import * as UserWidget from '../userWidget.js';
+import {wiggle} from '../../misc/animationUtils.js';
 
-const Dialog = imports.ui.dialog;
-const Main = imports.ui.main;
-const ModalDialog = imports.ui.modalDialog;
-const ShellEntry = imports.ui.shellEntry;
-const UserWidget = imports.ui.userWidget;
-const Util = imports.misc.util;
-
+/** @enum {number} */
 const DialogMode = {
     AUTH: 0,
     CONFIRM: 1,
 };
 
-const DIALOG_ICON_SIZE = 64;
+const DIALOG_ICON_SIZE = 96;
 
 const DELAYED_RESET_TIMEOUT = 200;
 
-var AuthenticationDialog = GObject.registerClass({
-    Signals: { 'done': { param_types: [GObject.TYPE_BOOLEAN] } },
+const AuthenticationDialog = GObject.registerClass({
+    Signals: {'done': {param_types: [GObject.TYPE_BOOLEAN]}},
 }, class AuthenticationDialog extends ModalDialog.ModalDialog {
     _init(actionId, description, cookie, userNames) {
-        super._init({ styleClass: 'prompt-dialog' });
+        super._init({styleClass: 'prompt-dialog'});
 
         this.actionId = actionId;
         this.message = description;
@@ -38,9 +41,9 @@ var AuthenticationDialog = GObject.registerClass({
 
         this.connect('closed', this._onDialogClosed.bind(this));
 
-        let title = _("Authentication Required");
+        let title = _('Authentication Required');
 
-        let headerContent = new Dialog.MessageDialogContent({ title, description });
+        let headerContent = new Dialog.MessageDialogContent({title, description});
         this.contentLayout.add_child(headerContent);
 
         let bodyContent = new Dialog.MessageDialogContent();
@@ -89,7 +92,7 @@ var AuthenticationDialog = GObject.registerClass({
 
         this._passwordEntry = new St.PasswordEntry({
             style_class: 'prompt-dialog-password-entry',
-            text: "",
+            text: '',
             can_focus: true,
             visible: false,
             x_align: Clutter.ActorAlign.CENTER,
@@ -101,7 +104,7 @@ var AuthenticationDialog = GObject.registerClass({
             GObject.BindingFlags.SYNC_CREATE);
         passwordBox.add_child(this._passwordEntry);
 
-        let warningBox = new St.BoxLayout({ vertical: true });
+        let warningBox = new St.BoxLayout({vertical: true});
 
         let capsLockWarning = new ShellEntry.CapsLockWarning();
         this._passwordEntry.bind_property('visible',
@@ -129,7 +132,7 @@ var AuthenticationDialog = GObject.registerClass({
          * infoMessage and errorMessageLabel - but it is still invisible because
          * gnome-shell.css sets the color to be transparent
          */
-        this._nullMessageLabel = new St.Label({ style_class: 'prompt-dialog-null-label' });
+        this._nullMessageLabel = new St.Label({style_class: 'prompt-dialog-null-label'});
         this._nullMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this._nullMessageLabel.clutter_text.line_wrap = true;
         warningBox.add_child(this._nullMessageLabel);
@@ -188,7 +191,7 @@ var AuthenticationDialog = GObject.registerClass({
     _ensureOpen() {
         // NOTE: ModalDialog.open() is safe to call if the dialog is
         // already open - it just returns true without side-effects
-        if (!this.open(global.get_current_time())) {
+        if (!this.open()) {
             // This can fail if e.g. unable to get input grab
             //
             // In an ideal world this wouldn't happen (because the
@@ -257,12 +260,12 @@ var AuthenticationDialog = GObject.registerClass({
                  * requested authentication was not gained; this can happen
                  * because of an authentication error (like invalid password),
                  * for instance. */
-                this._errorMessageLabel.set_text(_("Sorry, that didn’t work. Please try again."));
+                this._errorMessageLabel.set_text(_('Sorry, that didn’t work. Please try again.'));
                 this._errorMessageLabel.show();
                 this._infoMessageLabel.hide();
                 this._nullMessageLabel.hide();
 
-                Util.wiggle(this._passwordEntry);
+                wiggle(this._passwordEntry);
             }
 
             /* Try and authenticate again */
@@ -330,7 +333,7 @@ var AuthenticationDialog = GObject.registerClass({
         let resetDialog = () => {
             this._sessionRequestTimeoutId = 0;
 
-            if (this.state != ModalDialog.State.OPENED)
+            if (this.state !== ModalDialog.State.OPENED)
                 return GLib.SOURCE_REMOVE;
 
             this._passwordEntry.hide();
@@ -408,7 +411,7 @@ var AuthenticationDialog = GObject.registerClass({
     }
 });
 
-var AuthenticationAgent = GObject.registerClass(
+const AuthenticationAgent = GObject.registerClass(
 class AuthenticationAgent extends Shell.PolkitAuthenticationAgent {
     _init() {
         super._init();
@@ -468,4 +471,4 @@ class AuthenticationAgent extends Shell.PolkitAuthenticationAgent {
     }
 });
 
-var Component = AuthenticationAgent;
+export {AuthenticationAgent as Component};

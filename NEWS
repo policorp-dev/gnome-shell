@@ -1,125 +1,654 @@
-43.9
+47.2
+====
+* Fix graphical artifacts in partially-rounded buttons [Sebastian; #7996]
+* Fix caret tracking in magnifier [Bilal; !3522]
+* Improve accessibility of keyboard backlight quick settings toggle
+  [Lukáš, Florian; !3538, !3545]
+* Fix resetting non-caps shift key in on-screen keyboard [Jonas; !3286]
+* Misc. bug fixes and cleanups [Florian, Bilal, Automeris, Daniel, Jonas;
+  !3520, !3518, !3521, !3529, !3535, !3532, !3540, !3549, !3548, !3539]
+
+Contributors:
+  Jonas Dreßler, Bilal Elmoussaoui, Sebastian Keller, Florian Müllner,
+  Automeris naranja, Daniel Rusek, Lukáš Tyrychtr
+
+Translators:
+  Aefgh Threenine [th], Fabio Tomat [fur], Nathan Follens [nl],
+  Марко Костић [sr]
+
+47.1
+====
+* Improve quick settings accessibility [Lukáš; !3477, !3481, !3484, !3485]
+* Use accent color in tablet configuration UI [Alice; !3480]
+* Improve accuracy of inset box shadows [Daniel; !3488]
+* Fix `PopupSwitchMenuItem::toggled` passing wrong state [Andrew; !3493]
+* Consider text direction when handling arrow keys in sliders [Sundeep; !3500]
+* Fix layout issues with new dialog style [Sam; !3473]
+* Fix uneven padding in notification headers [Sam; !3486]
+* Fixed crash [Florian; #7912]
+* Misc. cleanups and bug fixes [Florian, Marco, Bilal; !3478, !3479, !3490,
+  !3495, !3499, !3504, !3505, !3507, !3508, !3506, !3511, !3514]
+
+Contributors:
+  Bilal Elmoussaoui, Sam Hewitt, Sundeep Mediratta, Alice Mikhaylenko,
+  Florian Müllner, Marco Trevisan (Treviño), Lukáš Tyrychtr, Daniel van Vugt,
+  Andrew Zaech
+
+Translators:
+  Aefgh Threenine [th], Daniel Mustieles [es]
+
+47.0
+====
+* Fix new wifi connections for restricted users [Thore; !3462]
+* Do not disable required animations [Alessandro; !2986]
+* Fix showing pending PAM messages on login screen [Marco; !3466]
+* Misc. bug fixes and cleanups [Alessandro, Balló, Sundeep, Martin, Peter,
+  Florian; !3446, !3374, !3439, !3464, !3465]
+
+Contributors:
+  Alessandro Bono, Balló György, Peter Hutterer, Martin Abente Lahaye,
+  Sundeep Mediratta, Florian Müllner, Thore Sommer, Marco Trevisan (Treviño)
+
+Translators:
+  Aefgh Threenine [th], Irénée THIRION [fr], twlvnn kraftwerk [bg],
+  Alexander Shopov [bg], Daniel Mustieles [es], Aurimas Černius [lt],
+  Fran Dieguez [gl], Anders Jonsson [sv], Andi Chandler [en_GB],
+  Ask Hjorth Larsen [da], Rūdolfs Mazurs [lv], Balázs Úr [hu]
+
+47.rc
+=====
+* Fix smartcard logins [Alessandro; !3448]
+* Mark drag to dash as move operation [Daniel; !3453]
+* Use rst2man to generate man pages [Florian; !3454]
+* Fix glitch when quick settings menu animation is interrupted [Dylan; !2481]
+* Plugged leak [Jonas; !3421]
+* Misc. bug fixes and cleanups [Bilal, Florian, Sophie, Jonas; Martin; !3433,
+  !3441, !3443, !3447, !3450, !3451, !3449, !3455, !3456, !3452, !3458, !3459]
+
+Contributors:
+  Jonas Ådahl, Alessandro Bono, Bilal Elmoussaoui, Sophie Herold,
+  Martin Abente Lahaye, Dylan McCall, Florian Müllner, Daniel Sheeler
+
+Translators:
+  Balázs Úr [hu], Yosef Or Boczko [he], Giannis Antypas [el],
+  Daniel Șerbănescu [ro], Jordi Mas [ca], Ekaterine Papava [ka],
+  Asier Sarasua Garmendia [eu], Artur S0 [ru], Vasil Pupkin [be],
+  Rafael Fontenelle [pt_BR], Jordi Mas i Hernandez [ca], Yuri Chornoivan [uk],
+  Luming Zh [zh_CN], Jose Riha [sk], Jiri Grönroos [fi], Jürgen Benvenuti [de],
+  Brage Fuglseth [nb], Daniel Rusek [cs], Danial Behzadi [fa],
+  Quentin PAGÈS [oc], Changwoo Ryu [ko], Hugo Carvalho [pt], Piotr Drąg [pl],
+  Andika Triwidada [id], Baurzhan Muftakhidinov [kk], Sabri Ünal [tr]
+
+47.beta
+=======
+* Use hardware encoding for screen recordings if possible [Jonas D.; !2080]
+* Allow notification portal to always use GTK protocol [Julian; !3382]
+* Improve Persian on-screen keyboard layout [Sohrab; !3409]
+* Build and publish GNOME OS systemd-sysext extensions [Martin; !3390]
+* Make overview startup notification more reliable [Will; !3422, !3428]
+* Fix keyboard navigation in app folders [sorelz; !3338]
+* Support exporting DebugControl service from looking glass [Sebastian; !3425]
+* Use low-power pipeline in screen recorder if possible [José; !3416]
+* Show notification when detecting captive portal [Florian; !3408]
+* Fix connecting to WPA2 enterprise networks [Tuomas; !3426]
+* Use unlinked rounded buttons in notifications and dialogs [Sam; !3383, !3427]
+* Misc. bug fixes and cleanups [Jonas Å., Florian, Sam, Bilal, kramo, Julian,
+  sorelz, Sebastian; !3363, !3411, !3413, !3414, !3412, !3402, !3423, !3420,
+  !3415, !3410, !3168, !3387, !3424, !3432, !3431, !3430]
+
+Contributors:
+  Jonas Ådahl, Sohrab Behdani, Jonas Dreßler, Bilal Elmoussaoui, Sam Hewitt,
+  kramo, Martin Abente Lahaye, Florian Müllner, Tuomas Nurmi, José Relvas,
+  sorelz, Julian Sparber, Will Thompson, Sebastian Wick
+
+Translators:
+  Ekaterine Papava [ka], Scrambled 777 [hi], Sabri Ünal [tr], Martin [sl],
+  Chao-Hsiung Liao [zh_TW], Daniel Rusek [cs], Emin Tufan Çetin [tr]
+
+47.alpha
+========
+* Fix size of workspace switcher OSD [Jakub; !3282]
+* Fix handling of invalid TLS certs in portal handler [Sebastian K.; !3284]
+* Exclude override-redirect windows from workspace animation [Marco; !3285]
+* Also center time on lock screen when using 12h format [pesader; !3290]
+* Use absolute tray icon position in root event coordinates [Marco; !3283]
+* Fix displaying info messages on login screen [Ray; !3298]
+* Correct expected bus name for streams [Simon; !3303]
+* Fix notifications on lock screen [Florian; !3308]
+* notifications: Only apply special styling to symbolic icons [Florian; !3296]
+* Use three or more fingers for touchpad gestures [Gregor; !3275]
+* Fix number of search results with Large Text option [Sam H.; !3312]
+* Make overview spacings dynamic [Jonas D.; !3278]
+* Fix showing keyboard layouts with variants [Sebastian K.; !3324]
+* Tweak font sizes in calendar [Sam H.; !3313]
+* automountManager: Fix re-asking password for TCRYPT devices [segfault; !3300]
+* Port unit tests to jasmine [Sam S., Florian; !3164]
+* Fix stuck unlock prompt when animations are disabled [Florian; !3317]
+* Add extended on-screen keyboard layout for 'za' [Michael; !3309]
+* Fix possible hang on startup during ibus-daemon launch [Marco; !3293]
+* Allow fillPreferencesWindow() to be asyn [Leleat; !3348]
+* Fix on-screen keyboard when windows are unredirected [Carlos; !3356]
+* Switch to paint nodes [Georges; !1538]
+* Stop using SVG assets for checks and switches [Alice, Daniel; !2717]
+* Support accent color [Alice; !2715]
+* Fix rendering artifacts of some rounded borders [Jonas D.; !3354]
+* Fix overview animation glitch when windows overlap workspaces [Keyu; !3378]
+* Support building with X11-less mutter [Bilal; !3362]
+* Misc. bug fixes and cleanups [Monster, Sebastian W., Jamie, Florian, Gabriel,
+  pesader, Sebastian K., Automeris, Jonas Å., Sam H., Jonas D., Ray, Bilal,
+  Georges, Mister, Philip, Marco, Jakub, Jordan, Balló, Alessandro, Sundeep;
+  !3224, !3267, !3254, !3280, !3248, !3281, !3289, !3288, !3270, !3295, !3299,
+  !3310, !3315, !3322, !3326, !3321, !3319, !3329, !3327, !3314, !3320, !3331,
+  !3337, !3245, !3332, !3340, !3344, !3347, !3350, !3349, !3351, !3352, !3353,
+  !3355, !3358, !3357, !3359, !3307, !3323, !3365, !3366, !3367, !3369, !3370,
+  !3361, !3142, !3368, !3291, !3371, !3375, !3311, !3376, !3377, !3380, !3373,
+  !3385, !3386, !3396, !3398, !3403]
+
+Contributors:
+  Jonas Ådahl, Daniel Ruiz de Alegría, Alessandro Bono, Jonas Dreßler,
+  Bilal Elmoussaoui, Michael Evans, Carlos Garnacho, Jamie Gravendeel,
+  Balló György, Sam Hewitt, Sebastian Keller, Leleat, Simon McVittie,
+  Sundeep Mediratta, Alice Mikhaylenko, Monster, Florian Müllner, Gabriel Nagy,
+  Automeris naranja, Georges Basile Stavracas Neto, Gregor Niehl, pesader,
+  Jordan Petridis, segfault, Mister Smör, Sam Spilsbury, Jakub Steiner,
+  Ray Strode, Keyu Tao, Marco Trevisan (Treviño), Sebastian Wick,
+  Philip Withnall
+
+Translators:
+  Martin [sl], Andika Triwidada [id], Yuri Chornoivan [uk], Hugo Carvalho [pt],
+  Scrambled 777 [hi], Jose Riha [sk], Balázs Úr [hu], Quentin PAGÈS [oc],
+  Artur S0 [ru], Yosef Or Boczko [he]
+
+46.1
+====
+* Improve notification of conflicting session [Joan; !3235]
+* Add shift level to Korean OSK layout [Carlos; !3222]
+* Fix markup support in notifications [Sebastian; !3247]
+* extensions-app: Fix empty rows with '&' in extension name [Florian; !3266]
+* extensions-app: Improve HIG compliance [Automeris; !3269, !3271]
+* Omit expand buttons in notification banners [Julian; !3249]
+* Misc. bug fixes and cleanups [dcz, Totto16, Sebastian, Florian;
+  !3262, !3253, !3260, !3234]
+
+Contributors:
+  dcz, Carlos Garnacho, Sebastian Keller, Robert Mader, Florian Müllner,
+  Automeris naranja, Julian Sparber, Joan Torres, Totto16, Sebastian Wick
+
+Translators:
+  Danial Behzadi [fa], Baurzhan Muftakhidinov [kk], Anders Jonsson [sv],
+  Aurimas Černius [lt], Yuri Chornoivan [uk], Daniel Rusek [cs],
+  Ekaterine Papava [ka], Asier Sarasua Garmendia [eu], Jiri Grönroos [fi],
+  Piotr Drąg [pl], Yaron Shahrabani [he], Brage Fuglseth [nb], A S Alam [pa],
+  Christian Kirbach [de], Milo Casagrande [it], Fran Dieguez [gl],
+  Jordi Mas i Hernandez [ca], Jordi Mas [ca], Sabri Ünal [tr],
+  Boyuan Yang [zh_CN], Athmane MOKRAOUI [kab], Vincent Chatelain [fr],
+  Милош Поповић [sr, sr@latin], Martin [sl], Nathan Follens [nl], Artur S0 [ru],
+  Juliano de Souza Camargo [pt_BR], Changwoo Ryu [ko], Jose Riha [sk],
+  Fabio Tomat [fur], Peter Vágner [sk], Andi Chandler [en_GB]
+
+46.0
+====
+* Fix model selection in on-screen keyboard [Jonas; !3230]
+* Fix key getting stuck when raising screen shield [Jonas; !3231]
+* Fix notifications sometimes being empty [Julian; !3229]
+* Fix cursor visibilty when magnified [Sebastian; !3237]
+* Fixed crashes [Jonas, Sebastian; !3233, !3239]
+* Misc. bug fixes and cleanups [Carlos, Yotam, Aleksandr, Florian, Joan, Sam;
+  !3225, !3161, !3232, !3226, !3236, !3203, !3238]
+
+Contributors:
+  Yotam Bar-On, Jonas Dreßler, Carlos Garnacho, Sam Hewitt, Sebastian Keller,
+  Aleksandr Mezin, Florian Müllner, Julian Sparber, Joan Torres
+
+Translators:
+  Sabri Ünal [tr], Yuri Chornoivan [uk], Piotr Drąg [pl], Jiri Grönroos [fi],
+  Ekaterine Papava [ka], Aurimas Černius [lt], Yaron Shahrabani [he],
+  Daniel Mustieles [es], Asier Sarasua Garmendia [eu], Guillaume Bernard [fr],
+  Jordi Mas i Hernandez [ca], Matej Urbančič [sl], Bruce Cowan [en_GB],
+  Baurzhan Muftakhidinov [kk], Brage Fuglseth [nb], Andika Triwidada [id],
+  Quentin PAGÈS [oc], Rūdolfs Mazurs [lv], Anders Jonsson [sv],
+  Fran Dieguez [gl], Milo Casagrande [it], Balázs Úr [hu], Philipp Kiemle [de],
+  Artur S0 [ru], Changwoo Ryu [ko], Ask Hjorth Larsen [da],
+  Athmane MOKRAOUI [kab]
+
+46.rc
+=====
+* Fix repainting drawing area [Florian; !3190]
+* Support locking down extension installation [Florian; !3180]
+* Fix auto-closing FDO notifications [Florian; !3204]
+* Ensure remote actions are activated with correct platform data [Julian; !3198]
+* FDO notifications: Support ActivationToken signal [Julian; !3199]
+* Delete selected text on backspace from on-screen keyboard [Sebastian; !2746]
+* Various on-screen keyboard improvements [Carlos; !3162]
+* Inform users of conflicting local/remote sessions on login [Joan; !3134]
+* screencasts: Use h264 encoding if available [Jonas; !3211]
+* Work around issue in NetworkManager's wireguard support [Jonas; !3219]
+* Allow expanding notifications in message list [Julian; !3173]
+* Fixed crash [Marco; !2267]
+* Misc. bug fixes and cleanups [Paul, Florian, Carlos, Julian, Bilal, Automeris,
+  Ray, Sam, Daniel, Sophie; !3186, !3187, !3028, !3188, !3189, !3191, !3192,
+  !3147, !3195, !3197, !3196, !2765, !3200, !3202, !3201, !3206, !3208, !3213,
+  !3207, !3214, !3215, !3216, !3209, !3217, !3221]
+
+Contributors:
+  Jonas Dreßler, Bilal Elmoussaoui, Carlos Garnacho, Sophie Herold, Sam Hewitt,
+  Paul Hollinsky, Sebastian Keller, Florian Müllner, Automeris naranja,
+  Julian Sparber, Ray Strode, Joan Torres, Marco Trevisan (Treviño),
+  Daniel van Vugt
+
+Translators:
+  Ekaterine Papava [ka], Danial Behzadi [fa], Marek Černocký [cs],
+  Sabri Ünal [tr], Artur S0 [ru], Yuri Chornoivan [uk], Fran Dieguez [gl],
+  Vasil Pupkin [be], Asier Sarasua Garmendia [eu], Yaron Shahrabani [he],
+  Daniel Rusek [cs], Brage Fuglseth [nb], Emin Tufan Çetin [tr],
+  Nathan Follens [nl], Aurimas Černius [lt], Matej Urbančič [sl],
+  Daniel Mustieles [es], Quique Serrano [ca], Irénée THIRION [fr],
+  Kukuh Syafaat [id], Luming Zh [zh_CN], Jordi Mas i Hernandez [ca],
+  Bruce Cowan [en_GB], Quentin PAGÈS [oc], Baurzhan Muftakhidinov [kk],
+  Rūdolfs Mazurs [lv], Chao-Hsiung Liao [zh_TW], Guillaume Bernard [fr],
+  Jürgen Benvenuti [de], Philipp Kiemle [de], Jiri Grönroos [fi]
+
+46.beta
+=======
+* Improve High Contrast styling
+  [Sam; !3063, !3075, !3076, !3097, !3143, !3120, !3154]
+* Improve default styling [Sam; !3044, !3084, !3102, !3140, !3167]
+* Close mount notification when drive gets disconnected [Florian; !3089]
+* extensions-app: Remember window state [Florian; !3115]
+* Fix feedback look in keyboard backlight slider [Barnabás; !3086]
+* Follow "switch-shapes" accessibility setting [Florian; !3107]
+* Fix effects of transient wayland windows [Florian; !3125]
+* Add keyboard model configuration support [Leorize; !2583]
+* Add Text Editor to the dash by default [Allan; !3135]
+* Fix icon size regression in dash [Sam; !3119]
+* Improve project and development documentation [Florian; !3122]
+* overview: Keep dimming effect for modal dialogs [Florian; !3151]
+* Do not use markup in button labels [Carlos; !3149]
+* Fix menu alignment in RTL locales [Florian; !3150]
+* Overhaul assets in monitor layout switcher [Sam; !3128]
+* Fix overview transition from search results to session [Suryashankar; !3152]
+* Add header to notifications [Julian; !3103]
+* extensions-app: Use adaptive dialogs [Florian; !3148]
+* Register custom D-Bus errors [Florian; !3159, !3160]
+* Improve appearance of symbolic icons in notifications [Julian; !3066]
+* Improve minimize animation [Keyu; !2968]
+* Use a single source for all system notifications [Julian; !3156]
+* Add missing shift level to Georgian OSK layout [Carlos; !3145]
+* Tweak switch appearance [kramo; !3077]
+* Improve handling of screencast failures [Jonas; !2976]
+* Fixed crash [Florian; !3117]
+* Misc. bug fixes and cleanups [Julian, Robert, Bilal, Florian, Georges, Sam,
+  Shmuel, Jonas, Andy, Evan, Óscar, Bilal; !3059, !2982, !3026, !3105, !3104,
+  !3106, !3109, !3110, !3112, !3111, !3113, !3114, !3118, !3121, !3098, !3123,
+  !3126, !3129, !3136, !3138, !3139, !3137, !3133, !3132, !3130, !3131, !3141,
+  !3146, !786, !2475, !2901, !2037, !3153, !3158, !3155, !3165, !3171, !3169,
+  !3127, !3172, !3157, !3170, !3175, !3176, !3178, !3177, !3181]
+
+Contributors:
+  Suryashankar Das, Allan Day, Jonas Dreßler, Bilal Elmoussaoui,
+  Óscar Fernández Diaz, Carlos Garnacho, Sam Hewitt, Andy Holmes, kramo,
+  Leorize, Robert Mader, Shmuel Melamud, Florian Müllner,
+  Georges Basile Stavracas Neto, Barnabás Pőcze, Julian Sparber, Keyu Tao,
+  Evan Welsh
+
+Translators:
+  Ekaterine Papava [ka], Artur S0 [ru], Sabri Ünal [tr], Balázs Meskó [hu],
+  Danial Behzadi [fa], A S Alam [pa], Daniel Rusek [cs], Fran Dieguez [gl],
+  Vasil Pupkin [be], Yosef Or Boczko [he]
+
+46.alpha
+========
+* Fix scroll handling on sliders [Carlos; !2967]
+* overview: Handle unredirection as part of the state transition [Robert; !2970]
+* Handle DESKTOP windows during workspace animations [Sundeep; !2865]
+* Improve wording in welcome dialog [Automeris, Florian; !2963, !2962]
+* Improve recording indicator in light style [Georges; !2983]
+* Fix calendar popup shrinking on date changes [Sebastian K.; !2989]
+* app: Make all windows on target workspace recent when activated
+  [Sebastian W.; !2991]
+* Fix performance degradation due to repeated signal leak [Sebastian K.; !3001]
+* Optimize application search [Sebastian K.; !3004]
+* Fix on-screen keyboard backspace getting stuck [Sebastian K.; !3009]
+* Adapt to ClutterContainer removal [Zander; !3010, !3014]
+* Fix arrow navigation in search results [Sebastian K.; !3015]
+* Improve monitor OSD labels [Sam; !3016]
+* Support async code in Eval() D-Bus method [Florian; !3021]
+* Fix sliders not requesting any size [Florian; !2994]
+* Only show prefs dialog after the extension has been loaded [Florian; !3025]
+* Use dedicated assets in ctrl-alt-tab popup [Sam; !3019]
+* Improve high-contrast styling [Sam; !3030]
+* Fix mapping of tablet rings/strips [Peter; !3029]
+* Add support for "version-name" field in extension metainfo
+  [Aryan, Florian; !2995, !3034]
+* Add more toolbox developer tooling [Florian; !2935, !3040]
+* Use less ambiguous symbols for radio menu items [Sam; !3027]
+* Improve icon- and text scaling [Sam; !3033]
+* Modernize Extensions app [Florian; !3048, !3051, !3067]
+* Use gi-docgen for API documentation [Zander; !1873]
+* Improve high-contrast styling [Sam; !3017]
+* Allow any enter key to be used to screenshot [Scott; !2777]
+* Remove X11-specific icon fallback [Florian; !3056]
+* Replace StBin's custom layout code [Florian; !3046]
+* Minimize need to rebase when loading extensions [Sundeep; !2851]
+* Add D-Bus method to take interactive screenshots [Georges; !2999]
+* Add shortcuts to open new window of pinned apps [Florian, Leleat; !1829]
+* Fix spinner in light style variant [Florian; !3080]
+* Improve handling of enabled-but-inactive extensions [Florian; !3073]
+* Improve formatting of extension errors [Philip; !3041]
+* Fixed crashes [Daniel, Sebastian K., Carlos, Florian; !2975, !2974, !2993,
+  !3018, !3011, !3006]
+* Misc. bug fixes and cleanups [Florian, Martin, Alessandro, Bilal,
+  Sebastian K., Barnabás, Jonas, Julian, Charles, Daniel, Automeris, Cassidy,
+  Carlos, Sam, Sabri, Jonian, Sebastian W.; !2966, !2978, !2987, !2988, !2808,
+  !2964, !3000, !3005, !3008, !3013, !2190, !3020, !3023, !2997, !3031, !3042,
+  !3043, !3045, !3047, !3049, !2653, !3052, !3050, !3054, !3055, !1905, !3060,
+  !3061, !2950, !3062, !3068, !3058, !3064, !3072, !3071, !3079, !2998, !3085,
+  !3083, !3088, !3087, !3091, !3057, !3090]
+
+Contributors:
+  Cassidy James Blaede, Alessandro Bono, Zander Brown, Scott Buchanan,
+  Philip Chimento, Jonas Dreßler, Bilal Elmoussaoui, Carlos Garnacho,
+  Jonian Guveli, Sam Hewitt, Peter Hutterer, Aryan Kaushik, Sebastian Keller,
+  Leleat, Robert Mader, Sundeep Mediratta, Florian Müllner, Automeris naranja,
+  Georges Basile Stavracas Neto, Barnabás Pőcze, Julian Sparber, Sabri Ünal,
+  Daniel van Vugt, Sebastian Wick, Charles Wong, Martin Zurowietz
+
+Translators:
+  Jordi Mas [ca], Fabio Tomat [fur], Ekaterine Papava [ka], Sabri Ünal [tr],
+  Cheng-Chia Tseng [zh_TW], Changwoo Ryu [ko], Florentina Mușat [ro],
+  Brage Fuglseth [nb], Evangelos Skarmoutsos [el], Efstathios Iosifidis [el],
+  Quentin PAGÈS [oc], Jürgen Benvenuti [de], Daniel Șerbănescu [ro],
+  Artur S0 [ru], Марко Костић [sr], Hugo Carvalho [pt], Ngọc Quân Trần [vi],
+  Dušan Kazik [sk], Aefgh Threenine [th]
+
+45.0
 ====
 * Fix exposing window previews on lock screen via keyboard shortcuts
   [Florian; !2944]
 * Improve handling of latched vs. locked modes in OSK [Carlos; !2945]
+* Fix regression in workspace state tracking [Florian; !2949]
+* Update extensions immediately on startup after major upgrades [Florian; !2951]
 * Reverse slider direction in RTL locales [Khalid; !2943]
-* Misc. bug fixes and cleanups [xiaofan; !2947]
+* Misc. bug fixes and cleanups [Hollow, xiaofan, Florian; !2946, !2947, !2952,
+  !2956]
 
 Contributors:
-  Carlos Garnacho, Florian Müllner, Khalid Abu Shawarib, xiaofan
+  Carlos Garnacho, Hollow Man, Florian Müllner, Khalid Abu Shawarib, xiaofan
 
 Translators:
-  Daniel Rusek [cs]
+  Anders Jonsson [sv], Jordi Mas [ca], Rafael Fontenelle [pt_BR],
+  Matej Urbančič [sl], Irénée THIRION [fr], Carmen Bianca BAKKER [eo],
+  Rūdolfs Mazurs [lv], Artur S0 [ru]
 
-43.8
-====
-* Fix accessibility of quick settings sliders [Lukáš; !2762]
+45.rc
+=====
 * Allow notification dismissal with backspace [Chris; !2435]
-* Misc. bug fixes and cleanups [Florian, Takao, Carlos, Brendan, Daniel, Jonas;
-  !2814, !2842, !2849, !2668, !2666, !2876, !2729, !2828, !2904]
+* Add workspace indicators in activities button [Georges; !2902]
+* Add extension hook to add quick settings items [Florian; !2894]
+* Fix legibility issue in calendar [Jakub; !2857]
+* Fix three-finger swipes on touchscreens [Carlos; !2910]
+* Add more options to `gnome-extensions create` [Florian; !2889]
+* Fix scrolling regression in ScrollView [Andrew; !2920]
+* Fix broken workspace animation with swipe gesture [Carlos; !2918]
+* Restore focus indication in system entries [Florian; !2922]
+* Use UUID as fallback extension gettext domain [Florian; !2888]
+* Reflect core app change in default "Utilities" folder [kramo; !2916]
+* Support OWE networks in status menu [Florian; !2927]
+* Show immediate feedback when toggling bluetooth [Florian; !2815]
+* Switch workspaces when scrolling over activities button [Florian; !2933]
+* Wrap around when navigating menus with arrow keys [Lukáš; !2525]
+* Fix background apps menu showing up empty [Florian; !2938]
+* Misc. bug fixes and cleanups [Florian, Dallas, Georges, Sebastian, Brendan,
+  Simon, Marco, Daniel, Stuart, Bilal, Carlos, aliriza, Bryan; !2884, !2885,
+  !2881, !2887, !2893, !2891, !2729, !2892, !2897, !2898, !2899, !2900, !2828,
+  !2903, !2904, !2859, !2911, !2912, !2917, !2919, !2873, !2928, !2924, !2926,
+  !2930, !2932, !2934, !2936, !2875, !2938, !2940, !2939]
 
 Contributors:
-  Takao Fujiwara, Carlos Garnacho, Chris Heywood, Florian Müllner,
-  Lukáš Tyrychtr, Daniel van Vugt, Brendan William, Jonas Ådahl
+  aliriza, Bilal Elmoussaoui, Carlos Garnacho, Stuart Hayhurst, Chris Heywood,
+  Sebastian Keller, kramo, Florian Müllner, Georges Basile Stavracas Neto,
+  Bryan Ricker, Simon Schneegans, Jakub Steiner, Dallas Strouse,
+  Marco Trevisan (Treviño), Lukáš Tyrychtr, Daniel van Vugt, Brendan William,
+  Andrew Zaech
 
 Translators:
-  Danial Behzadi [fa]
+  Fran Dieguez [gl], Asier Sarasua Garmendia [eu], Quentin PAGÈS [oc],
+  Sabri Ünal [tr], Baurzhan Muftakhidinov [kk], Ekaterine Papava [ka],
+  Jordi Mas [ca], Yuri Chornoivan [uk], Piotr Drąg [pl], Vasil Pupkin [be],
+  Philipp Kiemle [de], Daniel Rusek [cs], Daniel Mustieles [es],
+  Danial Behzadi [fa], Amn Alam [pa], Artur S0 [ru], Yosef Or Boczko [he],
+  Jiri Grönroos [fi], Nathan Follens [nl], Luming Zh [zh_CN],
+  Kukuh Syafaat [id], Milo Casagrande [it], Aurimas Černius [lt],
+  Changwoo Ryu [ko], A S Alam [pa], Alan Mortensen [da], Balázs Úr [hu],
+  Bruce Cowan [en_GB]
 
-43.7
-====
-* Fix cursor offset when using magnifier [Андрей; !2780]
-* Fix missing workspace borders after wallpaper changes [Florian; !2801]
-* Misc. bug fixes and cleanups [Florian; !2796]
+45.beta.1
+=========
+* Fix input handling in alt-tab and several other components [Carlos; !2872]
+* Fix screenshot tool [Florian; 2877]
+* Export notification source classes for extensions [Andy; 2869]
+* Finishing ESM porting touches [Florian; 2880]
+* Misc. bug fixes and cleanups [Andrew, Carlos, Florian; !2866, !2871,
+  !2876, !2878, !2879]
 
 Contributors:
-  Florian Müllner, Андрей Гриценко
+  Carlos Garnacho, Florian Müllner, Andy Holmes, Andrew Zaech
 
-43.6
-====
+Translators:
+  Piotr Drąg [pl], Kukuh Syafaat [id]
+
+45.beta
+=======
+* Load extensions as modules [Florian; !2795]
+* Run "perf" tests as external scripts [Florian; !2812]
+* Remove toLocaleFormat() from date [Evan; !2827]
+* Use Tecla for keyboard layout previews [Carlos; !2834]
+* Fix accessibility of quick settings sliders [Lukáš; !2762]
+* Port to EcmaScript modules [Evan, Florian; !2842, !2822, !1499, !2868]
+* Overhaul ExtensionUtils API for modules [Florian; !2832, !2837, !2838]
+* Add a camera indicator [Robert]
+* Add keyboard backlight quick toggle [Florian; !2820]
+* Hide popup menu ornaments by default [Florian, Sebastian; !2843]
+* Improve light style variant [Sam; !2823]
+* Add InjectionManager convenience API for extensions [Florian; !2809]
+* Use per-direction labels on ring/strip tablet actions [Carlos; !2766]
+* Misc. bug fixes and cleanups [Florian, Robert, Carlos, Daniel, Sebastian,
+  Takao; !2807, !2814, !2831, !2830, !2829, !2835, !2836, !2824, !2841, !2845,
+  !2846, !2850, !2849, !2844, !2854, !2852, !2855, !2856, !2860, !2718, !2861,
+  !2862, !2864, !2668, !2666]
+
+Contributors:
+  Takao Fujiwara, Carlos Garnacho, Sam Hewitt, Sebastian Keller, Robert Mader,
+  Florian Müllner, Lukáš Tyrychtr, Daniel van Vugt, Evan Welsh
+
+Translators:
+  Vasil Pupkin [be], Fabio Tomat [fur], Balázs Úr [hu], Ekaterine Papava [ka],
+  Yuri Chornoivan [uk], Artur So [ru], Danial Behzadi [fa], Ngọc Quân Trần [vi],
+  Yosef Or Boczko [he], Boyuan Yang [zh_CN], Hugo Carvalho [pt],
+  Daniel Rusek [cs], Jiri Grönroos [fi], Florentina Musat [ro],
+  Fran Dieguez [gl], Daniel Mustieles [es]
+
+45.alpha
+========
+* Improve background apps menu [Florian; !2732, !2790]
+* Complete GTK4 port [Florian; !2690, !2733]
+* Use user-defined names in bluetooth menu [Florian; !2751]
+* Improve the built-in screen recorder
+  [Jonas, Robert; !2197, !2609, !2752, !2597, !2754, !2782]
+* Remove the app menu [Jonas; !2610]
 * Fix stuck authentication dialog in remote sessions [Joan; !2761]
-* Fix IM popup getting stuck on engine changes [Daniel; !2774]
-* Fixed crash [Carlos; !2756]
-* Misc. bug fixes and cleanups [Zacharie; !2770]
+* Provide generated toolbox images for development [Florian; !2713]
+* Fix glitches in calendar when using large-text option [Sebastian; !2759]
+* Use icons for ornaments in popup menus [maniacx; !2767]
+* Improve calendar styling [Sam; !2769]
+* Fix IM popup getting stuck on engine changes [Daniel D.; !2774]
+* Support color-scheme setting for default stylesheet [Florian; !2324]
+* Remove Soup2 support [Florian; !2776]
+* Expose public functions for search provider registration [Andy; !2783]
+* Fix cursor offset when using magnifier [Андрей; !2780]
+* Modernize Extensions app UI [Christopher; !2802]
+* Fix missing workspace borders after wallpaper changes [Florian; !2801]
+* Port auxiliary services and apps to ESM [Florian; !2786]
+* Add shortcut for toggling quick settings [Florian; !2716]
+* Fixed crashes [Carlos, Evan; !2756, !2781]
+* Misc. bug fixes and cleanups [Florian, Automeris, Daniel v. V., Jonas, Sam,
+  Zacharie, Joan, Evan, Martin; !2741, !2742, !2743, !2683, !2650, !2753, !2757,
+  !2755, !2768, !2772, !2770, !2665, !2775, !2791, !2792, !2563, !2796, !2799,
+  !2778, !2805, !2806, !2804, !2794, !2813, !2811, !2800, !2816, !2798, !2821]
 
 Contributors:
-  Daniel Drake, Zacharie DUBRULLE, Carlos Garnacho, Joan Torres
+  Christopher Davis, Daniel Drake, Jonas Dreßler, Zacharie DUBRULLE,
+  Carlos Garnacho, Sam Hewitt, Andy Holmes, Sebastian Keller, maniacx,
+  Florian Müllner, Automeris naranja, robert.mader@collabora.com, Joan Torres,
+  Daniel van Vugt, Evan Welsh, Martin Zurowietz, Андрей Гриценко
 
 Translators:
-  Leônidas Araújo [pt_BR]
+  Fabio Tomat [fur], Jiri Grönroos [fi], Sabri Ünal [tr],
+  Gianvito Cavasoli [it], Guillaume Bernard [fr], Jordi Mas [ca],
+  Yosef Or Boczko [he], Daniel Rusek [cs], Rafael Fontenelle [pt_BR],
+  Jordi Mas i Hernandez [ca], Hugo Carvalho [pt], Julia Dronova [ru],
+  Dušan Kazik [sk], Bruce Cowan [en_GB]
 
-43.5
+44.1
 ====
+* Add section title in background apps menu [Florian; !2681]
+* Fix visibility of xembed icons [Marco; !2684]
+* Fix placeholder alignment in bluetooth menu [Sebastian; !2687]
+* Fix recording screenshots in recent items [Carlos, Adam; !2692, !2725]
+* Fix reloading extensions on version-validation changes [Florian; !2694]
+* Fix force-enabling animations at runtime [Florian; !2698]
+* Fix stuck session after logout dialog timeout [Florian; !2696]
 * Fix window screenshots with pointer [Ivan; !2710, !2702]
+* Only show network subtitles if they don't match the title [Georges; !2682]
+* Fix constructing QuickMenuToggles with icon-name [Florian; !2726]
+* Fix accessible names in VPN menu [Lukáš; !2720]
+* Don't fail extracting extensions without schemas [Andy; !2727]
+* Fixes and improvements to the light theme variant [Sam; !2515]
+* Improve accessible name of wireless menu items [Lukáš; !2724]
+* Use consistent naming for "Power Mode" toggle [Automeris; !2697]
+* Fix support for transparent colors in symbolic SVGs [Florian; !2731]
 * Fix notifications getting stuck indefinitely [msizanoen1; !2736]
 * Fix keynav of menu-less buttons [Florian; !2734]
 * Fix corner cases when matching apps on StartupWmClass [Marco; !2721]
 * Fix occasional misalignment of search results [Sebastian; !2744]
 * Fix regression in content-type sniffing on autorun [Balló; !2745]
-* Misc. bug fixes and cleanups [Will, Daniel, Florian, Jonas, Marco, Sebastian;
-  !2689, !2693, !2696, !2699, !2730, !2739, !2738, !2712]
+* Fix building API documentation [Bobby; !2749]
+* Fixed crash [Jonas Å.; !2722]
+* Plugged leak [Sebastian; !2737]
+* Misc. bug fixes and cleanups [Florian, Will, Daniel, Marco, Sebastian,
+  Jordan, Jonas D.; !2679, !2689, !2693, !2639, !2661, !2685, !2709, !2699,
+  !2711, !2723, !2728, !2730, !2739, !2738, !2740, !2712, !2695, !2193]
 
 Contributors:
-  Jonas Dreßler, Balló György, Sebastian Keller, Ivan Molodetskikh, msizanoen1,
-  Florian Müllner, Will Thompson, Marco Trevisan (Treviño), Daniel van Vugt
+  Jonas Ådahl, Jonas Dreßler, Carlos Garnacho, Balló György, Sam Hewitt,
+  Andy Holmes, Sebastian Keller, Ivan Molodetskikh, msizanoen1, Florian Müllner,
+  Automeris naranja, Georges Basile Stavracas Neto, Jordan Petridis, Bobby Rong,
+  Will Thompson, Marco Trevisan (Treviño), Lukáš Tyrychtr, Daniel van Vugt,
+  Adam Williamson
 
 Translators:
-  Nart Tlisha [ab], Boyuan Yang [zh_CN]
+  Fran Dieguez [gl], Balázs Úr [hu], Andika Triwidada [id], Anders Jonsson [sv],
+  Martin [sl], Danial Behzadi [fa], Bruce Cowan [en_GB], Rūdolfs Mazurs [lv],
+  Asier Sarasua Garmendia [eu], Nathan Follens [nl], Sabri Ünal [tr],
+  Boyuan Yang [zh_CN], Guillaume Bernard [fr], Alexander Shopov [bg],
+  Aleksandr Melman [ru], MohammadSaleh Kamyab [fa], Yuri Chornoivan [uk],
+  Hugo Carvalho [pt], Fabio Tomat [fur], Kukuh Syafaat [id], Piotr Drąg [pl],
+  Марко Костић [sr], Aurimas Černius [lt], Yaron Shahrabani [he],
+  Philipp Kiemle [de]
 
-43.4
+44.0
 ====
+ * Bump version
+
+Translators:
+  Piotr Drąg [pl], Martin [sl], Fran Dieguez [gl], Chao-Hsiung Liao [zh_TW],
+  Vasil Pupkin [be], Alexandre Franke [fr], Kukuh Syafaat [id],
+  Fabio Tomat [fur], Sabri Ünal [tr], Anders Jonsson [sv], Boyuan Yang [zh_CN],
+  Marek Černocký [cs], Alan Mortensen [da], Asier Sarasua Garmendia [eu],
+  Daniel [es], Aleksandr Melman [ru], MohammadSaleh Kamyab [fa]
+
+44.rc
+=====
+* Unmute to default volume when slider was at 0 [Florian; !2644]
+* Fix missing battery percentage in the top bar [DaPigGuy; !2657]
+* Fix unexpected focus order after activating apps [Florian; !2659]
+* Stop using GTK for systray support [Carlos; !2590]
+* Expose GtkIconTheme replacement to extensions [Florian; !2671]
+* Disallow using (most of) GTK in the compositor process [Florian; !2680]
 * Plugged leak [Sebastian; !2652]
-* Misc. bug fixes and cleanups [Jonas, Sebastian; !2318, !2667]
+* Misc. bug fixes and cleanups [Jonas, Florian, Andy, Carlos, Sebastian, Sam,
+  Automeris, Ray; !2318, !2658, !2663, !2642, !2656, !2664, !2667, !2648,
+  !2654, !2655, !2670, !2669, !2673, !2675, !2674, !2677, !2676]
 
 Contributors:
-  Jonas Dreßler, Sebastian Keller
+  DaPigGuy, Jonas Dreßler, Carlos Garnacho, Sam Hewitt, Andy Holmes,
+  Sebastian Keller, Florian Müllner, Ray Strode, Automeris naranja
 
 Translators:
-  Anders Jonsson [sv], Sabri Ünal [tr], Jiri Grönroos [fi],
-  Ekaterine Papava [ka], Hugo Carvalho [pt], Yuri Chornoivan [uk],
-  Kukuh Syafaat [id], Martin [sl], Tim Sabsch [de], Piotr Drąg [pl],
-  Aurimas Černius [lt], Мирослав Николић [sr], Balázs Úr [hu], Alan Paris [fr]
+  Daniel Mustieles [es], Jürgen Benvenuti [de], Piotr Drąg [pl],
+  Danial Behzadi [fa], Fabio Tomat [fur], Jordi Mas [ca], Hemish [hi],
+  Asier Sarasua Garmendia [eu], Matej Urbančič [sl], Alan Mortensen [da],
+  Мирослав Николић [sr], Jean-Marc Tissières [fr], Jiri Grönroos [fi],
+  Sabri Ünal [tr], Balázs Úr [hu], Yuri Chornoivan [uk], Changwoo Ryu [ko],
+  Aleksandr Melman [ru], Yosef Or Boczko [he], Aurimas Černius [lt],
+  Alexander Shopov [bg], Hugo Carvalho [pt]
 
-43.3
-====
-* Ensure quick settings toggles align with the pixel grid [Sebastian; !2577]
-* Lower OOM score of gnome-shell process [Jian-Hong; !2582]
-* Fix incomplete device list in volume menus [Florian; !2616]
-* Fixed crash [Florian; !2622]
-* Plugged leak [Sebastian; !2637]
-* Misc. bug fixes and cleanups [Jonas Å., Florian, Jonas D., Alessandro, Heiko,
-  Takao, Carlos, Sebastian; !2578, !2571, !2594, !2606, !2604, !2399, !2613,
-  !2496, !2625, !2552, !2634, !2514]
-
-Contributors:
-  Alessandro Bono, Jonas Dreßler, Takao Fujiwara, Carlos Garnacho, Balló György,
-  Heiko Hösch, Sebastian Keller, Florian Müllner, Jian-Hong Pan, Olga Smirnova,
-  Jonas Ådahl
-
-Translators:
-  Olga Smirnova [ie], Ekaterine Papava [ka], Aleksandr Melman [ru],
-  Nart Tlisha [ab], Bruce Cowan [en_GB], Hugo Carvalho [pt]
-
-43.2
-====
+44.beta
+=======
 * Fix screencast UI being erroneously disabled [Florian; !2533]
-* Properly apply saved shortcuts inhibition permissions [Florian; !2548]
-* Fix IM candidate popup getting closed when switching pages [Carlos; !2497]
 * Fix unresponsive screen area when quick settings are opened [Carlos; !2535]
 * Ensure completions are disabled when hiding on-screen keyboard [Carlos; !2543]
 * Fix missing name in wired network quick settings button [Florian; !2529]
+* Properly apply saved shortcuts inhibition permissions [Florian; !2548]
 * Don't let wayland popovers block overview [Florian; !2549]
-* Fix repeated entries in volume device menu [Florian; !2558]
+* Improve high contrast styling [Sam; !2527]
+* Open correct Settings panel from on-screen keyboard menu [Roshan-R; !2554]
+* Test running gnome-shell in CI [Jonas Å.; !1349]
+* Do not use symbolic app icons for High Contrast [Jakub; !2555]
+* Prepare extension loading for ESM [Evan; !2364]
 * Fix input source switching with focus on password entry [Carlos; !2534]
-* Misc. bug fixes and cleanups [Alessandro, Florian, Jonas; !2536, !2545, !2546,
-  !2547, !2532, !1349]
+* Ensure quick settings toggles align with the pixel grid [Sebastian K.; !2577]
+* Lower OOM score of gnome-shell process [Jian-Hong; !2582]
+* Polish page switching behavior during DND in app grid [Jonas D.; !2581]
+* Tweak lock- and login screen styling [Sam; !2564]
+* Consistently link to Settings from menus
+  [sunflowerskater; !2600, !2559, !2615]
+* Make it easier for extensions to add a credential manager [Alessandro; !2399]
+* Fix mount operation dialog when Disks is not available [Balló; !2621]
+* Refine quick settings [Georges, two, Florian; !2619, !2627, !2553, !2631, !2505, !2632]
+* Mute/unmute volume when clicking slider icon [Florian; !2630]
+* Add device menu to Bluetooth quick settings [Florian; !2501]
+* Expose list of background apps in quick settings [Georges; !2624]
+* Compile extension GSettings after install [Andy; !2638]
+* Fixed crash [Florian; !2622]
+* Plugged memory leak [Sebastian K.; !2637]
+* Misc. bug fixes and cleanups [Alessandro, Cassidy, Colin, Florian, Jonas Å.,
+  Sam, Michel, Felipe, Sebastian K., sunflowerskater, Robert, Bilal, Jonas D.,
+  Jakub, Philip, Heiko, Carlos, Takao, Sebastian W., Kolja; !2528, !2499, !2523,
+  !2540, !2536, !2545, !2546, !2517, !2547, !2544, !2532, !2558, !2560, !2561,
+  !2562, !2572, !2578, !2579, !2584, !2576, !2571, !2585, !2557, !2588, !2575,
+  !2594, !2602, !2606, !2596, !2607, !2604, !2611, !2613, !2612, !2616, !2617,
+  !2526, !2618, !2348, !2496, !2620, !2625, !2552, !2626, !2623, !2614, !2628,
+  !2629, !2573, !2633, !2634, !2636, !2514, !2479]
 
 Contributors:
-  Alessandro Bono, Carlos Garnacho, Florian Müllner, Jonas Ådahl
+  Cassidy James Blaede, Alessandro Bono, Felipe Borges, Jonas Dreßler,
+  Michel Dänzer, Bilal Elmoussaoui, Takao Fujiwara, Carlos Garnacho,
+  Balló György, Sam Hewitt, Andy Holmes, Heiko Hösch, Sebastian Keller,
+  Colin Kinloch, Kolja Lampe, Robert Mader, Florian Müllner,
+  Georges Basile Stavracas Neto, Jian-Hong Pan, Roshan-R, Olga Smirnova,
+  Jakub Steiner, Evan Welsh, Sebastian Wick, Philip Withnall, sunflowerskater,
+  two, Jonas Ådahl
 
 Translators:
-  Aleksandr Melman [ru], Dušan Kazik [sk], Vasil Pupkin [be],
-  Sveinn í Felli [is], Nart Tlisha [ab]
+  Yuri Chornoivan [uk], Balázs Úr [hu], Aleksandr Melman [ru], Dušan Kazik [sk],
+  Vasil Pupkin [be], Sveinn í Felli [is], Olga Smirnova [ie], Sabri Ünal [tr],
+  Yosef Or Boczko [he], Bruce Cowan [en_GB], Fabio Tomat [fur],
+  Ekaterine Papava [ka], Emin Tufan Çetin [tr], Hugo Carvalho [pt],
+  Jordi Mas [ca], Quentin PAGÈS [oc], Kukuh Syafaat [id], Fran Dieguez [gl],
+  Tim Sabsch [de], Danial Behzadi [fa], Yaron Shahrabani [he],
+  Asier Sarasua Garmendia [eu], Aurimas Černius [lt], Anders Jonsson [sv],
+  Jiri Grönroos [fi], Kjartan Maraas [nb]
 
 43.1
 ====

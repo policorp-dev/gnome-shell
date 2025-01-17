@@ -13,6 +13,7 @@ js/gdm/loginDialog.js
 js/gdm/util.js
 js/misc/systemActions.js
 js/misc/util.js
+js/misc/dateUtils.js
 js/portalHelper/main.js
 js/ui/accessDialog.js
 js/ui/appDisplay.js
@@ -27,7 +28,6 @@ js/ui/components/autorunManager.js
 js/ui/components/keyring.js
 js/ui/components/networkAgent.js
 js/ui/components/polkitAgent.js
-js/ui/components/telepathyClient.js
 js/ui/ctrlAltTab.js
 js/ui/dash.js
 js/ui/dateMenu.js
@@ -49,6 +49,7 @@ js/ui/overview.js
 js/ui/padOsd.js
 js/ui/panel.js
 js/ui/popupMenu.js
+js/ui/quickSettings.js
 js/ui/runDialog.js
 js/ui/screenShield.js
 js/ui/screenshot.js
@@ -58,6 +59,8 @@ js/ui/shellEntry.js
 js/ui/shellMountOperation.js
 js/ui/status/accessibility.js
 js/ui/status/autoRotate.js
+js/ui/status/backgroundApps.js
+js/ui/status/backlight.js
 js/ui/status/bluetooth.js
 js/ui/status/brightness.js
 js/ui/status/darkMode.js
@@ -78,7 +81,6 @@ js/ui/welcomeDialog.js
 js/ui/windowAttentionHandler.js
 js/ui/windowManager.js
 js/ui/windowMenu.js
-src/calendar-server/evolution-calendar.desktop.in
 src/main.c
 src/shell-app.c
 src/shell-app-system.c
@@ -86,11 +88,15 @@ src/shell-global.c
 src/shell-keyring-prompt.c
 src/shell-polkit-authentication-agent.c
 src/shell-util.c
+src/st/st-icon-theme.c
 subprojects/extensions-app/data/metainfo/org.gnome.Extensions.metainfo.xml.in
 subprojects/extensions-app/data/org.gnome.Extensions.desktop.in.in
-subprojects/extensions-app/js/main.js
+subprojects/extensions-app/js/extensionManager.js
+subprojects/extensions-app/js/extensionRow.js
+subprojects/extensions-app/js/extensionsWindow.js
 subprojects/extensions-app/data/ui/extension-row.ui
 subprojects/extensions-app/data/ui/extensions-window.ui
+subprojects/extensions-app/data/ui/help-overlay.ui
 subprojects/extensions-tool/src/command-create.c
 subprojects/extensions-tool/src/command-disable.c
 subprojects/extensions-tool/src/command-enable.c
@@ -104,5 +110,6 @@ subprojects/extensions-tool/src/command-uninstall.c
 subprojects/extensions-tool/src/main.c
 subprojects/extensions-tool/src/templates/00-plain.desktop.in
 subprojects/extensions-tool/src/templates/indicator.desktop.in
+subprojects/extensions-tool/src/templates/quick-settings.desktop.in
 # Please do not remove this file from POTFILES.in. Run "git submodule init && git submodule update" to get it.
 subprojects/gvc/gvc-mixer-control.c

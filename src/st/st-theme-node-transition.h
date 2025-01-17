@@ -18,8 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ST_THEME_NODE_TRANSITION_H__
-#define __ST_THEME_NODE_TRANSITION_H__
+#pragma once
 
 #include <clutter/clutter.h>
 
@@ -42,7 +41,8 @@ void  st_theme_node_transition_update   (StThemeNodeTransition *transition,
                                          StThemeNode           *new_node);
 
 void  st_theme_node_transition_paint    (StThemeNodeTransition *transition,
-                                         CoglFramebuffer       *framebuffer,
+                                         ClutterPaintContext   *paint_context,
+                                         ClutterPaintNode      *node,
                                          ClutterActorBox       *allocation,
                                          guint8                 paint_opacity,
                                          float                  resource_scale);
@@ -54,5 +54,3 @@ void  st_theme_node_transition_get_paint_box (StThemeNodeTransition *transition,
 StThemeNodePaintState * st_theme_node_transition_get_new_paint_state (StThemeNodeTransition *transition);
 
 G_END_DECLS
-
-#endif

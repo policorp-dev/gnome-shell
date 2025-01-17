@@ -17,20 +17,21 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include <math.h>
 #include <gio/gio.h>
 
 #include "st-private.h"
 #include "st-settings.h"
+#include "st-enum-types.h"
 
 #define KEY_ENABLE_ANIMATIONS     "enable-animations"
 #define KEY_PRIMARY_PASTE         "gtk-enable-primary-paste"
 #define KEY_DRAG_THRESHOLD        "drag-threshold"
 #define KEY_FONT_NAME             "font-name"
+#define KEY_COLOR_SCHEME          "color-scheme"
+#define KEY_ACCENT_COLOR          "accent-color"
 #define KEY_HIGH_CONTRAST         "high-contrast"
 #define KEY_GTK_ICON_THEME        "icon-theme"
 #define KEY_MAGNIFIER_ACTIVE      "screen-magnifier-enabled"
@@ -42,6 +43,8 @@ enum {
   PROP_PRIMARY_PASTE,
   PROP_DRAG_THRESHOLD,
   PROP_FONT_NAME,
+  PROP_COLOR_SCHEME,
+  PROP_ACCENT_COLOR,
   PROP_HIGH_CONTRAST,
   PROP_GTK_ICON_THEME,
   PROP_MAGNIFIER_ACTIVE,
@@ -71,6 +74,8 @@ struct _StSettings
   gboolean disable_show_password;
   gint drag_threshold;
   double slow_down_factor;
+  StSystemColorScheme color_scheme;
+  StSystemAccentColor accent_color;
 };
 
 G_DEFINE_TYPE (StSettings, st_settings, G_TYPE_OBJECT)
@@ -185,6 +190,12 @@ st_settings_get_property (GObject    *object,
     case PROP_GTK_ICON_THEME:
       g_value_set_string (value, settings->gtk_icon_theme);
       break;
+    case PROP_COLOR_SCHEME:
+      g_value_set_enum (value, settings->color_scheme);
+      break;
+    case PROP_ACCENT_COLOR:
+      g_value_set_enum (value, settings->accent_color);
+      break;
     case PROP_MAGNIFIER_ACTIVE:
       g_value_set_boolean (value, settings->magnifier_active);
       break;
@@ -213,9 +224,7 @@ st_settings_class_init (StSettingsClass *klass)
    *
    * Whether animations are enabled.
    */
-  props[PROP_ENABLE_ANIMATIONS] = g_param_spec_boolean ("enable-animations",
-                                                        "Enable animations",
-                                                        "Enable animations",
+  props[PROP_ENABLE_ANIMATIONS] = g_param_spec_boolean ("enable-animations", NULL, NULL,
                                                         TRUE,
                                                         ST_PARAM_READABLE);
 
@@ -225,9 +234,7 @@ st_settings_class_init (StSettingsClass *klass)
    * Whether pasting from the `PRIMARY` selection is supported (eg. middle-click
    * paste).
    */
-  props[PROP_PRIMARY_PASTE] = g_param_spec_boolean ("primary-paste",
-                                                    "Primary paste",
-                                                    "Primary paste",
+  props[PROP_PRIMARY_PASTE] = g_param_spec_boolean ("primary-paste", NULL, NULL,
                                                     TRUE,
                                                     ST_PARAM_READABLE);
 
@@ -236,9 +243,7 @@ st_settings_class_init (StSettingsClass *klass)
    *
    * The threshold before a drag operation begins.
    */
-  props[PROP_DRAG_THRESHOLD] = g_param_spec_int ("drag-threshold",
-                                                 "Drag threshold",
-                                                 "Drag threshold",
+  props[PROP_DRAG_THRESHOLD] = g_param_spec_int ("drag-threshold", NULL, NULL,
                                                  0, G_MAXINT, 8,
                                                  ST_PARAM_READABLE);
 
@@ -247,9 +252,7 @@ st_settings_class_init (StSettingsClass *klass)
    *
    * The current font name.
    */
-  props[PROP_FONT_NAME] = g_param_spec_string ("font-name",
-                                               "font name",
-                                               "font name",
+  props[PROP_FONT_NAME] = g_param_spec_string ("font-name", NULL, NULL,
                                                "",
                                                ST_PARAM_READABLE);
 
@@ -258,9 +261,7 @@ st_settings_class_init (StSettingsClass *klass)
    *
    * Whether the accessibility high contrast mode is enabled.
    */
-  props[PROP_HIGH_CONTRAST] = g_param_spec_boolean ("high-contrast",
-                                                    "High contrast",
-                                                    "High contrast",
+  props[PROP_HIGH_CONTRAST] = g_param_spec_boolean ("high-contrast", NULL, NULL,
                                                     FALSE,
                                                     ST_PARAM_READABLE);
 
@@ -269,20 +270,36 @@ st_settings_class_init (StSettingsClass *klass)
    *
    * The current GTK icon theme
    */
-  props[PROP_GTK_ICON_THEME] = g_param_spec_string ("gtk-icon-theme",
-                                                    "GTK Icon Theme",
-                                                    "GTK Icon Theme",
+  props[PROP_GTK_ICON_THEME] = g_param_spec_string ("gtk-icon-theme", NULL, NULL,
                                                     "",
                                                     ST_PARAM_READABLE);
+
+  /**
+   * StSettings:color-scheme:
+   *
+   * The preferred color-scheme
+   */
+  props[PROP_COLOR_SCHEME] = g_param_spec_enum ("color-scheme", NULL, NULL,
+                                                ST_TYPE_SYSTEM_COLOR_SCHEME,
+                                                ST_SYSTEM_COLOR_SCHEME_DEFAULT,
+                                                ST_PARAM_READABLE);
+
+  /**
+   * StSettings:accent-color:
+   *
+   * The current accent color.
+   */
+  props[PROP_ACCENT_COLOR] = g_param_spec_enum ("accent-color", NULL, NULL,
+                                                ST_TYPE_SYSTEM_ACCENT_COLOR,
+                                                ST_SYSTEM_ACCENT_COLOR_BLUE,
+                                                ST_PARAM_READABLE);
 
   /**
    * StSettings:magnifier-active:
    *
    * Whether the accessibility magnifier is active.
    */
-  props[PROP_MAGNIFIER_ACTIVE] = g_param_spec_boolean("magnifier-active",
-                                                      "Magnifier is active",
-                                                      "Whether the a11y magnifier is active",
+  props[PROP_MAGNIFIER_ACTIVE] = g_param_spec_boolean("magnifier-active", NULL, NULL,
                                                       FALSE,
                                                       ST_PARAM_READABLE);
 
@@ -291,9 +308,7 @@ st_settings_class_init (StSettingsClass *klass)
    *
    * The slow-down factor applied to all animation durations.
    */
-  props[PROP_SLOW_DOWN_FACTOR] = g_param_spec_double("slow-down-factor",
-                                                      "Slow down factor",
-                                                      "Factor applied to all animation durations",
+  props[PROP_SLOW_DOWN_FACTOR] = g_param_spec_double("slow-down-factor", NULL, NULL,
                                                       EPSILON, G_MAXDOUBLE, 1.0,
                                                       ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
@@ -302,9 +317,7 @@ st_settings_class_init (StSettingsClass *klass)
    *
    *  Whether password showing can be locked down
    */
-  props[PROP_DISABLE_SHOW_PASSWORD] = g_param_spec_boolean("disable-show-password",
-                                                           "'Show Password' is disabled",
-                                                           "Whether user can request to see their password",
+  props[PROP_DISABLE_SHOW_PASSWORD] = g_param_spec_boolean("disable-show-password", NULL, NULL,
                                                            FALSE,
                                                            ST_PARAM_READABLE);
 
@@ -338,6 +351,17 @@ on_interface_settings_changed (GSettings   *g_settings,
       settings->gtk_icon_theme = g_settings_get_string (g_settings, key);
       g_object_notify_by_pspec (G_OBJECT (settings),
                                 props[PROP_GTK_ICON_THEME]);
+    }
+  else if (g_str_equal (key, KEY_COLOR_SCHEME))
+    {
+      settings->color_scheme = g_settings_get_enum (g_settings, key);
+      g_object_notify_by_pspec (G_OBJECT (settings),
+                                props[PROP_COLOR_SCHEME]);
+    }
+  else if (g_str_equal (key, KEY_ACCENT_COLOR))
+    {
+      settings->accent_color = g_settings_get_enum (g_settings, key);
+      g_object_notify_by_pspec (G_OBJECT (settings), props[PROP_ACCENT_COLOR]);
     }
 }
 
@@ -374,8 +398,6 @@ on_a11y_interface_settings_changed (GSettings   *g_settings,
     {
       settings->high_contrast = g_settings_get_boolean (g_settings, key);
       g_object_notify_by_pspec (G_OBJECT (settings), props[PROP_HIGH_CONTRAST]);
-
-      g_object_notify_by_pspec (G_OBJECT (settings), props[PROP_GTK_ICON_THEME]);
     }
 }
 
@@ -422,6 +444,10 @@ st_settings_init (StSettings *settings)
                                                KEY_FONT_NAME);
   settings->gtk_icon_theme = g_settings_get_string (settings->interface_settings,
                                                     KEY_GTK_ICON_THEME);
+  settings->color_scheme = g_settings_get_enum (settings->interface_settings,
+                                                KEY_COLOR_SCHEME);
+  settings->accent_color = g_settings_get_enum (settings->interface_settings,
+                                                KEY_ACCENT_COLOR);
   settings->drag_threshold = g_settings_get_int (settings->mouse_settings,
                                                  KEY_DRAG_THRESHOLD);
   settings->magnifier_active = g_settings_get_boolean (settings->a11y_applications_settings,

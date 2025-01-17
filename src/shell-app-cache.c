@@ -4,10 +4,12 @@
 
 #include "shell-app-cache-private.h"
 
+#include "shell-global-private.h"
+
 /**
- * SECTION:shell-app-cache
- * @title: ShellAppCache
- * @short_description: application information cache
+ * ShellAppCache:
+ *
+ * Application information cache
  *
  * The #ShellAppCache is responsible for caching information about #GAppInfo
  * to ensure that the compositor thread never needs to perform disk reads to
@@ -82,15 +84,7 @@ cache_state_new (void)
 ShellAppCache *
 shell_app_cache_get_default (void)
 {
-  static ShellAppCache *instance;
-
-  if (instance == NULL)
-    {
-      instance = g_object_new (SHELL_TYPE_APP_CACHE, NULL);
-      g_object_add_weak_pointer (G_OBJECT (instance), (gpointer *)&instance);
-    }
-
-  return instance;
+  return shell_global_get_app_cache (shell_global_get ());
 }
 
 static void
