@@ -7,7 +7,7 @@ Index: gnome-shell/data/org.gnome.shell.gschema.xml.in
      </key>
      <key name="enabled-extensions" type="as">
 -      <default>[]</default>
-+      <default>['arcmenu@arcmenu.com', 'desktop-icons@csoriano', 'drive-menu@gnome-shell-extensions.gcampax.github.com', 'dash-to-panel@jderose9.github.com', 'ding@rastersoft.com', 'quick-settings-tweaks@qwreey', 'appindicators@ubuntu.com', 'monitor-display-switcher@matheus.com', 'autoselectheadset@josephlbarnett.github.com', 'lockkeys@vaina.lt']</default>
++      <default>['arcmenu@arcmenu.com', 'desktop-icons@csoriano', 'drive-menu@gnome-shell-extensions.gcampax.github.com', 'dash-to-panel@jderose9.github.com', 'ding@rastersoft.com', 'quick-settings-audio-panel@rayzeq.github.io', 'appindicators@ubuntu.com', 'monitor-display-switcher@matheus.com', 'autoselectheadset@josephlbarnett.github.com', 'lockkeys@vaina.lt']</default>
        <summary>UUIDs of extensions to enable</summary>
        <description>
          GNOME Shell extensions have a UUID property; this key lists extensions
