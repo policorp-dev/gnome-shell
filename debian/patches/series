@@ -12,4 +12,4 @@ shell-app-Warn-instead-of-crashing-if-disposed-before-sta.patch
 st-theme-node-Forget-properties-cache-on-stylesheet-chang.patch
 POLICORP-override-favorite-app-and-enable-extension.patch
 add-active-theme-background-in-login.patch
-retirado-background-not-listed
+retirado-background-not-listed.patch
