@@ -1,12 +1,12 @@
-Index: gnome-shell/data/theme/gnome-shell-dark.css
+Index: gnome-shell-48.beta/data/theme/gnome-shell-dark.css
 ===================================================================
---- gnome-shell.orig/data/theme/gnome-shell-dark.css
-+++ gnome-shell/data/theme/gnome-shell-dark.css
-@@ -3146,7 +3146,11 @@ StScrollBar {
+--- gnome-shell-48.beta.orig/data/theme/gnome-shell-dark.css
++++ gnome-shell-48.beta/data/theme/gnome-shell-dark.css
+@@ -3117,7 +3117,11 @@ StScrollBar {
    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); }
  
  #lockDialogGroup {
--  background-color: #282828; }
+-  background-color: #222226; }
 +  background: #2c001e url(file:///usr/share/desktop-base/active-theme/login/background-nologo.svg);
 +  background-repeat: no-repeat;
 +  background-size: cover;
@@ -14,12 +14,12 @@ Index: gnome-shell/data/theme/gnome-shell-dark.css
 +  }
  
  .unlock-dialog-clock {
-   color: whitesmoke;
-Index: gnome-shell/data/theme/gnome-shell-high-contrast.css
+   color: #fafafb;
+Index: gnome-shell-48.beta/data/theme/gnome-shell-high-contrast.css
 ===================================================================
---- gnome-shell.orig/data/theme/gnome-shell-high-contrast.css
-+++ gnome-shell/data/theme/gnome-shell-high-contrast.css
-@@ -3478,7 +3478,11 @@ StScrollBar {
+--- gnome-shell-48.beta.orig/data/theme/gnome-shell-high-contrast.css
++++ gnome-shell-48.beta/data/theme/gnome-shell-high-contrast.css
+@@ -3458,7 +3458,11 @@ StScrollBar {
    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); }
  
  #lockDialogGroup {
@@ -32,20 +32,20 @@ Index: gnome-shell/data/theme/gnome-shell-high-contrast.css
  
  .unlock-dialog-clock {
    color: #ffffff;
-Index: gnome-shell/data/theme/gnome-shell-light.css
+Index: gnome-shell-48.beta/data/theme/gnome-shell-light.css
 ===================================================================
---- gnome-shell.orig/data/theme/gnome-shell-light.css
-+++ gnome-shell/data/theme/gnome-shell-light.css
-@@ -3146,7 +3146,11 @@ StScrollBar {
+--- gnome-shell-48.beta.orig/data/theme/gnome-shell-light.css
++++ gnome-shell-48.beta/data/theme/gnome-shell-light.css
+@@ -3117,7 +3117,11 @@ StScrollBar {
    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); }
  
  #lockDialogGroup {
--  background-color: #282828; }
+-  background-color: #222226; }
 +  background: #2c001e url(file:///usr/share/desktop-base/active-theme/login/background-nologo.svg);
 +  background-repeat: no-repeat;
 +  background-size: cover;
 +  background-position: center;
-+  }
++ }
  
  .unlock-dialog-clock {
-   color: whitesmoke;
+   color: #fafafb;
