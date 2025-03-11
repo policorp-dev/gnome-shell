@@ -1,0 +1,13 @@
+Index: gnome-shell/data/org.gnome.shell.gschema.xml.in
+===================================================================
+--- gnome-shell.orig/data/org.gnome.shell.gschema.xml.in
++++ gnome-shell/data/org.gnome.shell.gschema.xml.in
+@@ -12,7 +12,7 @@
+       </description>
+     </key>
+     <key name="enabled-extensions" type="as">
+-      <default>[]</default>
++      <default>['arcmenu@arcmenu.com','drive-menu@gnome-shell-extensions.gcampax.github.com', 'dash-to-panel@jderose9.github.com', 'ding@rastersoft.com', 'monitor-display-switcher@matheus.com','lockkeys@vaina.lt']</default>
+       <summary>UUIDs of extensions to enable</summary>
+       <description>
+         GNOME Shell extensions have a UUID property; this key lists extensions
