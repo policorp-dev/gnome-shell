@@ -1,8 +1,8 @@
-gnome-shell (48.Policorp-4) stable; urgency=medium
+gnome-shell (48.Policorp-5) stable; urgency=medium
 
   * updated in Policorp
 
- -- Edson Juliano Drosdeck<edson@policorp.com.br>  Fri, 07 Mar 2025 14:55:45 +0000
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Fri, 07 Mar 2025 14:55:45 +0000
 
 gnome-shell (48~beta-4) unstable; urgency=medium
 
