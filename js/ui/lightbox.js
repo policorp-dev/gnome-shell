@@ -1,4 +1,5 @@
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
@@ -23,7 +24,8 @@ vec2 position = cogl_tex_coord_in[0].xy - 0.5;                             \n\
 float t = clamp(length(1.41421 * position), 0.0, 1.0);                     \n\
 float pixel_brightness = mix(1.0, 1.0 - vignette_sharpness, t);            \n\
 cogl_color_out.a *= 1.0 - pixel_brightness * brightness;                   \n\
-cogl_color_out.a += (rand(position) - 0.5) / 100.0;                        \n';
+float noise_magnitude = (2.0 / ((1.0 - cogl_color_out.a) * 255.0));        \n\
+cogl_color_out.a += (rand(position) - 0.5) * noise_magnitude;              \n';
 
 
 const RadialShaderEffect = GObject.registerClass({
@@ -52,7 +54,7 @@ const RadialShaderEffect = GObject.registerClass({
     }
 
     vfunc_build_pipeline() {
-        this.add_glsl_snippet(Shell.SnippetHook.FRAGMENT,
+        this.add_glsl_snippet(Cogl.SnippetHook.FRAGMENT,
             VIGNETTE_DECLARATIONS, VIGNETTE_CODE, true);
     }
 
