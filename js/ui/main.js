@@ -154,7 +154,7 @@ export async function start() {
             // toString() can throw
             if (msg)
                 args.unshift(`${msg}:`);
-        } catch (e) {}
+        } catch {}
 
         console.error(...args);
     };
@@ -737,7 +737,8 @@ export function pushModal(actor, params = {}) {
     });
 
     actionMode = newActionMode;
-    global.stage.set_key_focus(actor);
+    const newFocus = actor === global.stage ? null : actor;
+    global.stage.set_key_focus(newFocus);
     return grab;
 }
 
