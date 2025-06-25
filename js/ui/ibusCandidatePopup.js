@@ -225,10 +225,10 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
                 this._setDummyCursorGeometry(
                     windowActor.x + rect.x,
                     windowActor.y + rect.y,
-                    rect.w,
-                    rect.h);
+                    rect.width,
+                    rect.height);
             });
-        } catch (e) {
+        } catch {
             // Only recent IBus versions have support for this signal
             // which is used for wayland clients. In order to work
             // with older IBus versions we can silently ignore the

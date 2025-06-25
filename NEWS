@@ -1,3 +1,71 @@
+48.1
+====
+* Fix glitch in sliders when close to maximum [Sebastian; !3648]
+* Fix detecting suspend/resume for time tracking [Sebastian; !3679]
+* Fix wrongly sized images with fractional scaling [Jonas; !3680]
+* Fix frozen cursor when using magnifier in push mode [Jerome; !3688]
+* Fix session button on login screen after wrong password [Florian; !3638]
+* Misc. bug fixes and cleanups [Florian, Philip, Balló, Andy; !3673,
+  !3675, !3685, !3676, !3689, !3687, !3641, !3694, !3684, !3672]
+
+Contributors:
+  Jerome Brenier, Jonas Dreßler, Balló György, Andy Holmes, Sebastian Keller,
+  Florian Müllner, Vasil Pupkin, Baxrom Raxmatov, Philip Withnall
+
+Translators:
+  Vasil Pupkin [be@latin], Daniel Mustieles [es], Antonio Marin [ro],
+  Danial Behzadi [fa], Jose Riha [sk], Cheng-Chia Tseng [zh_TW],
+  Danial Behzadi [fa], Jose Riha [sk], Cheng-Chia Tseng [zh_TW],
+
+48.0
+====
+* Fix ibus candidate popup position [Peng; !3659]
+* breakManager: Allow break to be taken or delayed when overdue [Philip; !3656]
+* Fix audio selection dialog in light style [Laria; !3665]
+* Misc. bug fixes and cleanups [Philip, Simon, Daniel, Florian, Jonas; !3655,
+  !3662, !3664, !3669, !3667, !3670]
+
+Contributors:
+  Laria Carolin Chabowski, Simon McVittie, Florian Müllner, Daniel van Vugt,
+  Philip Withnall, Peng Wu, Jonas Ådahl
+
+Translators:
+  Yuri Chornoivan [uk], Alexander Shopov [bg], Daniel Rusek [cs],
+  Luming Zh [zh_CN], Changwoo Ryu [ko], Artur S0 [ru], Ekaterine Papava [ka],
+  Martin [sl], Daniel Mustieles [es], Artur Miranda [pt_BR], Hugo Carvalho [pt],
+  Piotr Drąg [pl], Balázs Úr [hu], Vasil Pupkin [be], Quentin PAGÈS [oc],
+  Jordi Mas i Hernandez [ca], Fran Dieguez [gl], Aurimas Černius [lt],
+  Ask Hjorth Larsen [da], Asier Saratsua Garmendia [eu], Anders Jonsson [sv],
+  Sabri Ünal [tr], Yosef Or Boczko [he], Andika Triwidada [id],
+  Brage Fuglseth [nb], A S Alam [pa], Bruce Cowan [en_GB], Cas Pascal [vi],
+  Irénée THIRION [fr]
+
+48.rc
+=====
+* Fix integer scaling for spinner [Daniel v. V.; !3634]
+* Group notifications by app [Julian; !3012]
+* Fix tracking inactive time for screen time limits [Florian; !3636]
+* Fix occasional stacking glitch during overview transition [Keyu; !3460]
+* Reorganize default dash/grid/folder apps [Florian, Allan; !3642]
+* Handle suspend/resume when tracking screen time [Philip; !3643]
+* Misc. bug fixes and cleanups [Marco, Florian, Sebastian, Daniel R.,
+  Alessandro; !3629, !3630, !3631] !3620, !3637, !3635, !3632, !3616, !3633,
+  !3639, !3649, !3646, !3647, !3651]
+
+Contributors:
+  Alessandro Astone, Allan Day, Florian Müllner, Daniel Rusek, Julian Sparber,
+  Keyu Tao, Marco Trevisan (Treviño), Daniel van Vugt, Sebastian Wick,
+  Philip Withnall
+
+Translators:
+  Cheng-Chia Tseng [zh_TW], Jordi Mas i Hernandez [ca], Sabri Ünal [tr],
+  Jordi Mas [ca], Aurimas Černius [lt], Piotr Drąg [pl], Aefgh Threenine [th],
+  Ekaterine Papava [ka], Andika Triwidada [id], Daniel Rusek [cs],
+  Danial Behzadi [fa], Yuri Chornoivan [uk], Asier Sarasua Garmendia [eu],
+  Yosef Or Boczko [he], twlvnn kraftwerk [bg], Quentin PAGÈS [oc],
+  Luming Zh [zh_CN], Jiri Grönroos [fi], Hugo Carvalho [pt], Fran Dieguez [gl],
+  A S Alam [pa], Brage Fuglseth [nb], Giannis Antypas [el]
+
 48.beta
 =======
 * Fix overlapping tiles in app grid on hover [Sam; !3551]

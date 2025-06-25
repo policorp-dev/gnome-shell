@@ -37,9 +37,14 @@ struct _StImageContent
 enum
 {
   PROP_0,
+
   PROP_PREFERRED_WIDTH,
   PROP_PREFERRED_HEIGHT,
+
+  N_PROPS,
 };
+
+static GParamSpec *props[N_PROPS] = { NULL, };
 
 static void clutter_content_interface_init (ClutterContentInterface *iface);
 static void g_icon_interface_init (GIconIface *iface);
@@ -103,11 +108,11 @@ st_image_content_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_PREFERRED_WIDTH:
-      self->width = g_value_get_int (value);
+      st_image_content_set_preferred_width (self, g_value_get_int (value));
       break;
 
     case PROP_PREFERRED_HEIGHT:
-      self->height = g_value_get_int (value);
+      st_image_content_set_preferred_height (self, g_value_get_int (value));
       break;
 
     default:
@@ -129,7 +134,6 @@ st_image_content_finalize (GObject *gobject)
 static void
 st_image_content_class_init (StImageContentClass *klass)
 {
-  GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   object_class->constructed = st_image_content_constructed;
@@ -137,15 +141,17 @@ st_image_content_class_init (StImageContentClass *klass)
   object_class->set_property = st_image_content_set_property;
   object_class->finalize = st_image_content_finalize;
 
-  pspec = g_param_spec_int ("preferred-width", NULL, NULL,
-                             -1, G_MAXINT, -1,
-                             G_PARAM_CONSTRUCT_ONLY | ST_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_PREFERRED_WIDTH, pspec);
+  props[PROP_PREFERRED_WIDTH] =
+    g_param_spec_int ("preferred-width", NULL, NULL,
+                      -1, G_MAXINT, -1,
+                      G_PARAM_CONSTRUCT_ONLY | ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
-  pspec = g_param_spec_int ("preferred-height", NULL, NULL,
-                             -1, G_MAXINT, -1,
-                             G_PARAM_CONSTRUCT_ONLY | ST_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_PREFERRED_HEIGHT, pspec);
+  props[PROP_PREFERRED_HEIGHT] =
+    g_param_spec_int ("preferred-height", NULL, NULL,
+                      -1, G_MAXINT, -1,
+                      G_PARAM_CONSTRUCT_ONLY | ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+
+  g_object_class_install_properties (object_class, N_PROPS, props);
 }
 
 static gboolean
@@ -361,6 +367,48 @@ st_image_content_new_with_preferred_size (int width,
 }
 
 void
+st_image_content_set_preferred_width (StImageContent *content,
+                                      int             width)
+{
+  g_return_if_fail (ST_IS_IMAGE_CONTENT (content));
+
+  if (content->width == width)
+    return;
+
+  content->width = width;
+  g_object_notify_by_pspec (G_OBJECT (content), props[PROP_PREFERRED_WIDTH]);
+}
+
+int
+st_image_content_get_preferred_width (StImageContent *content)
+{
+  g_return_val_if_fail (ST_IS_IMAGE_CONTENT (content), -1);
+
+  return content->width;
+}
+
+void
+st_image_content_set_preferred_height (StImageContent *content,
+                                       int             height)
+{
+  g_return_if_fail (ST_IS_IMAGE_CONTENT (content));
+
+  if (content->height == height)
+    return;
+
+  content->height = height;
+  g_object_notify_by_pspec (G_OBJECT (content), props[PROP_PREFERRED_HEIGHT]);
+}
+
+int
+st_image_content_get_preferred_height (StImageContent *content)
+{
+  g_return_val_if_fail (ST_IS_IMAGE_CONTENT (content), -1);
+
+  return content->height;
+}
+
+void
 st_image_content_set_is_symbolic (StImageContent *content,
                                   gboolean        is_symbolic)
 {
@@ -375,28 +423,6 @@ st_image_content_get_is_symbolic (StImageContent *content)
   g_return_val_if_fail (ST_IS_IMAGE_CONTENT (content), FALSE);
 
   return content->is_symbolic;
-}
-
-
-static void
-update_image_size (StImageContent *self)
-{
-  int width, height;
-
-  if (self->texture == NULL)
-    return;
-
-  width = cogl_texture_get_width (self->texture);
-  height = cogl_texture_get_height (self->texture);
-
-  if (self->width == width &&
-      self->height == height)
-    return;
-
-  self->width = width;
-  self->height = height;
-
-  clutter_content_invalidate_size (CLUTTER_CONTENT (self));
 }
 
 /**
@@ -454,11 +480,19 @@ st_image_content_set_data (StImageContent   *content,
                            guint             row_stride,
                            GError          **error)
 {
+  int old_width = 0;
+  int old_height = 0;
+
   g_return_val_if_fail (ST_IS_IMAGE_CONTENT (content), FALSE);
   g_return_val_if_fail (data != NULL, FALSE);
 
   if (content->texture != NULL)
-    g_object_unref (content->texture);
+    {
+      old_width = cogl_texture_get_width (content->texture);
+      old_height = cogl_texture_get_height (content->texture);
+
+      g_object_unref (content->texture);
+    }
 
   content->texture = cogl_texture_2d_new_from_data (cogl_context,
                                                     width,
@@ -472,7 +506,9 @@ st_image_content_set_data (StImageContent   *content,
     return FALSE;
 
   clutter_content_invalidate (CLUTTER_CONTENT (content));
-  update_image_size (content);
+
+  if (old_width != width || old_height != height)
+    clutter_content_invalidate_size (CLUTTER_CONTENT (content));
 
   return TRUE;
 }
@@ -512,12 +548,19 @@ st_image_content_set_bytes (StImageContent   *content,
                             GError          **error)
 {
 
+  int old_width = 0;
+  int old_height = 0;
+
   g_return_val_if_fail (ST_IS_IMAGE_CONTENT (content), FALSE);
   g_return_val_if_fail (data != NULL, FALSE);
 
-
   if (content->texture != NULL)
-    g_object_unref (content->texture);
+    {
+      old_width = cogl_texture_get_width (content->texture);
+      old_height = cogl_texture_get_height (content->texture);
+
+      g_object_unref (content->texture);
+    }
 
   content->texture = cogl_texture_2d_new_from_data (cogl_context,
                                                     width,
@@ -531,7 +574,9 @@ st_image_content_set_bytes (StImageContent   *content,
     return FALSE;
 
   clutter_content_invalidate (CLUTTER_CONTENT (content));
-  update_image_size (content);
+
+  if (old_width != width || old_height != height)
+    clutter_content_invalidate_size (CLUTTER_CONTENT (content));
 
   return TRUE;
 }

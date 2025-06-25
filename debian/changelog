@@ -1,3 +1,9 @@
+gnome-shell (48.Policorp-6) stable; urgency=medium
+
+  * Changed favorites apps
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Fri, 06 Jun 2025 15:36:51 +0000
+
 gnome-shell (48.Policorp-5) stable; urgency=medium
 
   * updated in Policorp
