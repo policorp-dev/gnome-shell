@@ -1,6 +1,7 @@
 gnome-shell (48.Policorp-7) stable; urgency=medium
 
   * new style login screen
+  * Enabled sound extension
 
  -- Erick bonfati <erick.bonfati@policorp.com.br>  Thu, 10 Jul 2025 12:21:26 -0400
 
