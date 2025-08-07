@@ -1,3 +1,9 @@
+gnome-shell (48.Policorp-8) stable; urgency=medium
+
+  * Enabled auto-select-headset
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Tue, 05 Aug 2025 15:26:39 +0000
+
 gnome-shell (48.Policorp-7) stable; urgency=medium
 
   * new style login screen
