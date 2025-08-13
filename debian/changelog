@@ -1,3 +1,9 @@
+gnome-shell (48.Policorp-9) stable; urgency=medium
+
+  * Added gnome-snapshot in favorites-app
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Wed, 13 Aug 2025 18:59:00 +0000
+
 gnome-shell (48.Policorp-8) stable; urgency=medium
 
   * Enabled auto-select-headset
