@@ -1,0 +1,13 @@
+Index: gnome-shell/data/org.gnome.shell.gschema.xml.in
+===================================================================
+--- gnome-shell.orig/data/org.gnome.shell.gschema.xml.in
++++ gnome-shell/data/org.gnome.shell.gschema.xml.in
+@@ -163,7 +163,7 @@
+       </description>
+     </key>
+     <key name="toggle-overview" type="as">
+-      <default>[]</default>
++      <default>["&lt;Shift&gt;&lt;Super&gt;Search"]</default>
+       <summary>Keybinding to open the overview</summary>
+       <description>
+         Keybinding to open the Activities Overview.

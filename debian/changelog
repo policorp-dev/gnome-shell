@@ -1,3 +1,9 @@
+gnome-shell (48.Policorp-12) stable; urgency=medium
+
+  * added panorama shortcut
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Fri, 10 Oct 2025 11:07:59 -0300
+
 gnome-shell (48.Policorp-11) stable; urgency=medium
 
   * Enabled ubuntu-appindicators@ubuntu.com
