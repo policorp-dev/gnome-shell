@@ -1,6 +1,6 @@
 project('gnome-shell', 'c',
-  version: '48.1',
-  meson_version: '>= 1.1.0',
+  version: '48.7',
+  meson_version: '>= 1.3.0',
   license: 'GPL-2.0-or-later',
 )
 
@@ -23,7 +23,7 @@ eds_req = '>= 3.33.1'
 gcr_req = '>= 3.90.0'
 gio_req = '>= 2.79.2'
 gi_req = '>= 1.49.1'
-gjs_req = '>= 1.73.1'
+gjs_req = '>= 1.81.2'
 gtk_req = '>= 4.0'
 mutter_req = '>= 48.0'
 polkit_req = '>= 0.100'
@@ -93,6 +93,8 @@ have_x11 = mutter_dep.get_variable('have_x11') == 'true'
 have_x11_client = mutter_dep.get_variable('have_x11_client') == 'true'
 if have_x11_client or have_x11
   x11_dep = dependency('x11')
+  xext_dep = dependency('xext')
+  xfixes_dep = dependency('xfixes')
 endif
 
 if not have_fonts
@@ -164,7 +166,10 @@ cdata.set('HAVE_MALLINFO', cc.has_function('mallinfo'))
 cdata.set('HAVE_MALLINFO2', cc.has_function('mallinfo2'))
 cdata.set('HAVE_SYS_RESOURCE_H', cc.has_header('sys/resource.h'))
 cdata.set('HAVE_EXE_INTROSPECTION',
-  cc.has_header('elf.h') and cc.has_header('link.h'))
+  cc.has_header('elf.h') and
+  cc.has_header('link.h') and
+  cc.has_define('__GLIBC__', prefix: '#include <link.h>')
+)
 cdata.set('HAVE__NL_TIME_FIRST_WEEKDAY',
   cc.has_header_symbol('langinfo.h', '_NL_TIME_FIRST_WEEKDAY')
 )
@@ -313,10 +318,10 @@ endif
 
 po_dir = join_paths(meson.current_source_dir(), 'po')
 
+subdir('data')
 subdir('js')
 subdir('src')
 subdir('po')
-subdir('data')
 
 if get_option('tests') and have_x11_client
   subdir('tests')

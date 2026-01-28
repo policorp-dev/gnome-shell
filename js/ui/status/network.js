@@ -64,8 +64,8 @@ function ssidToLabel(ssid) {
 }
 
 function launchSettingsPanel(panel, ...args) {
-    const param = new GLib.Variant('(sav)',
-        [panel, args.map(s => new GLib.Variant('s', s))]);
+    const param = new GLib.Variant('av',
+        [new GLib.Variant('(sav)', [panel, args.map(s => new GLib.Variant('s', s))])]);
 
     const app = Shell.AppSystem.get_default()
         .lookup_app('org.gnome.Settings.desktop');
@@ -116,7 +116,7 @@ class ItemSorter {
     }
 
     _sortByName(one, two) {
-        return GLib.utf8_collate(one.name, two.name);
+        return GLib.utf8_collate(one.name ?? '', two.name ?? '');
     }
 
     _sortByMru(one, two) {
@@ -500,7 +500,8 @@ const NMDeviceItem = GObject.registerClass({
     }
 
     _syncConnections() {
-        const available = this._device.get_available_connections();
+        const available = this._device.get_available_connections().filter(
+            c => c.get_id() != null);
         const removed = [...this._connectionItems.keys()]
             .filter(conn => !available.includes(conn));
 
@@ -1323,6 +1324,16 @@ const NMVpnConnectionItem = GObject.registerClass({
         this.bind_property('is-active',
             this._switch, 'state',
             GObject.BindingFlags.SYNC_CREATE);
+
+        // Switch handle is reactive, so events don't propagate to the item;
+        // activate it manually in that case
+        this._switch.connect('notify::state', () => {
+            if (this.is_active === this._switch.state)
+                return;
+
+            this.activate();
+        });
+
         this.bind_property('name',
             this._label, 'text',
             GObject.BindingFlags.SYNC_CREATE);
@@ -2004,7 +2015,7 @@ class CaptivePortalHandler extends Signals.EventEmitter {
         Main.panel.closeCalendar();
     }
 
-    _portalHelperDone(parameters) {
+    _portalHelperStatusChanged(parameters) {
         const [path, result] = parameters;
 
         if (result === PortalHelperResult.CANCELLED) {
@@ -2030,9 +2041,9 @@ class CaptivePortalHandler extends Signals.EventEmitter {
                 g_interface_name: PortalHelperInfo.name,
                 g_interface_info: PortalHelperInfo,
             });
-            this._portalHelperProxy.connectSignal('Done',
+            this._portalHelperProxy.connectSignal('StatusChanged',
                 (proxy, emitter, params) => {
-                    this._portalHelperDone(params);
+                    this._portalHelperStatusChanged(params);
                 });
 
             try {
@@ -2182,7 +2193,6 @@ class Indicator extends SystemIndicator {
             this._mainConnectionStateChanged();
         }
 
-        this._updateIcon();
         this._syncConnectivity();
     }
 
@@ -2192,11 +2202,15 @@ class Indicator extends SystemIndicator {
     }
 
     _syncConnectivity() {
+        this._updateIcon();
         if (this._mainConnection == null ||
             this._mainConnection.state !== NM.ActiveConnectionState.ACTIVATED) {
             this._portalHandler.clear();
             return;
         }
+
+        if (Main.sessionMode.isGreeter)
+            return;
 
         let isPortal = this._client.connectivity === NM.ConnectivityState.PORTAL;
         // For testing, allow interpreting any value != FULL as PORTAL, because
@@ -2206,12 +2220,14 @@ class Indicator extends SystemIndicator {
         // (but in general we should only prompt a portal if we know there is a portal)
         if (GLib.getenv('GNOME_SHELL_CONNECTIVITY_TEST') != null)
             isPortal ||= this._client.connectivity < NM.ConnectivityState.FULL;
-        if (!isPortal || Main.sessionMode.isGreeter)
-            return;
 
-        this._portalHandler.addConnection(
-            this._mainConnection.get_id(),
-            this._mainConnection.get_path());
+        if (isPortal) {
+            this._portalHandler.addConnection(
+                this._mainConnection.get_id(),
+                this._mainConnection.get_path());
+        } else {
+            this._portalHandler.clear();
+        }
     }
 
     _updateIcon() {

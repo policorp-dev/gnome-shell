@@ -1,5 +1,6 @@
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
+import GioUnix from 'gi://GioUnix';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
@@ -166,7 +167,7 @@ export async function start() {
 
     let currentDesktop = GLib.getenv('XDG_CURRENT_DESKTOP');
     if (!currentDesktop || !currentDesktop.split(':').includes('GNOME'))
-        Gio.DesktopAppInfo.set_desktop_env('GNOME');
+        GioUnix.DesktopAppInfo.set_desktop_env('GNOME');
 
     sessionMode = new SessionMode.SessionMode();
     sessionMode.connect('updated', _sessionUpdated);
@@ -328,6 +329,8 @@ async function _initializeUI() {
     extensionManager = new ExtensionSystem.ExtensionManager();
     extensionManager.init();
 
+    LoginManager.registerSessionWithGDM();
+
     if (sessionMode.isGreeter && screenShield) {
         layoutManager.connect('startup-prepared', () => {
             screenShield.showDialog();
@@ -373,8 +376,6 @@ async function _initializeUI() {
         if (sessionMode.currentMode !== 'gdm' &&
             sessionMode.currentMode !== 'initial-setup')
             _handleLockScreenWarning();
-
-        LoginManager.registerSessionWithGDM();
 
         if (perfModule) {
             let perfOutput = GLib.getenv('SHELL_PERF_OUTPUT');
@@ -937,7 +938,7 @@ function _queueBeforeRedraw(workId) {
         const laters = global.compositor.get_laters();
         laters.add(Meta.LaterType.BEFORE_REDRAW, () => {
             _runBeforeRedrawQueue();
-            return false;
+            return GLib.SOURCE_REMOVE;
         });
     }
 }
