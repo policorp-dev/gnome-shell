@@ -3,3 +3,8 @@ extensions-app-Add-test-dependency-on-generated-desktop-f.patch
 debian/Revert-tests-Fail-on-warnings-too.patch
 shell-app-Warn-instead-of-crashing-if-disposed-before-sta.patch
 debian/data-Add-im-config.desktop-to-System-folder.patch
+POLICORP-2-add-active-theme-background-in-login.patch
+POLICORP-apps-favorites-override.patch
+POLICORP-enable-extension.patch
+VAIO-panorama-shortcut.patch
+new-login-screen.patch

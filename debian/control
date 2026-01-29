@@ -1,8 +1,8 @@
 Source: gnome-shell
 Section: gnome
 Priority: optional
-Maintainer: Debian GNOME Maintainers <pkg-gnome-maintainers@lists.alioth.debian.org>
-Uploaders: Jeremy Bícha <jbicha@ubuntu.com>, Marco Trevisan (Treviño) <marco@ubuntu.com>
+Maintainer: Policorp Linux Maintainers <contato@policorp.com.br>
+Uploaders: Lucas Salles <lucas.salles@policorp.com.br>
 Build-Depends: appstream,
                bash-completion,
                dbus-daemon <!nocheck>,
@@ -68,9 +68,8 @@ Build-Depends: appstream,
                xwayland <!nocheck>
 Rules-Requires-Root: no
 Standards-Version: 4.7.2
-Homepage: https://gitlab.gnome.org/GNOME/gnome-shell
-Vcs-Git: https://salsa.debian.org/gnome-team/gnome-shell.git -b debian/trixie
-Vcs-Browser: https://salsa.debian.org/gnome-team/gnome-shell
+Homepage: https://github.com/policorp-dev
+Vcs-Git: https://github.com/policorp-dev/gnome-shell
 
 Package: gnome-shell
 Architecture: linux-any

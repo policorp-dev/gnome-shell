@@ -1,3 +1,9 @@
+gnome-shell (48.Policorp.7-0) stable; urgency=medium
+
+  * Add versão Policorp baseado na versão 48.7-0+deb13u1
+
+ -- Lucas Salles <lucas.salles@policorp.com.br>  Thu, 29 Jan 2026 08:48:59 -0400
+
 gnome-shell (48.7-0+deb13u1) trixie; urgency=medium
 
   * Team upload
@@ -352,6 +358,55 @@ gnome-shell (48~rc-1) experimental; urgency=medium
     transition
 
  -- Simon McVittie <smcv@debian.org>  Wed, 05 Mar 2025 11:23:09 +0000
+
+gnome-shell (48.Policorp-12) stable; urgency=medium
+
+  * added panorama shortcut
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Fri, 10 Oct 2025 11:07:59 -0300
+
+gnome-shell (48.Policorp-11) stable; urgency=medium
+
+  * Enabled ubuntu-appindicators@ubuntu.com
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Thu, 04 Sep 2025 17:42:49 -0300
+
+gnome-shell (48.Policorp-10) stable; urgency=medium
+
+  * Added policorp-store in favorites
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Mon, 01 Sep 2025 14:55:12 +0000
+
+gnome-shell (48.Policorp-9) stable; urgency=medium
+
+  * Added gnome-snapshot in favorites-app
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Wed, 13 Aug 2025 18:59:00 +0000
+
+gnome-shell (48.Policorp-8) stable; urgency=medium
+
+  * Enabled auto-select-headset
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Tue, 05 Aug 2025 15:26:39 +0000
+
+gnome-shell (48.Policorp-7) stable; urgency=medium
+
+  * new style login screen
+  * Enabled sound extension
+
+ -- Erick bonfati <erick.bonfati@policorp.com.br>  Thu, 10 Jul 2025 12:21:26 -0400
+
+gnome-shell (48.Policorp-6) stable; urgency=medium
+
+  * Changed favorites apps
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Fri, 06 Jun 2025 15:36:51 +0000
+
+gnome-shell (48.Policorp-5) stable; urgency=medium
+
+  * updated in Policorp
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Fri, 07 Mar 2025 14:55:45 +0000
 
 gnome-shell (48~beta-4) unstable; urgency=medium
 
