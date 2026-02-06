@@ -358,7 +358,7 @@ const ScrollGesture = GObject.registerClass({
             return false;
 
         if (!this._began && this.scrollModifiers !== 0 &&
-            (event.get_state() & this.scrollModifiers) === 0)
+            (event.get_state() & this.scrollModifiers) !== this.scrollModifiers)
             return false;
 
         return true;
@@ -610,8 +610,7 @@ export const SwipeTracker = GObject.registerClass({
     }
 
     _findPreviousPoint(pos) {
-        const reversedIndex = this._snapPoints.slice().reverse().findIndex(p => p <= pos);
-        return this._snapPoints.length - 1 - reversedIndex;
+        return this._snapPoints.findLastIndex(p => p <= pos);
     }
 
     _findPointForProjection(pos, velocity) {

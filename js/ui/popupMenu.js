@@ -308,6 +308,7 @@ class PopupSeparatorMenuItem extends PopupBaseMenuItem {
         this.label = new St.Label({text: text || ''});
         this.add_child(this.label);
         this.label_actor = this.label;
+        this.accessible_role = Atk.Role.SEPARATOR;
 
         this.label.connect('notify::text',
             this._syncVisibility.bind(this));
@@ -1117,6 +1118,13 @@ export class PopupMenu extends PopupMenuBase {
         this._boxPointer.open(animate);
 
         this.actor.get_parent().set_child_above_sibling(this.actor, null);
+
+        /* The position calculation expects the source actor allocation to be
+         * up to date, so queue relayout on parent to ensure it gets allocated
+         * first.
+         */
+        if (!this.sourceActor?.has_allocation())
+            this.sourceActor?.get_parent().queue_relayout();
 
         this.emit('open-state-changed', true);
     }

@@ -1,3 +1,364 @@
+gnome-shell (48.Policorp.7-0) stable; urgency=medium
+
+  * Add versão Policorp baseado na versão 48.7-0+deb13u1
+
+ -- Lucas Salles <lucas.salles@policorp.com.br>  Thu, 29 Jan 2026 08:48:59 -0400
+
+gnome-shell (48.7-0+deb13u1) trixie; urgency=medium
+
+  * Team upload
+  * New upstream release 48.5
+    - Avoid a crash when using the Draw-On-Gnome extension, fixing a
+      regression in 48.3
+      (gnome-shell#8602 upstream)
+    - Close the captive-portal authentication dialog when full network
+      connectivity is detected
+      (gnome-shell#7790 upstream)
+    - Fix connecting to WPA Enterprise or WPA2 Enterprise networks from the
+      quick settings menu
+      (gnome-shell#8590 upstream)
+    - Disable unneeded extensions before enabling new extensions, ensuring
+      that there is never a time when two conflicting extensions are active
+      (gnome-shell!3835 upstream)
+    - Fix position of IBus candidate panel when using a scaled display
+      (gnome-shell#8424 upstream)
+    - During authentication, don't reset the authentication prompt on
+      every tap/click, only when the prompt should change from hidden to
+      visible
+      (gnome-shell!3852 upstream)
+    - Incorporate previously Debian-specific patches fixing X11 tray icon
+      handling
+      (gnome-shell!3818 upstream)
+    - Avoid a possible source of lockups in keyboard focus handling
+      (gnome-shell!3220 upstream)
+    - Fix a memory leak with custom themes
+      (gnome-shell#8509 upstream, LP: #2121786)
+    - During authentication, don't discard typeahead when changing
+      entry visibility
+      (gnome-shell!3850 upstream)
+    - Fix a crash when using a CSS-only Shell extension
+      (gnome-shell#7339 upstream, previously fixed differently by a
+      Debian-specific patch)
+    - Improve debuggability of the actor tree (gnome-shell!3863 upstream)
+    - Improve display of overview application search results in
+      right-to-left locales (Arabic/Hebrew)
+      (gnome-shell!3851 upstream)
+    - Fix a crash during searches
+      (gnome-shell#8651 upstream, LP: #2104113)
+    - Fix a race condition causing intermittent stuck notifications
+      (gnome-shell#6006 upstream)
+    - Better forward-compatibility with post-trixie GLib versions
+      (gnome-shell!3846, gnome-shell!3855 upstream)
+    - Better forward-compatibility with post-trixie mutter versions
+      (gnome-shell#4253 upstream)
+    - Documentation/comment fixes
+    - Translation updates: de, fi, th, zh_TW
+  * New upstream release 48.6
+    - During authentication, move keyboard focus to the currently-visible
+      widget, not always the text entry box
+      (gnome-shell!3849 upstream)
+    - Ensure that workspace selector reappears promptly when cancelling
+      a search in the overview (gnome-shell#7985 upstream)
+    - Warn instead of crashing if an unsupported accent colour is set,
+      for example when swapping between Ubuntu's patched gnome-shell and
+      an upstream gnome-shell (gnome-shell!3892 upstream)
+    - Always send a valid value for the reason a notification was closed
+      (gnome-shell!3907 upstream)
+    - In the UI for screenshots, if a button doesn't have any other label,
+      use its tooltip as the label for accessibility purposes
+      (gnome-shell!3908 upstream)
+    - When a notification instance is reused, don't send its activation
+      event multiple times (gnome-shell!3904 upstream)
+    - Don't emit spurious dotted circles when using the on-screen keyboard
+      in the Hindi (Bolnagri) layout (gnome-shell#8719 upstream)
+    - Remove unused argument to PopupMenu constructor
+      (gnome-shell!3894 upstream)
+    - Translation updates: ug
+  * New upstream release 48.7
+    - Revert some changes in 48.6 that could cause regressions
+      (not shown in the above summary)
+    - Ensure network icon is updated on connectivity changes
+      (gnome-shell#7357, gnome-shell#8549 upstream)
+    - In gdm, sort the available sessions by their localized name,
+      as displayed, and not by their internal IDs
+      (gnome-shell!3920 upstream)
+    - Add on-screen keyboard layouts for German (extended) and
+      German (Austria, extended)
+      (gnome-shell!3923 upstream)
+    - Avoid zombie networkmanager-openvpn-auth processes when a VPN connection
+      is stopped
+      (gnome-shell#7083 upstream)
+    - Avoid a warning on drag-and-drop when animations are disabled
+      (gnome-shell!3922 upstream)
+    - When logout, reboot or shutdown is prevented by a systemd inhibitor,
+      don't log the cancellation with a stack trace as though it was an
+      internal error
+      (gnome-shell#8749 upstream)
+    - Fix a crash when a window is closed immediately after losing on-screen
+      keyboard focus
+      (gnome-shell#8752 upstream)
+    - Fix handling of multiple gdm greeter instances
+      (gnome-shell!3942 upstream)
+    - Fix warnings and potential use-after-free when the Shell exits in
+      certain states
+      (gnome-shell!3943 upstream)
+    - Improve code clarity by using symbolic constants for SOURCE_CONTINUE,
+      SOURCE_REMOVE
+      (gnome-shell!3950 upstream)
+    - Always return a result from "later" handlers
+      (gnome-shell!3950 upstream)
+    - Align search results' provider name better
+      (gnome-shell!3951 upstream)
+    - Always register the session with GDM on startup, even if no monitor is
+      connected
+      (gnome-shell!3708 upstream)
+    - Fix misplaced separator in dash after unpinning running app
+      (gnome-shell#3966, #3799 upstream)
+    - Fix swipe gestures behaving incorrectly in RTL locales
+      (gnome-shell!3967 upstream)
+    - Fix some typos in documentation/comments
+    - Translation updates: ro
+  * Interface change: the misleadingly-named org.gnome.Shell.PortalHelper.Done
+    signal has been renamed to org.gnome.Shell.PortalHelper.StatusChanged.
+    In practice no other Debian package appears to subscribe to this signal,
+    so this shouldn't have any effect.
+
+  [ Jeremy Bícha ]
+  * Remove tray-icons patches: applied in 48.5
+  * Remove st-theme-node patch: alternative fix applied in 48.5
+
+  [ Marco Trevisan (Treviño) ]
+  * d/p/build-Define-test-dependencies.patch,
+    d/p/extensions-app-Add-test-dependency-on-generated-desktop-f.patch:
+    Add patches to fix tests' compilation dependencies
+  * debian/tests: Add autopkgtests for GNOME Shell.
+    We can just recompile gnome-shell and run the tests provided
+    by upstream.
+  * debian/tests: Run tests on the installed gnome-shell.
+    Run the autopkgtests running the upstream-provided test scripts using
+    the gnome-shell in the archive installed as it is. When in Ubuntu,
+    we are also using the Ubuntu profile.
+  * debian/salsa-ci: Enable i386 autopkgtests.
+    i386 is kinda special in desktop, so better to track potential
+    breakages.
+
+  [ Simon McVittie ]
+  * Document upstream changes in detail
+  * Rebase patch series
+    - Drop one of Marco's new test-related build system patches (see
+      above), applied in 48.5
+  * Slightly improve patch metadata
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 09 Dec 2025 11:38:09 +0000
+
+gnome-shell (48.4-1~deb13u1) trixie; urgency=medium
+
+  * Team upload
+  * d/control, d/gbp.conf: Set packaging branch for trixie stable updates
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 18 Aug 2025 15:35:38 +0100
+
+gnome-shell (48.4-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream stable release
+    - network: If a network has no ID, don't treat it as available,
+      avoiding breaking the network menu
+      (gnome-shell!3785 upstream)
+    - Improve URL recognition heuristic for notifications so that non-URLs do
+      not become a link
+      (gnome-shell#8517 upstream)
+    - In gdm, improve efficiency of user list
+      (gnome-shell!3799 upstream)
+    - Fix signal order when taking a screenshot interactively is triggered
+      via D-Bus, for example from xdg-desktop-portal
+      (gnome-shell#8499 upstream)
+    - Improve cursor scaling on systems with different-DPI monitors when using
+      the Magnifier accessibility tool
+      (gnome-shell!475 upstream)
+    - In sliders like volume and brightness, avoid drawing part of the bar
+      over the handle in RTL locales
+      (gnome-shell!3817 upstream)
+    - Improve robustness of signal connections in the Thunderbolt and
+      smart-card code
+      (gnome-shell!3796 upstream)
+    - Code cleanups in extensions management service
+      (part of gnome-shell!3750 upstream)
+    - Translation updates
+  * d/control: Bump gjs version to 1.81.2 as per meson.build.
+    No practical effect, 1.82.x is already in trixie.
+  * d/gbp.conf: Use debian/forky branch for uploads targeting forky.
+    We'll stick to 48.x in testing/unstable for now, to get better testing
+    for future 48.x updates in trixie. Preliminary 49.x packaging for
+    experimental is already using the debian/latest branch.
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 08 Aug 2025 09:19:26 +0100
+
+gnome-shell (48.3-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream stable release
+    - Accessibility improvements (LP: #2115948)
+      + In the Alt+F2 "run" dialog, provide the dialog title to screen
+        readers and other accessibility tools (gnome-shell!3736 upstream)
+      + In the calendar/notifications menu, label the Events and Weather
+        areas for accessibility tools (gnome-shell!3769 upstream)
+      + In popup menus, tell accessibility tools that separators are
+        not useful to select (gnome-shell!3773 upstream)
+      + In text entry widgets, send the hint (placeholder text) to
+        accessibility tools (gnome-shell!3179 upstream)
+      + In text entry widgets, make the label available to accessibility
+        tools (gnome-shell!3179 upstream)
+      + When running as a gdm greeter, if there is an error such as a wrong
+        password, send it to the screen reader as well as displaying it
+        (gnome-shell!3765 upstream)
+    - When prompting for a password change via Gcr, if the repeated password
+      doesn't match, re-enable the UI widgets so the user can try again
+      (gnome-shell!3757 upstream)
+    - Always update on-screen keyboard layout to reflect the purpose hint,
+      so that the expected features appear (alphanumeric vs. numeric-only,
+      emoji chooser shown or hidden, etc.)
+      (gnome-shell#8377 upstream)
+    - Limit the length of the input method indicator by counting grapheme
+      clusters rather than UTF-16 string lengths, allowing input methods like
+      ibus-typing-booster to use emoji as their indicator
+      (gnome-shell#1026 upstream)
+    - Avoid the top bar disappearing when doing a 3-finger downward swipe
+      gesture on a touchscreen
+      (gnome-shell#7456 upstream)
+    - If Decibels is installed, put it in the Utilities folder as intended
+      (Decibels is not yet in Debian, ITP: #1100886)
+      (gnome-shell!3728 upstream)
+    - If the mouse button modifier (normally Super, i.e. the Windows key)
+      is set to a combination of modifiers such as <Control><Super>, only
+      make the mouse wheel switch between desktops if *all* of those
+      modifiers are held
+      (mutter#4129 upstream)
+    - Avoid flooding the systemd journal with old time-limit transitions if
+      debug messages are enabled
+      (gnome-shell!3740 upstream)
+    - Reuse one proxy object for all communication with the gdm greeter,
+      which is more efficient and can mitigate per-connection memory
+      leaks in gdm
+      (gnome-shell!3749 upstream)
+    - Better build-time compatibility with non-glibc libc
+      (gnome-shell#8457 upstream, no practical effect on Debian)
+    - Remove redundant eslint hints
+      (gnome-shell!3756 upstream, no practical effect since they're comments)
+    - Translation updates
+    - CI changes with no effect on Debian
+  * d/patches: Re-export patch series (no functional changes)
+  * d/control: Update Homepage field (Closes: #1100764)
+
+ -- Simon McVittie <smcv@debian.org>  Sun, 13 Jul 2025 12:24:58 +0100
+
+gnome-shell (48.2-3) unstable; urgency=medium
+
+  * Team upload
+  * Adjust wording of previous changelog entry to reflect that gnome-music
+    is still installed by default
+  * Release to unstable
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 12 Jun 2025 21:08:12 +0100
+
+gnome-shell (48.2-2) experimental; urgency=medium
+
+  * Team upload
+  * Summarize upstream changes in previous changelog entry
+  * d/gnome-shell.gsettings-override: Update default pinned apps for trixie.
+    The pinned (favourite) apps appear in the Dash (the bottom panel),
+    instead of appearing in the main app grid.
+    This file is a Debian-specific override for upstream's default list.
+    The changes compared with previous versions in Debian:
+    - Remove Rhythmbox. We no longer recommend a specific music player for
+      GNOME; users are welcome to install Amberol, GNOME Music, Lollypop,
+      Rhythmbox or any other music player of their choice.
+    - Remove LibreOffice Writer. Pinned apps don't appear in the app grid,
+      and it seems inconsistent to have Writer in the Dash (and not the
+      app grid) but every other LibreOffice component such as Calc in the
+      app grid (not the dash).
+    - Add gnome-text-editor, matching upstream.
+    - Add gnome-calculator, matching upstream.
+    The changes compared with upstream:
+    - Replace Epiphany (GNOME Web) with Firefox ESR, matching what we
+      install by default
+    - Replace GNOME Calendar with Evolution
+    - Add Yelp (GNOME Help)
+    This doesn't necessarily have any effect for existing users:
+    if the user has pinned or unpinned an app at least once, once,
+    then their list of pinned apps is saved and will be unaffected
+    by this override. Please test with a completely new installation,
+    a newly-created test user, or a user with an empty home directory.
+    (Closes: #1099579)
+  * d/patches: Move im-config from main app grid to the System folder,
+    as requested by Jeremy Bícha on #1099579.
+    A known issue is that this only has an effect for completely new
+    installations or newly-created users: if the user has logged in at
+    least once, then their app -> folder mapping is saved, even if they
+    never explicitly modified it.
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 10 Jun 2025 14:16:06 +0100
+
+gnome-shell (48.2-1) experimental; urgency=medium
+
+  * New upstream bugfix release
+    - Track screen-time for the Wellbeing feature correctly across
+      suspend/resume, not counting time spent suspended as screen time
+      (Closes: #1104630; gnome-shell!3707 upstream)
+    - Check for surrounding text before enabling that capability
+      (mutter#3102, gnome-shell!3666 upstream)
+    - Fix a crash that can occur during startup when an extension is
+      updated
+      (gnome-shell#8417 upstream)
+    - Fix a regression that broke the ability to run commands in
+      terminals via: Alt+F2, <command>, Ctrl+Enter
+      (gnome-shell#7516 upstream)
+    - Fix VPN toggle in system menu not working when clicking the switch
+      (gnome-shell#8204 upstream)
+    - Always close folders when clicking outside them
+      (gnome-shell#7541 upstream)
+    - Add comments to give context for translators
+      (gnome-shell!3716 upstream)
+    - Translation updates: ro
+
+ -- Jeremy Bícha <jbicha@ubuntu.com>  Fri, 06 Jun 2025 13:32:38 -0400
+
+gnome-shell (48.1-1) unstable; urgency=medium
+
+  * New upstream release
+  * Refresh patches
+
+ -- Jeremy Bícha <jbicha@ubuntu.com>  Thu, 17 Apr 2025 13:38:58 -0400
+
+gnome-shell (48.0-1) unstable; urgency=medium
+
+  * New upstream release
+  * Bump minimum mutter
+
+ -- Jeremy Bícha <jbicha@ubuntu.com>  Fri, 21 Mar 2025 09:15:07 -0400
+
+gnome-shell (48~rc-2) unstable; urgency=high
+
+  * Release to unstable
+
+ -- Jeremy Bícha <jbicha@ubuntu.com>  Thu, 06 Mar 2025 11:25:50 -0500
+
+gnome-shell (48~rc-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream release candidate
+    - In particular, when combined with mutter 48~rc, this version avoids
+      an issue where the visible cursor position in GTK 4 apps does not
+      match the position where clicks will be applied
+  * Refresh patch series
+  * Bump mutter dependency to 48~rc as per meson.build
+  * d/gnome-shell-common.install: Install the new System directory
+  * Standards-Version: 4.7.2 (no changes required)
+  * Release to experimental to avoid disrupting the gnome-shell/mutter
+    transition
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 05 Mar 2025 11:23:09 +0000
+
 gnome-shell (48.Policorp-12) stable; urgency=medium
 
   * added panorama shortcut
