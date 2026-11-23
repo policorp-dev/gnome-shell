@@ -1,3 +1,9 @@
+gnome-shell (48.Policorp.7-1) stable; urgency=medium
+
+  * Hablitado gnome-control-center-shortcut@policorp.com.br
+
+ -- Lucas Salles <lucas.salles@policorp.com.br>  Thu, 05 Nov 2026 12:14:05 +0000
+
 gnome-shell (48.Policorp.7-0) stable; urgency=medium
 
   * Add versão Policorp baseado na versão 48.7-0+deb13u1
