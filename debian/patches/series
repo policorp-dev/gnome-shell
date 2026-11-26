@@ -4,3 +4,4 @@ debian/data-Add-im-config.desktop-to-System-folder.patch
 POLICORP-2-add-active-theme-background-in-login.patch
 POLICORP-apps-favorites-override.patch
 POLICORP-enable-extension.patch
+VAIO-panorama-shortcut.patch
