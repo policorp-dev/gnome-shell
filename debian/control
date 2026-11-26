@@ -68,6 +68,7 @@ Build-Depends: appstream,
                pkgconf,
                python3-docutils,
                sassc,
+               ibus,
                systemd-dev [linux-any],
                xauth <!nocheck>,
                xwayland <!nocheck>
