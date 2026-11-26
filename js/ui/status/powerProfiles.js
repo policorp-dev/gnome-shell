@@ -31,12 +31,20 @@ const PROFILE_PARAMS = {
     },
 };
 
+const FALLBACK_PARAMS = {
+    name: C_('Power profile', 'Custom'),
+    iconName: 'gnome-power-manager-symbolic',
+};
+
 const LAST_PROFILE_KEY = 'last-selected-power-profile';
 
 const PowerProfilesToggle = GObject.registerClass(
 class PowerProfilesToggle extends QuickMenuToggle {
     _init() {
-        super._init({title: _('Power Mode')});
+        super._init({
+            title: C_('Quick settings button title', 'Power Mode'),
+            menuButtonAccessibleName: _('Open power profiles menu'),
+        });
 
         this._profileItems = new Map();
 
@@ -66,7 +74,7 @@ class PowerProfilesToggle extends QuickMenuToggle {
 
         this._profileSection = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(this._profileSection);
-        this.menu.setHeader('power-profile-balanced-symbolic', _('Power Mode'));
+        this.menu.setHeader('power-profile-balanced-symbolic', C_('Quick settings menu header', 'Power Mode'));
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this.menu.addSettingsAction(_('Power Settings'),
             'gnome-power-panel.desktop');
@@ -82,6 +90,9 @@ class PowerProfilesToggle extends QuickMenuToggle {
             .map(p => p.Profile.unpack())
             .reverse();
         for (const profile of profiles) {
+            if (!PROFILE_PARAMS[profile])
+                continue;
+
             const {name, iconName} = PROFILE_PARAMS[profile];
             if (!name)
                 continue;
@@ -110,7 +121,7 @@ class PowerProfilesToggle extends QuickMenuToggle {
                 : PopupMenu.Ornament.NONE);
         }
 
-        const {name: subtitle, iconName} = PROFILE_PARAMS[activeProfile];
+        const {name: subtitle, iconName} = PROFILE_PARAMS[activeProfile] ?? FALLBACK_PARAMS;
         this.set({subtitle, iconName});
 
         this.checked = activeProfile !== 'balanced';
@@ -125,6 +136,17 @@ class Indicator extends SystemIndicator {
     _init() {
         super._init();
 
-        this.quickSettingsItems.push(new PowerProfilesToggle());
+        this._indicator = this._addIndicator();
+
+        this._powerProfilesToggle = new PowerProfilesToggle();
+
+        this._powerProfilesToggle.bind_property('icon-name',
+            this._indicator, 'icon-name',
+            GObject.BindingFlags.SYNC_CREATE);
+        this._powerProfilesToggle.bind_property('checked',
+            this._indicator, 'visible',
+            GObject.BindingFlags.SYNC_CREATE);
+
+        this.quickSettingsItems.push(this._powerProfilesToggle);
     }
 });

@@ -61,24 +61,14 @@ Refer to the [README][toolbox-tools] for further information on the scripts.
 
 ## Running a nested instance
 
-It is possible to run gnome-shell as "nested" instance in a window.
+It is possible to run gnome-shell as nested instance using Devkit.
 
 The `run-gnome-shell` script will automatically do that when run from
 a graphical session, or you can run the following command:
 
 ```sh
-$ WAYLAND_DISPLAY=shell-test-1 dbus-run-session \
-    gnome-shell --wayland-display=shell-test-1 --nested
+$ dbus-run-session gnome-shell --wayland --devkit
 ```
-
-There are limitations to the nested instance, such as keyboard shortcuts
-usually not getting to the nested compositor.
-
-In order to still bring up the [Looking Glass][lg] debugger, you can
-use an [extension][lg-button] as workaround.
-
-[lg]: ./looking-glass.md
-[lg-button]: https://extensions.gnome.org/extension/2296/looking-glass-button/
 
 ## Native
 
@@ -105,7 +95,7 @@ adjusting the timeouts of the service as well. This command can be used to
 create such a drop-in file for the current user:
 
 ```sh
-$ systemctl --user edit org.gnome.Shell@wayland.service --drop-in valgrind
+$ systemctl --user edit org.gnome.Shell@user.service --drop-in valgrind
 ```
 
 This opens an editor in which the following content has to be added:
@@ -127,7 +117,5 @@ needs to be removed again before starting the next session. Otherwise the log
 will get overwritten. This can be done using following command from a VT:
 
 ```sh
-$ systemctl --user revert org.gnome.Shell@wayland.service
+$ systemctl --user revert org.gnome.Shell@user.service
 ```
-
-For X11 sessions use `org.gnome.Shell@x11.service` in these commands instead.

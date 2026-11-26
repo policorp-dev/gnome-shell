@@ -11,13 +11,13 @@ import * as Util from '../misc/util.js';
 
 import * as Main from './main.js';
 
-const WINDOW_ANIMATION_TIME = 250;
+export const WINDOW_ANIMATION_TIME = 250;
 export const WORKSPACE_SPACING = 100;
 
-export const WorkspaceGroup = GObject.registerClass(
-class WorkspaceGroup extends Clutter.Actor {
-    _init(workspace, monitor, movingWindow) {
-        super._init({
+export const BaseWorkspaceGroup = GObject.registerClass(
+class BaseWorkspaceGroup extends Clutter.Actor {
+    constructor(workspace, monitor, movingWindow) {
+        super({
             width: monitor.width,
             height: monitor.height,
             clip_to_allocation: true,
@@ -28,65 +28,18 @@ class WorkspaceGroup extends Clutter.Actor {
         this._movingWindow = movingWindow;
         this._windowRecords = [];
 
-        if (this._workspace) {
-            this._background = new Meta.BackgroundGroup();
-
-            this.add_child(this._background);
-
-            this._bgManager = new Background.BackgroundManager({
-                container: this._background,
-                monitorIndex: this._monitor.index,
-                controlPosition: false,
-            });
-            this._createDesktopWindows();
-        }
-
+        this._createBackground();
         this._createWindows();
 
         this.connect('destroy', this._onDestroy.bind(this));
-        global.display.connectObject('restacked',
-            this._syncStacking.bind(this), this);
     }
 
     get workspace() {
         return this._workspace;
     }
 
-    _shouldShowWindow(window) {
-        if (!window.showing_on_its_workspace() || this._isDesktopWindow(window))
-            return false;
-
-        if (window.is_override_redirect())
-            return false;
-
-        if (!this._windowIsOnThisMonitor(window))
-            return false;
-
-        const isSticky =
-            window.is_on_all_workspaces() || window === this._movingWindow;
-
-        // No workspace means we should show windows that are on all workspaces
-        if (!this._workspace)
-            return isSticky;
-
-        // Otherwise only show windows that are (only) on that workspace
-        return !isSticky && window.located_on_workspace(this._workspace);
-    }
-
-    _syncStacking() {
-        const windowActors = global.get_window_actors().filter(w =>
-            this._shouldShowWindow(w.meta_window));
-
-        let lastRecord;
-        const bottomActor = this._background ?? null;
-
-        for (const windowActor of windowActors) {
-            const record = this._windowRecords.find(r => r.windowActor === windowActor);
-
-            this.set_child_above_sibling(record.clone,
-                lastRecord ? lastRecord.clone : bottomActor);
-            lastRecord = record;
-        }
+    _shouldShowWindow(_window) {
+        throw new GObject.NotImplementedError();
     }
 
     _isDesktopWindow(metaWindow) {
@@ -99,11 +52,7 @@ class WorkspaceGroup extends Clutter.Actor {
         return intersects;
     }
 
-    _createDesktopWindows() {
-        const desktopActors = global.get_window_actors().filter(w => {
-            return this._isDesktopWindow(w.meta_window) && this._windowIsOnThisMonitor(w.meta_window);
-        });
-        desktopActors.map(a => this._createClone(a)).forEach(clone => this._background.add_child(clone));
+    _createBackground() {
     }
 
     _createWindows() {
@@ -127,8 +76,18 @@ class WorkspaceGroup extends Clutter.Actor {
             this._windowRecords.splice(this._windowRecords.indexOf(record), 1);
         }, this);
 
+        windowActor.meta_window.connectObject('notify::minimized',
+            () => this._syncCloneVisibility(clone),
+            this);
+        this._syncCloneVisibility(clone);
+
         this._windowRecords.push(record);
         return clone;
+    }
+
+    _syncCloneVisibility(clone) {
+        const window = clone.source.meta_window;
+        clone.visible = window.showing_on_its_workspace();
     }
 
     _removeWindows() {
@@ -140,9 +99,95 @@ class WorkspaceGroup extends Clutter.Actor {
 
     _onDestroy() {
         this._removeWindows();
+    }
+});
 
-        if (this._workspace)
-            this._bgManager.destroy();
+export const WorkspaceGroup = GObject.registerClass(
+class WorkspaceGroup extends BaseWorkspaceGroup {
+    constructor(workspace, monitor, movingWindow) {
+        super(workspace, monitor, movingWindow);
+
+        global.display.connectObject('restacked',
+            () => this._syncStacking(), this);
+    }
+
+    _shouldShowWindow(window) {
+        if (this._isDesktopWindow(window))
+            return false;
+
+        if (window.is_override_redirect())
+            return false;
+
+        if (!this._windowIsOnThisMonitor(window))
+            return false;
+
+        const isSticky =
+            window.is_on_all_workspaces() || window === this._movingWindow;
+
+        // No workspace means we should show windows that are on all workspaces
+        if (!this._workspace)
+            return isSticky;
+
+        // Otherwise only show windows that are (only) on that workspace
+        return !isSticky && window.located_on_workspace(this._workspace);
+    }
+
+    _syncStacking() {
+        const stackIndeces = new Map(
+            global.get_window_actors().map((w, i) => [w, i]));
+
+        this._windowRecords.sort((a, b) => {
+            const seqA = a.windowActor;
+            const seqB = b.windowActor;
+
+            return stackIndeces.get(seqA) - stackIndeces.get(seqB);
+        });
+
+        let lastRecord;
+        const bottomActor = this._background ?? null;
+
+        for (const record of this._windowRecords) {
+            this.set_child_above_sibling(record.clone,
+                lastRecord ? lastRecord.clone : bottomActor);
+            lastRecord = record;
+        }
+    }
+
+    _createBackground() {
+        if (!this._workspace)
+            return;
+
+        this._background = new WorkspaceBackground(this._workspace, this._monitor);
+        this.add_child(this._background);
+    }
+});
+
+export const WorkspaceBackground = GObject.registerClass(
+class WorkspaceBackground extends BaseWorkspaceGroup {
+    constructor(workspace, monitor) {
+        super(workspace, monitor, null);
+    }
+
+    _shouldShowWindow(window) {
+        return this._isDesktopWindow(window) &&
+            this._windowIsOnThisMonitor(window);
+    }
+
+    _createBackground() {
+        const background = new Meta.BackgroundGroup();
+        this.add_child(background);
+
+        this._bgManager = new Background.BackgroundManager({
+            container: background,
+            monitorIndex: this._monitor.index,
+            controlPosition: false,
+        });
+    }
+
+    _onDestroy() {
+        super._onDestroy();
+
+        this._bgManager.destroy();
     }
 });
 
@@ -329,7 +374,11 @@ export class WorkspaceAnimationController {
         const swipeTracker = new SwipeTracker.SwipeTracker(global.stage,
             Clutter.Orientation.HORIZONTAL,
             Shell.ActionMode.NORMAL,
-            {allowDrag: false});
+            {
+                allowDrag: false,
+                phase: Clutter.EventPhase.CAPTURE,
+                name: 'WorkspaceAnimation swipe tracker',
+            });
         swipeTracker.connect('begin', this._switchWorkspaceBegin.bind(this));
         swipeTracker.connect('update', this._switchWorkspaceUpdate.bind(this));
         swipeTracker.connect('end', this._switchWorkspaceEnd.bind(this));
@@ -373,11 +422,21 @@ export class WorkspaceAnimationController {
             switchData.monitors.push(group);
         }
 
+        Main.wm.blockWorkspaceUpdates();
         global.compositor.disable_unredirect();
+        this._grab = Main.pushModal(global.stage, {
+            actionMode: Shell.ActionMode.NORMAL,
+        });
     }
 
     _finishWorkspaceSwitch(switchData) {
+        Main.wm.unblockWorkspaceUpdates();
         global.compositor.enable_unredirect();
+
+        if (this._grab) {
+            Main.popModal(this._grab);
+            this._grab = null;
+        }
 
         this._switchData = null;
 

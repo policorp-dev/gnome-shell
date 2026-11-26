@@ -14,7 +14,6 @@ import * as Background from './background.js';
 import * as FocusCaretTracker from './focusCaretTracker.js';
 import * as Main from './main.js';
 import * as Params from '../misc/params.js';
-import * as PointerWatcher from './pointerWatcher.js';
 
 const CROSSHAIRS_CLIP_SIZE = [100, 100];
 const NO_CHANGE = 0.0;
@@ -59,8 +58,8 @@ const MouseSpriteContent = GObject.registerClass({
         if (!this._texture)
             return [false, 0, 0];
 
-        let width = this._texture.get_width() / this._scale;
-        let height = this._texture.get_height() / this._scale;
+        const width = this._texture.get_width() / this._scale;
+        const height = this._texture.get_height() / this._scale;
 
         return [true, width, height];
     }
@@ -69,8 +68,8 @@ const MouseSpriteContent = GObject.registerClass({
         if (!this._texture)
             return;
 
-        let [minFilter, magFilter] = actor.get_content_scaling_filters();
-        let textureNode = new Clutter.TextureNode(this._texture,
+        const [minFilter, magFilter] = actor.get_content_scaling_filters();
+        const textureNode = new Clutter.TextureNode(this._texture,
             null, minFilter, magFilter);
         textureNode.set_name('MouseSpriteContent');
         node.add_child(textureNode);
@@ -87,12 +86,12 @@ const MouseSpriteContent = GObject.registerClass({
          * and so we should actually add an API to mutter that will allow us
          * to know the real sprite texture scaling in order to adapt it to the
          * wanted one. */
-        let avgSize = (this._texture.get_width() + this._texture.get_height()) / 2;
+        const avgSize = (this._texture.get_width() + this._texture.get_height()) / 2;
         return Math.max(1, Math.floor(avgSize / Meta.prefs_get_cursor_size() + .1));
     }
 
     _recomputeScale() {
-        let scale = this._textureScale() / this._monitorScale;
+        const scale = this._textureScale() / this._monitorScale;
 
         if (this._scale !== scale) {
             this._scale = scale;
@@ -109,7 +108,7 @@ const MouseSpriteContent = GObject.registerClass({
         if (this._texture === coglTexture)
             return;
 
-        let oldTexture = this._texture;
+        const oldTexture = this._texture;
         this._texture = coglTexture;
         this.invalidate();
 
@@ -137,6 +136,8 @@ export class Magnifier extends Signals.EventEmitter {
 
         // Create small clutter tree for the magnified mouse.
         this._cursorTracker = global.backend.get_cursor_tracker();
+        this._pointerPositionId = 0;
+        this._pointerPositionLaterId = 0;
 
         this._mouseSprite = new Clutter.Actor({request_mode: Clutter.RequestMode.CONTENT_SIZE});
         this._mouseSprite.content = new MouseSpriteContent();
@@ -149,9 +150,9 @@ export class Magnifier extends Signals.EventEmitter {
         // Create the first ZoomRegion and initialize it according to the
         // magnification settings.
 
-        [this.xMouse, this.yMouse] = global.get_pointer();
+        [this.xMouse, this.yMouse] = this._getPointerPosition();
 
-        let aZoomRegion = new ZoomRegion(this, this._cursorRoot);
+        const aZoomRegion = new ZoomRegion(this, this._cursorRoot);
         this._zoomRegions.push(aZoomRegion);
         this._settingsInit(aZoomRegion);
         aZoomRegion.scrollContentsTo(this.xMouse, this.yMouse);
@@ -167,7 +168,7 @@ export class Magnifier extends Signals.EventEmitter {
     }
 
     _updateContentScale() {
-        let monitor = Main.layoutManager.findMonitorForPoint(this.xMouse,
+        const monitor = Main.layoutManager.findMonitorForPoint(this.xMouse,
             this.yMouse);
         this._mouseSprite.content.monitorScale = monitor
             ? monitor.geometry_scale : 1;
@@ -183,11 +184,9 @@ export class Magnifier extends Signals.EventEmitter {
             this._cursorUnfocusInhibited = false;
         }
 
-        if (this._cursorVisibilityChangedId) {
-            this._cursorTracker.disconnect(this._cursorVisibilityChangedId);
-            delete this._cursorVisibilityChangedId;
-
-            this._cursorTracker.set_pointer_visible(true);
+        if (this._cursorVisibleInhibited) {
+            this._cursorTracker.uninhibit_cursor_visibility();
+            this._cursorVisibleInhibited = false;
         }
     }
 
@@ -201,12 +200,9 @@ export class Magnifier extends Signals.EventEmitter {
             this._cursorUnfocusInhibited = true;
         }
 
-        if (!this._cursorVisibilityChangedId) {
-            this._cursorTracker.set_pointer_visible(false);
-            this._cursorVisibilityChangedId = this._cursorTracker.connect('visibility-changed', () => {
-                if (this._cursorTracker.get_pointer_visible())
-                    this._cursorTracker.set_pointer_visible(false);
-            });
+        if (!this._cursorVisibleInhibited) {
+            this._cursorTracker.inhibit_cursor_visibility();
+            this._cursorVisibleInhibited = true;
         }
     }
 
@@ -217,7 +213,7 @@ export class Magnifier extends Signals.EventEmitter {
      * @param {boolean} activate Boolean to activate or de-activate the magnifier.
      */
     setActive(activate) {
-        let isActive = this.isActive();
+        const isActive = this.isActive();
 
         this._zoomRegions.forEach(zoomRegion => {
             zoomRegion.setActive(activate);
@@ -270,12 +266,12 @@ export class Magnifier extends Signals.EventEmitter {
      * Turn on mouse tracking, if not already doing so.
      */
     startTrackingMouse() {
-        if (!this._pointerWatch) {
-            let interval = 1000 / 60;
-            this._pointerWatch = PointerWatcher.getPointerWatcher().addWatch(interval, this.scrollToMousePos.bind(this));
+        if (this._pointerPositionId)
+            return;
 
-            this.scrollToMousePos();
-        }
+        this._pointerPositionId = this._cursorTracker.connect(
+            'position-invalidated', () => this._queuePointerPositionUpdate());
+        this.scrollToMousePos();
     }
 
     /**
@@ -283,10 +279,17 @@ export class Magnifier extends Signals.EventEmitter {
      * Turn off mouse tracking, if not already doing so.
      */
     stopTrackingMouse() {
-        if (this._pointerWatch)
-            this._pointerWatch.remove();
+        if (!this._pointerPositionId)
+            return;
 
-        this._pointerWatch = null;
+        this._cursorTracker.disconnect(this._pointerPositionId);
+        this._pointerPositionId = 0;
+
+        if (this._pointerPositionLaterId) {
+            const laters = global.compositor.get_laters();
+            laters.remove(this._pointerPositionLaterId);
+            this._pointerPositionLaterId = 0;
+        }
     }
 
     /**
@@ -295,7 +298,25 @@ export class Magnifier extends Signals.EventEmitter {
      * @returns {boolean} whether the magnifier is currently tracking the mouse
      */
     isTrackingMouse() {
-        return !!this._pointerWatch;
+        return !!this._pointerPositionId;
+    }
+
+    _getPointerPosition() {
+        const [coords] = this._cursorTracker.get_pointer();
+        return [coords.x, coords.y];
+    }
+
+    _queuePointerPositionUpdate() {
+        if (this._pointerPositionLaterId)
+            return;
+
+        const laters = global.compositor.get_laters();
+        this._pointerPositionLaterId = laters.add(
+            Meta.LaterType.BEFORE_REDRAW, () => {
+                this._pointerPositionLaterId = 0;
+                this.scrollToMousePos();
+                return GLib.SOURCE_REMOVE;
+            });
     }
 
     /**
@@ -306,7 +327,9 @@ export class Magnifier extends Signals.EventEmitter {
      * @param {[xMouse: number, yMouse: number] | []} args
      */
     scrollToMousePos(...args) {
-        const [xMouse, yMouse] = args.length ? args : global.get_pointer();
+        const [xMouse, yMouse] = args.length
+            ? args
+            : this._getPointerPosition();
 
         if (xMouse === this.xMouse && yMouse === this.yMouse)
             return;
@@ -344,11 +367,11 @@ export class Magnifier extends Signals.EventEmitter {
      * @returns {ZoomRegion} the newly created ZoomRegion.
      */
     createZoomRegion(xMagFactor, yMagFactor, roi, viewPort) {
-        let zoomRegion = new ZoomRegion(this, this._cursorRoot);
+        const zoomRegion = new ZoomRegion(this, this._cursorRoot);
         zoomRegion.setViewPort(viewPort);
 
         // We ignore the redundant width/height on the ROI
-        let fixedROI = Object.create(roi);
+        const fixedROI = Object.create(roi);
         fixedROI.width = viewPort.width / xMagFactor;
         fixedROI.height = viewPort.height / yMagFactor;
         zoomRegion.setROI(fixedROI);
@@ -403,11 +426,11 @@ export class Magnifier extends Signals.EventEmitter {
         if (!this._crossHairs)
             this._crossHairs = new Crosshairs();
 
-        let thickness = this._settings.get_int(CROSS_HAIRS_THICKNESS_KEY);
-        let color = this._settings.get_string(CROSS_HAIRS_COLOR_KEY);
-        let opacity = this._settings.get_double(CROSS_HAIRS_OPACITY_KEY);
-        let length = this._settings.get_int(CROSS_HAIRS_LENGTH_KEY);
-        let clip = this._settings.get_boolean(CROSS_HAIRS_CLIP_KEY);
+        const thickness = this._settings.get_int(CROSS_HAIRS_THICKNESS_KEY);
+        const color = this._settings.get_string(CROSS_HAIRS_COLOR_KEY);
+        const opacity = this._settings.get_double(CROSS_HAIRS_OPACITY_KEY);
+        const length = this._settings.get_int(CROSS_HAIRS_LENGTH_KEY);
+        const clip = this._settings.get_boolean(CROSS_HAIRS_CLIP_KEY);
 
         this.setCrosshairsThickness(thickness);
         this.setCrosshairsColor(color);
@@ -415,7 +438,7 @@ export class Magnifier extends Signals.EventEmitter {
         this.setCrosshairsLength(length);
         this.setCrosshairsClip(clip);
 
-        let theCrossHairs = this._crossHairs;
+        const theCrossHairs = this._crossHairs;
         this._zoomRegions.forEach(zoomRegion => {
             zoomRegion.addCrosshairs(theCrossHairs);
         });
@@ -449,7 +472,7 @@ export class Magnifier extends Signals.EventEmitter {
      */
     setCrosshairsColor(color) {
         if (this._crossHairs) {
-            let [res_, clutterColor] = Cogl.Color.from_string(color);
+            const [res_, clutterColor] = Cogl.Color.from_string(color);
             this._crossHairs.setColor(clutterColor);
         }
     }
@@ -507,7 +530,7 @@ export class Magnifier extends Signals.EventEmitter {
      */
     setCrosshairsLength(length) {
         if (this._crossHairs) {
-            let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+            const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
             this._crossHairs.setLength(length / scaleFactor);
         }
     }
@@ -549,7 +572,7 @@ export class Magnifier extends Signals.EventEmitter {
      */
     getCrosshairsClip() {
         if (this._crossHairs) {
-            let [clipWidth, clipHeight] = this._crossHairs.getClip();
+            const [clipWidth, clipHeight] = this._crossHairs.getClip();
             return clipWidth > 0 && clipHeight > 0;
         } else {
             return false;
@@ -560,7 +583,7 @@ export class Magnifier extends Signals.EventEmitter {
 
     _updateMouseSprite() {
         this._updateSpriteTexture();
-        let [xHot, yHot] = this._cursorTracker.get_hot();
+        const [xHot, yHot] = this._cursorTracker.get_hot();
         this._mouseSprite.set({
             translation_x: -xHot,
             translation_y: -yHot,
@@ -568,7 +591,7 @@ export class Magnifier extends Signals.EventEmitter {
     }
 
     _updateSpriteTexture() {
-        let sprite = this._cursorTracker.get_sprite();
+        const sprite = this._cursorTracker.get_sprite();
 
         if (sprite) {
             this._mouseSprite.content.texture = sprite;
@@ -672,7 +695,7 @@ export class Magnifier extends Signals.EventEmitter {
             if (aPref)
                 zoomRegion.setColorSaturation(aPref);
 
-            let bc = {};
+            const bc = {};
             bc.r = this._settings.get_double(BRIGHT_RED_KEY);
             bc.g = this._settings.get_double(BRIGHT_GREEN_KEY);
             bc.b = this._settings.get_double(BRIGHT_BLUE_KEY);
@@ -684,7 +707,7 @@ export class Magnifier extends Signals.EventEmitter {
             zoomRegion.setContrast(bc);
         }
 
-        let showCrosshairs = this._settings.get_boolean(SHOW_CROSS_HAIRS_KEY);
+        const showCrosshairs = this._settings.get_boolean(SHOW_CROSS_HAIRS_KEY);
         this.addCrosshairs();
         this.setCrosshairsVisible(showCrosshairs);
     }
@@ -692,7 +715,7 @@ export class Magnifier extends Signals.EventEmitter {
     _updateScreenPosition() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
-            let position = this._settings.get_enum(SCREEN_POSITION_KEY);
+            const position = this._settings.get_enum(SCREEN_POSITION_KEY);
             this._zoomRegions[0].setScreenPosition(position);
             if (position !== GDesktopEnums.MagnifierScreenPosition.FULL_SCREEN)
                 this._updateLensMode();
@@ -703,7 +726,7 @@ export class Magnifier extends Signals.EventEmitter {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
             // Mag factor is accurate to two decimal places.
-            let magFactor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
+            const magFactor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
             this._zoomRegions[0].setMagFactor(magFactor, magFactor);
         }
     }
@@ -765,7 +788,7 @@ export class Magnifier extends Signals.EventEmitter {
     _updateBrightness() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
-            let brightness = {};
+            const brightness = {};
             brightness.r = this._settings.get_double(BRIGHT_RED_KEY);
             brightness.g = this._settings.get_double(BRIGHT_GREEN_KEY);
             brightness.b = this._settings.get_double(BRIGHT_BLUE_KEY);
@@ -776,7 +799,7 @@ export class Magnifier extends Signals.EventEmitter {
     _updateContrast() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
-            let contrast = {};
+            const contrast = {};
             contrast.r = this._settings.get_double(CONTRAST_RED_KEY);
             contrast.g = this._settings.get_double(CONTRAST_GREEN_KEY);
             contrast.b = this._settings.get_double(CONTRAST_BLUE_KEY);
@@ -844,7 +867,7 @@ class ZoomRegion {
     }
 
     _disconnectSignals() {
-        for (let [obj, id] of this._signalConnections)
+        for (const [obj, id] of this._signalConnections)
             obj.disconnect(id);
 
         delete this._signalConnections;
@@ -921,7 +944,7 @@ class ZoomRegion {
     }
 
     _updateFocus(caller, event) {
-        let component = event.source.get_component_iface();
+        const component = event.source.get_component_iface();
         if (!component || event.detail1 !== 1)
             return;
         let extents;
@@ -947,7 +970,7 @@ class ZoomRegion {
     }
 
     _updateCaret(caller, event) {
-        let text = event.source.get_text_iface();
+        const text = event.source.get_text_iface();
         if (!text)
             return;
         let extents;
@@ -1084,7 +1107,7 @@ class ZoomRegion {
     }
 
     _syncFocusTracking() {
-        let enabled = this._focusTrackingMode !== GDesktopEnums.MagnifierFocusTrackingMode.NONE &&
+        const enabled = this._focusTrackingMode !== GDesktopEnums.MagnifierFocusTrackingMode.NONE &&
             this.isActive();
 
         if (enabled)
@@ -1094,7 +1117,7 @@ class ZoomRegion {
     }
 
     _syncCaretTracking() {
-        let enabled = this._caretTrackingMode !== GDesktopEnums.MagnifierCaretTrackingMode.NONE &&
+        const enabled = this._caretTrackingMode !== GDesktopEnums.MagnifierCaretTrackingMode.NONE &&
             this.isActive();
 
         if (enabled)
@@ -1147,8 +1170,8 @@ class ZoomRegion {
      *     the bounding rectangle of what is shown in the magnified view.
      */
     getROI() {
-        let roiWidth = this._viewPortWidth / this._xMagFactor;
-        let roiHeight = this._viewPortHeight / this._yMagFactor;
+        const roiWidth = this._viewPortWidth / this._xMagFactor;
+        const roiHeight = this._viewPortHeight / this._yMagFactor;
 
         return [
             this._xCenter - roiWidth / 2,
@@ -1199,7 +1222,7 @@ class ZoomRegion {
      * Magnifier view occupies the top half of the screen.
      */
     setTopHalf() {
-        let viewPort = {};
+        const viewPort = {};
         viewPort.x = 0;
         viewPort.y = 0;
         viewPort.width = global.screen_width;
@@ -1213,7 +1236,7 @@ class ZoomRegion {
      * Magnifier view occupies the bottom half of the screen.
      */
     setBottomHalf() {
-        let viewPort = {};
+        const viewPort = {};
         viewPort.x = 0;
         viewPort.y = global.screen_height / 2;
         viewPort.width = global.screen_width;
@@ -1227,7 +1250,7 @@ class ZoomRegion {
      * Magnifier view occupies the left half of the screen.
      */
     setLeftHalf() {
-        let viewPort = {};
+        const viewPort = {};
         viewPort.x = 0;
         viewPort.y = 0;
         viewPort.width = global.screen_width / 2;
@@ -1241,7 +1264,7 @@ class ZoomRegion {
      * Magnifier view occupies the right half of the screen.
      */
     setRightHalf() {
-        let viewPort = {};
+        const viewPort = {};
         viewPort.x = global.screen_width / 2;
         viewPort.y = 0;
         viewPort.width = global.screen_width / 2;
@@ -1256,7 +1279,7 @@ class ZoomRegion {
      * Note:  disallows lens mode.
      */
     setFullScreenMode() {
-        let viewPort = {};
+        const viewPort = {};
         viewPort.x = 0;
         viewPort.y = 0;
         viewPort.width = global.screen_width;
@@ -1320,13 +1343,15 @@ class ZoomRegion {
      */
     scrollToMousePos() {
         this._followingCursor = true;
-        if (this._mouseTrackingMode !== GDesktopEnums.MagnifierMouseTrackingMode.NONE)
+        if (this._mouseTrackingMode !== GDesktopEnums.MagnifierMouseTrackingMode.NONE) {
             this._changeROI({redoCursorTracking: true});
-        else
+        } else {
+            this._updateCloneGeometry();
             this._updateMousePosition();
+        }
 
         this._clearScrollContentsTimer();
-        this._scrollContentsTimerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, POINTER_REST_TIME, () => {
+        this._scrollContentsTimerId = GLib.timeout_add_once(GLib.PRIORITY_DEFAULT, POINTER_REST_TIME, () => {
             this._followingCursor = false;
             if (this._xDelayed != null && this._yDelayed != null) {
                 this._scrollContentsToDelayed(this._xDelayed, this._yDelayed);
@@ -1335,8 +1360,6 @@ class ZoomRegion {
             }
 
             this._scrollContentsTimerId = 0;
-
-            return GLib.SOURCE_REMOVE;
         });
 
         // Determine whether the system mouse pointer is over this zoom region.
@@ -1488,7 +1511,7 @@ class ZoomRegion {
      *     the contrast for the red, green, and blue channels.
      */
     getContrast() {
-        let contrast = {};
+        const contrast = {};
         contrast.r = this._contrast.r;
         contrast.g = this._contrast.g;
         contrast.b = this._contrast.b;
@@ -1564,8 +1587,8 @@ class ZoomRegion {
     _setViewPort(viewPort, fromROIUpdate) {
         // Sets the position of the zoom region on the screen
 
-        let width = Math.round(Math.min(viewPort.width, global.screen_width));
-        let height = Math.round(Math.min(viewPort.height, global.screen_height));
+        const width = Math.round(Math.min(viewPort.width, global.screen_width));
+        const height = Math.round(Math.min(viewPort.height, global.screen_height));
         let x = Math.max(viewPort.x, 0);
         let y = Math.max(viewPort.y, 0);
 
@@ -1618,8 +1641,8 @@ class ZoomRegion {
         }
 
         if (this._clampScrollingAtEdges) {
-            let roiWidth = this._viewPortWidth / this._xMagFactor;
-            let roiHeight = this._viewPortHeight / this._yMagFactor;
+            const roiWidth = this._viewPortWidth / this._xMagFactor;
+            const roiHeight = this._viewPortHeight / this._yMagFactor;
 
             params.xCenter = Math.min(params.xCenter, global.screen_width - roiWidth / 2);
             params.xCenter = Math.max(params.xCenter, roiWidth / 2);
@@ -1650,8 +1673,8 @@ class ZoomRegion {
         // mouse's position is not given, then it is fetched.
         let mouseIsOver = false;
         if (this.isActive()) {
-            let xMouse = this._magnifier.xMouse;
-            let yMouse = this._magnifier.yMouse;
+            const xMouse = this._magnifier.xMouse;
+            const yMouse = this._magnifier.yMouse;
 
             mouseIsOver =
                 xMouse >= this._viewPortX && xMouse < (this._viewPortX + this._viewPortWidth) &&
@@ -1677,8 +1700,8 @@ class ZoomRegion {
         // Determines where the center should be given the current cursor
         // position and mouse tracking mode
 
-        let xMouse = this._magnifier.xMouse;
-        let yMouse = this._magnifier.yMouse;
+        const xMouse = this._magnifier.xMouse;
+        const yMouse = this._magnifier.yMouse;
 
         if (this._mouseTrackingMode === GDesktopEnums.MagnifierMouseTrackingMode.PROPORTIONAL)
             return this._centerFromPointProportional(xMouse, yMouse);
@@ -1719,12 +1742,12 @@ class ZoomRegion {
     }
 
     _centerFromPointPush(xPoint, yPoint) {
-        let [xRoi, yRoi, widthRoi, heightRoi] = this.getROI();
-        let [cursorWidth, cursorHeight] = this._mouseSourceActor.get_size();
+        const [xRoi, yRoi, widthRoi, heightRoi] = this.getROI();
+        const [cursorWidth, cursorHeight] = this._mouseSourceActor.get_size();
         let xPos = xRoi + widthRoi / 2;
         let yPos = yRoi + heightRoi / 2;
-        let xRoiRight = xRoi + widthRoi - cursorWidth;
-        let yRoiBottom = yRoi + heightRoi - cursorHeight;
+        const xRoiRight = xRoi + widthRoi - cursorWidth;
+        const yRoiBottom = yRoi + heightRoi - cursorHeight;
 
         if (xPoint < xRoi)
             xPos -= xRoi - xPoint;
@@ -1740,18 +1763,18 @@ class ZoomRegion {
     }
 
     _centerFromPointProportional(xPoint, yPoint) {
-        let [xRoi_, yRoi_, widthRoi, heightRoi] = this.getROI();
-        let halfScreenWidth = global.screen_width / 2;
-        let halfScreenHeight = global.screen_height / 2;
+        const [xRoi_, yRoi_, widthRoi, heightRoi] = this.getROI();
+        const halfScreenWidth = global.screen_width / 2;
+        const halfScreenHeight = global.screen_height / 2;
         // We want to pad with a constant distance after zooming, so divide
         // by the magnification factor.
-        let unscaledPadding = Math.min(this._viewPortWidth, this._viewPortHeight) / 5;
-        let xPadding = unscaledPadding / this._xMagFactor;
-        let yPadding = unscaledPadding / this._yMagFactor;
-        let xProportion = (xPoint - halfScreenWidth) / halfScreenWidth;   // -1 ... 1
-        let yProportion = (yPoint - halfScreenHeight) / halfScreenHeight; // -1 ... 1
-        let xPos = xPoint - xProportion * (widthRoi / 2 - xPadding);
-        let yPos = yPoint - yProportion * (heightRoi / 2 - yPadding);
+        const unscaledPadding = Math.min(this._viewPortWidth, this._viewPortHeight) / 5;
+        const xPadding = unscaledPadding / this._xMagFactor;
+        const yPadding = unscaledPadding / this._yMagFactor;
+        const xProportion = (xPoint - halfScreenWidth) / halfScreenWidth;   // -1 ... 1
+        const yProportion = (yPoint - halfScreenHeight) / halfScreenHeight; // -1 ... 1
+        const xPos = xPoint - xProportion * (widthRoi / 2 - xPadding);
+        const yPos = yPoint - yProportion * (heightRoi / 2 - yPadding);
 
         return [xPos, yPos];
     }
@@ -1786,7 +1809,7 @@ class ZoomRegion {
         if (!this.isActive())
             return;
 
-        let [x, y] = this._screenToViewPort(0, 0);
+        const [x, y] = this._screenToViewPort(0, 0);
         this._uiGroupClone.ease({
             x: Math.round(x),
             y: Math.round(y),
@@ -1796,18 +1819,19 @@ class ZoomRegion {
             duration: animate ? 100 : 0,
         });
 
-        let [mouseX, mouseY] = this._getMousePosition();
+        const [mouseX, mouseY] = this._getMousePosition();
+        const sourceMouseScale = this._mouseSourceActor.get_resource_scale();
         this._mouseActor.ease({
             x: mouseX,
             y: mouseY,
-            scale_x: this._xMagFactor,
-            scale_y: this._yMagFactor,
+            scale_x: this._xMagFactor / sourceMouseScale,
+            scale_y: this._yMagFactor / sourceMouseScale,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             duration: animate ? 100 : 0,
         });
 
         if (this._crossHairsActor) {
-            let [crossX, crossY] = this._getCrossHairsPosition();
+            const [crossX, crossY] = this._getCrossHairsPosition();
             this._crossHairsActor.ease({
                 x: crossX,
                 y: crossY,
@@ -1818,24 +1842,24 @@ class ZoomRegion {
     }
 
     _updateMousePosition() {
-        let [xMagMouse, yMagMouse] = this._getMousePosition();
+        const [xMagMouse, yMagMouse] = this._getMousePosition();
         this._mouseActor.set_position(xMagMouse, yMagMouse);
 
         if (this._crossHairsActor) {
-            let [crossX, crossY] = this._getCrossHairsPosition();
+            const [crossX, crossY] = this._getCrossHairsPosition();
             this._crossHairsActor.set_position(crossX, crossY);
         }
     }
 
     _getMousePosition() {
-        let [xMagMouse, yMagMouse] = this._screenToViewPort(
+        const [xMagMouse, yMagMouse] = this._screenToViewPort(
             this._magnifier.xMouse, this._magnifier.yMouse);
         return [Math.round(xMagMouse), Math.round(yMagMouse)];
     }
 
     _getCrossHairsPosition() {
-        let [xMagMouse, yMagMouse] = this._getMousePosition();
-        let [groupWidth, groupHeight] = this._crossHairsActor.get_size();
+        const [xMagMouse, yMagMouse] = this._getMousePosition();
+        const [groupWidth, groupHeight] = this._crossHairsActor.get_size();
 
         return [xMagMouse - groupWidth / 2, yMagMouse - groupHeight / 2];
     }
@@ -1852,8 +1876,8 @@ class Crosshairs extends Clutter.Actor {
         // Set the group containing the crosshairs to three times the desktop
         // size in case the crosshairs need to appear to be infinite in
         // length (i.e., extend beyond the edges of the view they appear in).
-        let groupWidth = global.screen_width * 3;
-        let groupHeight = global.screen_height * 3;
+        const groupWidth = global.screen_width * 3;
+        const groupHeight = global.screen_height * 3;
 
         super._init({
             clip_to_allocation: false,
@@ -1905,7 +1929,7 @@ class Crosshairs extends Clutter.Actor {
     addToZoomRegion(zoomRegion, magnifiedMouse) {
         let crosshairsActor = null;
         if (zoomRegion && magnifiedMouse) {
-            let container = magnifiedMouse.get_parent();
+            const container = magnifiedMouse.get_parent();
             if (container) {
                 crosshairsActor = this;
                 if (this.get_parent() != null) {
@@ -1920,8 +1944,8 @@ class Crosshairs extends Clutter.Actor {
 
                 container.add_child(crosshairsActor);
                 container.set_child_above_sibling(magnifiedMouse, crosshairsActor);
-                let [xMouse, yMouse] = magnifiedMouse.get_position();
-                let [crosshairsWidth, crosshairsHeight] = crosshairsActor.get_size();
+                const [xMouse, yMouse] = magnifiedMouse.get_position();
+                const [crosshairsWidth, crosshairsHeight] = crosshairsActor.get_size();
                 crosshairsActor.set_position(xMouse - crosshairsWidth / 2, yMouse - crosshairsHeight / 2);
             }
         }
@@ -2057,21 +2081,21 @@ class Crosshairs extends Clutter.Actor {
      * @param {[number, number]} [clipSize] If present, the clip's [width, height].
      */
     reCenter(clipSize) {
-        let [groupWidth, groupHeight] = this.get_size();
-        let leftLength = this._horizLeftHair.get_width();
-        let topLength = this._vertTopHair.get_height();
-        let thickness = this._horizLeftHair.get_height();
+        const [groupWidth, groupHeight] = this.get_size();
+        const leftLength = this._horizLeftHair.get_width();
+        const topLength = this._vertTopHair.get_height();
+        const thickness = this._horizLeftHair.get_height();
 
         // Deal with clip rectangle.
         if (clipSize)
             this._clipSize = clipSize;
-        let clipWidth = this._clipSize[0];
-        let clipHeight = this._clipSize[1];
+        const clipWidth = this._clipSize[0];
+        const clipHeight = this._clipSize[1];
 
-        let left = groupWidth / 2 - clipWidth / 2 - leftLength - thickness / 2;
-        let right = groupWidth / 2 + clipWidth / 2 + thickness / 2;
-        let top = groupHeight / 2 - clipHeight / 2 - topLength - thickness / 2;
-        let bottom = groupHeight / 2 + clipHeight / 2 + thickness / 2;
+        const left = groupWidth / 2 - clipWidth / 2 - leftLength - thickness / 2;
+        const right = groupWidth / 2 + clipWidth / 2 + thickness / 2;
+        const top = groupHeight / 2 - clipHeight / 2 - topLength - thickness / 2;
+        const bottom = groupHeight / 2 + clipHeight / 2 + thickness / 2;
         this._horizLeftHair.set_position(left, (groupHeight - thickness) / 2);
         this._horizRightHair.set_position(right, (groupHeight - thickness) / 2);
         this._vertTopHair.set_position((groupWidth - thickness) / 2, top);
@@ -2137,14 +2161,14 @@ class MagShaderEffects {
      *     {number} brightness.b - the blue component
      */
     setBrightness(brightness) {
-        let bRed = brightness.r;
-        let bGreen = brightness.g;
-        let bBlue = brightness.b;
+        const bRed = brightness.r;
+        const bGreen = brightness.g;
+        const bBlue = brightness.b;
         this._brightnessContrast.set_brightness_full(bRed, bGreen, bBlue);
 
         // Enable the effect if the brightness OR contrast change are such that
         // it modifies the brightness and/or contrast.
-        let [cRed, cGreen, cBlue] = this._brightnessContrast.get_contrast();
+        const [cRed, cGreen, cBlue] = this._brightnessContrast.get_contrast();
         this._brightnessContrast.set_enabled(
             bRed !== NO_CHANGE || bGreen !== NO_CHANGE || bBlue !== NO_CHANGE ||
             cRed !== NO_CHANGE || cGreen !== NO_CHANGE || cBlue !== NO_CHANGE);
@@ -2163,9 +2187,9 @@ class MagShaderEffects {
      *     {number} contrast.b - the blue component
      */
     setContrast(contrast) {
-        let cRed = contrast.r;
-        let cGreen = contrast.g;
-        let cBlue = contrast.b;
+        const cRed = contrast.r;
+        const cGreen = contrast.g;
+        const cBlue = contrast.b;
 
         this._brightnessContrast.set_contrast_full(cRed, cGreen, cBlue);
 
@@ -2173,7 +2197,7 @@ class MagShaderEffects {
         // it modifies the brightness and/or contrast.
         // should be able to use Cogl.Color.equal(), but that complains of
         // a null first argument.
-        let [bRed, bGreen, bBlue] = this._brightnessContrast.get_brightness();
+        const [bRed, bGreen, bBlue] = this._brightnessContrast.get_brightness();
         this._brightnessContrast.set_enabled(
             cRed !== NO_CHANGE || cGreen !== NO_CHANGE || cBlue !== NO_CHANGE ||
             bRed !== NO_CHANGE || bGreen !== NO_CHANGE || bBlue !== NO_CHANGE);

@@ -1,11 +1,9 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import IBus from 'gi://IBus';
-import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 
 import * as Signals from './signals.js';
-import * as BoxPointer from '../ui/boxpointer.js';
 import {logErrorUnlessCancelled} from './errorUtils.js';
 
 import * as IBusCandidatePopup from '../ui/ibusCandidatePopup.js';
@@ -27,6 +25,8 @@ let _ibusManager = null;
 const IBUS_SYSTEMD_SERVICE = 'org.freedesktop.IBus.session.GNOME.service';
 
 const TYPING_BOOSTER_ENGINE = 'typing-booster';
+
+const FALLBACK_ENGINE_ID = 'xkb:us::eng';
 
 function _checkIBusVersion(requiredMajor, requiredMinor, requiredMicro) {
     if ((IBus.MAJOR_VERSION > requiredMajor) ||
@@ -98,7 +98,7 @@ class IBusManager extends Signals.EventEmitter {
     async _queueSpawn() {
         const isSystemdService = await this._ibusSystemdServiceExists();
         if (!isSystemdService)
-            this._spawn(Meta.is_wayland_compositor() ? [] : ['--xim']);
+            this._spawn([]);
     }
 
     _tryAppendEnv(env, varname) {
@@ -159,16 +159,16 @@ class IBusManager extends Signals.EventEmitter {
 
     _onConnected() {
         this._cancellable = new Gio.Cancellable();
-        this._initEngines();
-        this._initPanelService();
+        this._initEngines(this._cancellable);
+        this._initPanelService(this._cancellable);
     }
 
-    async _initEngines() {
+    async _initEngines(cancellable) {
         try {
             const enginesList =
-                await this._ibus.list_engines_async(-1, this._cancellable);
+                await this._ibus.list_engines_async(-1, cancellable);
             for (let i = 0; i < enginesList.length; ++i) {
-                let name = enginesList[i].get_name();
+                const name = enginesList[i].get_name();
                 this._engines.set(name, enginesList[i]);
             }
             this._updateReadiness();
@@ -178,10 +178,10 @@ class IBusManager extends Signals.EventEmitter {
         }
     }
 
-    async _initPanelService() {
+    async _initPanelService(cancellable) {
         try {
             await this._ibus.request_name_async(IBus.SERVICE_PANEL,
-                IBus.BusNameFlag.REPLACE_EXISTING, -1, this._cancellable);
+                IBus.BusNameFlag.REPLACE_EXISTING, -1, cancellable);
         } catch (e) {
             if (logErrorUnlessCancelled(e))
                 this._clear();
@@ -195,7 +195,7 @@ class IBusManager extends Signals.EventEmitter {
         this._candidatePopup.setPanelService(this._panelService);
         this._panelService.connect('update-property', this._updateProperty.bind(this));
         this._panelService.connect('set-cursor-location', (ps, x, y, w, h) => {
-            let cursorLocation = {x, y, width: w, height: h};
+            const cursorLocation = {x, y, width: w, height: h};
             this.emit('set-cursor-location', cursorLocation);
         });
         this._panelService.connect('focus-in', (panel, path) => {
@@ -219,7 +219,7 @@ class IBusManager extends Signals.EventEmitter {
         try {
             // If an engine is already active we need to get its properties
             const engine =
-                await this._ibus.get_global_engine_async(-1, this._cancellable);
+                await this._ibus.get_global_engine_async(-1, cancellable);
             this._engineChanged(this._ibus, engine.get_name());
         } catch {
         }
@@ -235,7 +235,7 @@ class IBusManager extends Signals.EventEmitter {
             return;
 
         this._currentEngineName = engineName;
-        this._candidatePopup.close(BoxPointer.PopupAnimation.NONE);
+        this._candidatePopup.close({animate: false});
 
         if (this._registerPropertiesId !== 0)
             return;
@@ -278,12 +278,22 @@ class IBusManager extends Signals.EventEmitter {
         if (!this._ready)
             return;
 
+        const cancellable = this._cancellable;
         try {
             await this._ibus.set_global_engine_async(id,
                 this._MAX_INPUT_SOURCE_ACTIVATION_TIME,
-                this._cancellable);
+                cancellable);
         } catch (e) {
-            logErrorUnlessCancelled(e);
+            if (!logErrorUnlessCancelled(e))
+                return;
+
+            try {
+                await this._ibus.set_global_engine_async(FALLBACK_ENGINE_ID,
+                    this._MAX_INPUT_SOURCE_ACTIVATION_TIME,
+                    cancellable);
+            } catch (e2) {
+                logErrorUnlessCancelled(e2);
+            }
         }
     }
 
@@ -319,7 +329,7 @@ class IBusManager extends Signals.EventEmitter {
         }
 
         this._preloadEnginesId =
-            GLib.timeout_add_seconds(
+            GLib.timeout_add_seconds_once(
                 GLib.PRIORITY_DEFAULT,
                 this._PRELOAD_ENGINES_DELAY_TIME,
                 () => {
@@ -329,7 +339,6 @@ class IBusManager extends Signals.EventEmitter {
                         this._cancellable,
                         null);
                     this._preloadEnginesId = 0;
-                    return GLib.SOURCE_REMOVE;
                 });
     }
 

@@ -756,8 +756,7 @@ cr_tknzr_parse_string (CRTknzr * a_this, CRString ** a_str)
 
         if (status == CR_OK) {
                 if (*a_str == NULL) {
-                        *a_str = str;
-                        str = NULL;
+                        *a_str = g_steal_pointer (&str);
                 } else {
                         (*a_str)->stryng = g_string_append_len
                                 ((*a_str)->stryng,
@@ -1207,8 +1206,7 @@ cr_tknzr_parse_uri (CRTknzr * a_this,
                 }
                 if (str) {                        
                         if (*a_str == NULL) {
-                                *a_str = str;
-                                str = NULL;
+                                *a_str = g_steal_pointer (&str);
                         } else {
                                 g_string_append_len
                                         ((*a_str)->stryng,
@@ -1610,10 +1608,7 @@ cr_tknzr_new (CRInput * a_input)
         if (result->priv == NULL) {
                 cr_utils_trace_info ("Out of memory");
 
-                if (result) {
-                        g_free (result);
-                        result = NULL;
-                }
+                g_clear_pointer (&result, g_free);
 
                 return NULL;
         }
@@ -1625,30 +1620,14 @@ cr_tknzr_new (CRInput * a_input)
 
 CRTknzr *
 cr_tknzr_new_from_buf (guchar * a_buf, gulong a_len,
-                       enum CREncoding a_enc, 
                        gboolean a_free_at_destroy)
 {
         CRTknzr *result = NULL;
         CRInput *input = NULL;
 
-        input = cr_input_new_from_buf (a_buf, a_len, a_enc,
+        input = cr_input_new_from_buf (a_buf, a_len,
                                        a_free_at_destroy);
 
-        g_return_val_if_fail (input != NULL, NULL);
-
-        result = cr_tknzr_new (input);
-
-        return result;
-}
-
-CRTknzr *
-cr_tknzr_new_from_uri (const guchar * a_file_uri, 
-                       enum CREncoding a_enc)
-{
-        CRTknzr *result = NULL;
-        CRInput *input = NULL;
-
-        input = cr_input_new_from_uri ((const gchar *) a_file_uri, a_enc);
         g_return_val_if_fail (input != NULL, NULL);
 
         result = cr_tknzr_new (input);
@@ -1824,28 +1803,6 @@ cr_tknzr_peek_byte2 (CRTknzr * a_this, gulong a_offset, gboolean * a_eof)
         return cr_input_peek_byte2 (PRIVATE (a_this)->input, a_offset, a_eof);
 }
 
-/**
- *Gets the number of bytes left in the topmost input stream
- *associated to this parser.
- *@param a_this the current instance of #CRTknzr
- *@return the number of bytes left or -1 in case of error.
- */
-glong
-cr_tknzr_get_nb_bytes_left (CRTknzr * a_this)
-{
-        g_return_val_if_fail (a_this && PRIVATE (a_this)
-                              && PRIVATE (a_this)->input, CR_BAD_PARAM_ERROR);
-
-        if (PRIVATE (a_this)->token_cache) {
-                cr_input_set_cur_pos (PRIVATE (a_this)->input,
-                                      &PRIVATE (a_this)->prev_pos);
-                cr_token_destroy (PRIVATE (a_this)->token_cache);
-                PRIVATE (a_this)->token_cache = NULL;
-        }
-
-        return cr_input_get_nb_bytes_left (PRIVATE (a_this)->input);
-}
-
 enum CRStatus
 cr_tknzr_get_cur_pos (CRTknzr * a_this, CRInputPos * a_pos)
 {
@@ -1985,8 +1942,7 @@ cr_tknzr_get_next_token (CRTknzr * a_this, CRToken ** a_tk)
                               CR_BAD_PARAM_ERROR);
 
         if (PRIVATE (a_this)->token_cache) {
-                *a_tk = PRIVATE (a_this)->token_cache;
-                PRIVATE (a_this)->token_cache = NULL;
+                *a_tk = g_steal_pointer (&PRIVATE (a_this)->token_cache);
                 return CR_OK;
         }
 
@@ -2686,8 +2642,7 @@ cr_tknzr_parse_token (CRTknzr * a_this, enum CRTokenType a_type,
                 case TIME_TK:
                 case FREQ_TK:
                         if (token->extra_type == a_et) {
-                                *((CRNum **) a_res) = token->u.num;
-                                token->u.num = NULL;
+                                *((CRNum **) a_res) = g_steal_pointer (&token->u.num);
                                 status = CR_OK;
                         }
                         break;

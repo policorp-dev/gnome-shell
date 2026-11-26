@@ -18,30 +18,143 @@
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Graphene from 'gi://Graphene';
 import Meta from 'gi://Meta';
+import Pango from 'gi://Pango';
+import Shell from 'gi://Shell';
 import St from 'gi://St';
 
-const SCROLL_ANIMATION_TIME = 500;
+import * as Main from '../ui/main.js';
+import * as PopupMenu from '../ui/popupMenu.js';
 
-const AuthListItem = GObject.registerClass({
-    Signals: {'activate': {}},
-}, class AuthListItem extends St.Button {
-    _init(key, text) {
+export const SCROLL_ANIMATION_TIME = 500;
+
+class ItemIconPopup extends PopupMenu.PopupMenu {
+    constructor(sourceActor, title, subtitle) {
+        super(sourceActor, 0.5, St.Side.TOP);
+
+        this.box.add_style_class_name('login-dialog-item-icon-popup-box');
+        this.actor.add_style_class_name('login-dialog-item-icon-popup');
+
+        const labels = new St.BoxLayout({
+            orientation: Clutter.Orientation.VERTICAL,
+            style_class: 'login-dialog-item-icon-popup-labels',
+        });
+        labels.add_child(new St.Label({text: title}));
+        labels.add_child(new St.Label({text: subtitle}));
+
+        const item = new PopupMenu.PopupBaseMenuItem({
+            reactive: false,
+            can_focus: false,
+        });
+        item.add_child(labels);
+        this.addMenuItem(item);
+
+        sourceActor.connectObject('clicked', () => this.toggle(), this);
+        sourceActor.connectObject('destroy', () => this.destroy(), this);
+
+        this.actor.hide();
+
+        this._menuManager = new PopupMenu.PopupMenuManager(sourceActor, {
+            actionMode: Shell.ActionMode.NONE,
+        });
+        this._menuManager.addMenu(this);
+    }
+};
+
+class ItemIcon extends St.Button {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(iconName, iconTitle, iconSubtitle) {
+        super({
+            style_class: 'login-dialog-item-icon',
+            button_mask: St.ButtonMask.PRIMARY | St.ButtonMask.SECONDARY,
+            iconName,
+        });
+
+        this._popup = new ItemIconPopup(this, iconTitle, iconSubtitle);
+        Main.uiGroup.add_child(this._popup.actor);
+    }
+}
+
+class AuthListItem extends St.Button {
+    static [GObject.signals] = {
+        'activate': {},
+    };
+
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(key, content) {
+        const {title, subtitle, iconName, iconTitle, iconSubtitle} = content;
+
+        super({
+            style_class: 'login-dialog-auth-list-item',
+            button_mask: St.ButtonMask.PRIMARY | St.ButtonMask.SECONDARY,
+            can_focus: true,
+            reactive: true,
+            accessible_name: [title, subtitle, iconTitle, iconSubtitle]
+                .filter(p => p)
+                .join(', '),
+        });
+
         this.key = key;
-        const label = new St.Label({
-            text,
-            style_class: 'login-dialog-auth-list-label',
+
+        this._container = new St.Widget({
+            layout_manager: new Clutter.BinLayout(),
+            x_expand: true,
+        });
+        this._labelBox = new St.BoxLayout({
+            orientation: Clutter.Orientation.VERTICAL,
             y_align: Clutter.ActorAlign.CENTER,
             x_expand: true,
         });
+        this._container.add_child(this._labelBox);
 
-        super._init({
-            style_class: 'login-dialog-auth-list-item',
-            button_mask: St.ButtonMask.ONE | St.ButtonMask.THREE,
-            can_focus: true,
-            child: label,
-            reactive: true,
-        });
+        if (title) {
+            const label = new St.Label({
+                text: title,
+                style_class: 'login-dialog-auth-list-item-title',
+                y_align: Clutter.ActorAlign.CENTER,
+                x_expand: true,
+            });
+            label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+            this._labelBox.add_child(label);
+        }
+
+        if (subtitle) {
+            const label = new St.Label({
+                text: subtitle,
+                style_class: 'login-dialog-auth-list-item-subtitle',
+                y_align: Clutter.ActorAlign.CENTER,
+                x_expand: true,
+            });
+            label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+            this._labelBox.add_child(label);
+        }
+
+        if (iconName && iconTitle && iconSubtitle) {
+            const icon = new ItemIcon(iconName, iconTitle, iconSubtitle);
+            icon.add_constraint(new Clutter.AlignConstraint({
+                source: this._container,
+                align_axis: Clutter.AlignAxis.X_AXIS,
+                factor: 0.5,
+            }));
+            icon.add_constraint(new Clutter.AlignConstraint({
+                source: this._container,
+                align_axis: Clutter.AlignAxis.Y_AXIS,
+                factor: 0.0,
+                pivot_point: new Graphene.Point({x: 0.0, y: 0.35}),
+            }));
+            this._container.add_child(icon);
+        }
+
+        this.compact = !subtitle && !iconName;
+
+        this.set_child(this._container);
 
         this.connect('key-focus-in',
             () => this._setSelected(true));
@@ -65,24 +178,25 @@ const AuthListItem = GObject.registerClass({
             this.remove_style_pseudo_class('selected');
         }
     }
-});
+}
 
-export const AuthList = GObject.registerClass({
-    Signals: {
+export class AuthList extends St.BoxLayout {
+    static [GObject.signals] = {
         'activate': {param_types: [GObject.TYPE_STRING]},
         'item-added': {param_types: [AuthListItem.$gtype]},
-    },
-}, class AuthList extends St.BoxLayout {
-    _init() {
-        super._init({
+    };
+
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor() {
+        super({
             orientation: Clutter.Orientation.VERTICAL,
             style_class: 'login-dialog-auth-list-layout',
-            x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true,
         });
-
-        this.label = new St.Label({style_class: 'login-dialog-auth-list-title'});
-        this.add_child(this.label);
 
         this._box = new St.BoxLayout({
             orientation: Clutter.Orientation.VERTICAL,
@@ -98,11 +212,15 @@ export const AuthList = GObject.registerClass({
 
         this._items = new Map();
 
+        this._box.connectObject(
+            'child-added', () => this._updateItemsLayout(),
+            'child-removed', () => this._updateItemsLayout(),
+            this);
         this.connect('key-focus-in', this._moveFocusToItems.bind(this));
     }
 
     _moveFocusToItems() {
-        let hasItems = this.numItems > 0;
+        const hasItems = this.numItems > 0;
 
         if (!hasItems)
             return;
@@ -110,7 +228,7 @@ export const AuthList = GObject.registerClass({
         if (global.stage.get_key_focus() !== this)
             return;
 
-        let focusSet = this.navigate_focus(null, St.DirectionType.TAB_FORWARD, false);
+        const focusSet = this.navigate_focus(null, St.DirectionType.TAB_FORWARD, false);
         if (!focusSet) {
             const laters = global.compositor.get_laters();
             laters.add(Meta.LaterType.BEFORE_REDRAW, () => {
@@ -125,21 +243,31 @@ export const AuthList = GObject.registerClass({
     }
 
     scrollToItem(item) {
-        let box = item.get_allocation_box();
+        const box = item.get_allocation_box();
 
         const adjustment = this._scrollView.vadjustment;
 
-        let value = (box.y1 + adjustment.step_increment / 2.0) - (adjustment.page_size / 2.0);
+        const value = (box.y1 + adjustment.step_increment / 2.0) - (adjustment.page_size / 2.0);
         adjustment.ease(value, {
             duration: SCROLL_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
     }
 
-    addItem(key, text) {
+    _updateItemsLayout() {
+        const items = this._box.get_children();
+
+        const compact = items.every(item => item.compact);
+        if (compact)
+            items.forEach(item => item.add_style_class_name('compact'));
+        else
+            items.forEach(item => item.remove_style_class_name('compact'));
+    }
+
+    addItem(key, content) {
         this.removeItem(key);
 
-        let item = new AuthListItem(key, text);
+        const item = new AuthListItem(key, content);
         this._box.add_child(item);
 
         this._items.set(key, item);
@@ -158,7 +286,7 @@ export const AuthList = GObject.registerClass({
         if (!this._items.has(key))
             return;
 
-        let item = this._items.get(key);
+        const item = this._items.get(key);
 
         item.destroy();
 
@@ -170,8 +298,7 @@ export const AuthList = GObject.registerClass({
     }
 
     clear() {
-        this.label.text = '';
         this._box.destroy_all_children();
         this._items.clear();
     }
-});
+}

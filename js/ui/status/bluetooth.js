@@ -176,10 +176,9 @@ const BtClient = GObject.registerClass({
     _queueDevicesChanged() {
         if (this._devicesChangedId)
             return;
-        this._devicesChangedId = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+        this._devicesChangedId = GLib.idle_add_once(GLib.PRIORITY_DEFAULT, () => {
             delete this._devicesChangedId;
             this.emit('devices-changed');
-            return GLib.SOURCE_REMOVE;
         });
     }
 
@@ -273,7 +272,10 @@ class BluetoothDeviceItem extends PopupMenu.PopupBaseMenuItem {
 const BluetoothToggle = GObject.registerClass(
 class BluetoothToggle extends QuickMenuToggle {
     _init(client) {
-        super._init({title: _('Bluetooth')});
+        super._init({
+            title: _('Bluetooth'),
+            menuButtonAccessibleName: _('Open Bluetooth menu'),
+        });
 
         this.menu.setHeader('bluetooth-active-symbolic', _('Bluetooth'));
 

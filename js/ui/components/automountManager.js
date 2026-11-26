@@ -29,6 +29,8 @@ class AutomountManager {
     }
 
     enable() {
+        this._cancellable = new Gio.Cancellable();
+
         this._volumeMonitor.connectObject(
             'volume-added', this._onVolumeAdded.bind(this),
             'volume-removed', this._onVolumeRemoved.bind(this),
@@ -36,11 +38,14 @@ class AutomountManager {
             'drive-disconnected', this._onDriveDisconnected.bind(this),
             'drive-eject-button', this._onDriveEjectButton.bind(this), this);
 
-        this._mountAllId = GLib.idle_add(GLib.PRIORITY_DEFAULT, this._startupMountAll.bind(this));
+        this._mountAllId = GLib.idle_add_once(GLib.PRIORITY_DEFAULT, this._startupMountAll.bind(this));
         GLib.Source.set_name_by_id(this._mountAllId, '[gnome-shell] this._startupMountAll');
     }
 
     disable() {
+        this._cancellable?.cancel();
+        this._cancellable = null;
+
         this._volumeMonitor.disconnectObject(this);
 
         if (this._mountAllId > 0) {
@@ -58,7 +63,7 @@ class AutomountManager {
     }
 
     _startupMountAll() {
-        let volumes = this._volumeMonitor.get_volumes();
+        const volumes = this._volumeMonitor.get_volumes();
         volumes.forEach(volume => {
             this._checkAndMountVolume(volume, {
                 checkSession: false,
@@ -68,7 +73,6 @@ class AutomountManager {
         });
 
         this._mountAllId = 0;
-        return GLib.SOURCE_REMOVE;
     }
 
     _onDriveConnected() {
@@ -77,8 +81,9 @@ class AutomountManager {
         if (!this._session.SessionIsActive)
             return;
 
-        let player = global.display.get_sound_player();
-        player.play_from_theme('device-added-media',
+        const player = global.display.get_sound_player();
+        player.play_from_file(
+            Gio.File.new_for_path(`${global.datadir}/sounds/device-added.oga`),
             _('External drive connected'),
             null);
     }
@@ -89,8 +94,9 @@ class AutomountManager {
         if (!this._session.SessionIsActive)
             return;
 
-        let player = global.display.get_sound_player();
-        player.play_from_theme('device-removed-media',
+        const player = global.display.get_sound_player();
+        player.play_from_file(
+            Gio.File.new_for_path(`${global.datadir}/sounds/device-removed.oga`),
             _('External drive disconnected'),
             null);
     }
@@ -163,7 +169,7 @@ class AutomountManager {
         }
 
         if (params.useMountOp) {
-            let operation = new ShellMountOperation.ShellMountOperation(volume);
+            const operation = new ShellMountOperation.ShellMountOperation(volume);
             this._mountVolume(volume, operation, params.allowAutorun);
         } else {
             this._mountVolume(volume, null, params.allowAutorun);
@@ -177,7 +183,7 @@ class AutomountManager {
         const mountOp = operation?.mountOp ?? null;
         this._activeOperations.set(volume, operation);
 
-        volume.mount(0, mountOp, null,
+        volume.mount(0, mountOp, this._cancellable,
             this._onVolumeMounted.bind(this));
     }
 
@@ -224,15 +230,15 @@ class AutomountManager {
     }
 
     _reaskPassword(volume) {
-        let prevOperation = this._activeOperations.get(volume);
+        const prevOperation = this._activeOperations.get(volume);
         const existingDialog = prevOperation?.borrowDialog();
-        let operation =
+        const operation =
             new ShellMountOperation.ShellMountOperation(volume, {existingDialog});
         this._mountVolume(volume, operation);
     }
 
     _closeOperation(volume) {
-        let operation = this._activeOperations.get(volume);
+        const operation = this._activeOperations.get(volume);
         if (!operation)
             return;
         operation.close();
@@ -244,10 +250,9 @@ class AutomountManager {
     }
 
     _allowAutorunExpire(volume) {
-        let id = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, AUTORUN_EXPIRE_TIMEOUT_SECS, () => {
+        const id = GLib.timeout_add_seconds_once(GLib.PRIORITY_DEFAULT, AUTORUN_EXPIRE_TIMEOUT_SECS, () => {
             volume.allowAutorun = false;
             delete volume._allowAutorunExpireId;
-            return GLib.SOURCE_REMOVE;
         });
         volume._allowAutorunExpireId = id;
         GLib.Source.set_name_by_id(id, '[gnome-shell] volume.allowAutorun');

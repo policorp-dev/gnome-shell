@@ -23,7 +23,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <meta/meta-context.h>
 #include <meta/display.h>
-#ifdef HAVE_X11_CLIENT
+#ifdef HAVE_XWAYLAND
 #include <meta/meta-x11-display.h>
 #endif
 
@@ -33,13 +33,10 @@
 #endif
 
 #ifdef HAVE_SYSTEMD
-#include <systemd/sd-daemon.h>
 #include <systemd/sd-login.h>
-#else
-/* So we don't need to add ifdef's everywhere */
-#define sd_notify(u, m)            do {} while (0)
-#define sd_notifyf(u, m, ...)      do {} while (0)
-#endif
+#endif /* HAVE_SYSTEMD */
+
+#include <systemd/sd-daemon.h>
 
 static void
 stop_pick (ClutterActor *actor)
@@ -153,7 +150,7 @@ shell_util_translate_time_string (const char *str)
 {
   const char *locale = g_getenv ("LC_TIME");
   const char *res;
-  char *sep;
+  const char *sep;
   locale_t old_loc;
   locale_t loc = (locale_t) 0;
 
@@ -350,6 +347,32 @@ shell_util_create_pixbuf_from_data (const guchar      *data,
                                     int                height,
                                     int                rowstride)
 {
+  g_return_val_if_fail (data != NULL, NULL);
+  g_return_val_if_fail (colorspace == GDK_COLORSPACE_RGB, NULL);
+  g_return_val_if_fail (bits_per_sample == 8, NULL);
+  g_return_val_if_fail (width > 0, NULL);
+  g_return_val_if_fail (height > 0, NULL);
+
+  unsigned int channels;
+  unsigned int row_min;
+  size_t required;
+
+  channels = has_alpha ? 4 : 3;
+
+  /* Validate that the data array length is big enough for
+   * the provided pixbuf parameters;
+   * take into account that the actual rowstride may be bigger
+   * than the minimum requirement, and that the last row may
+   * not be as wide as the full rowstride.
+   * See https://docs.gtk.org/gdk-pixbuf/class.Pixbuf.html#image-data
+   */
+
+  row_min = width * ((channels * bits_per_sample + 7) / 8);
+  g_return_val_if_fail (rowstride >= row_min, NULL);
+
+  required = (height - 1) * rowstride + row_min;
+  g_return_val_if_fail (len >= required, NULL);
+
   return gdk_pixbuf_new_from_data (data, colorspace, has_alpha,
                                    bits_per_sample, width, height, rowstride,
                                    (GdkPixbufDestroyNotify) g_free, NULL);
@@ -619,6 +642,7 @@ shell_util_systemd_call (const char           *command,
                          gpointer              user_data)
 {
   g_autoptr (GTask) task = g_task_new (NULL, cancellable, callback, user_data);
+  g_task_set_source_tag (task, shell_util_systemd_call);
   g_autoptr (GVariant) params_owned = g_variant_ref_sink (g_steal_pointer (&params));
 
 #ifdef HAVE_SYSTEMD
@@ -789,7 +813,7 @@ gboolean
 shell_util_has_x11_display_extension (MetaDisplay *display,
                                       const char  *extension)
 {
-#ifdef HAVE_X11_CLIENT
+#ifdef HAVE_XWAYLAND
   MetaX11Display *x11_display;
   Display *xdisplay;
   int op, event, error;

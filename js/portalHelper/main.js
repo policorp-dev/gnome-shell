@@ -25,6 +25,12 @@ const PortalHelperSecurityLevel = {
     INSECURE: 2,
 };
 
+const ZoomAction = {
+    NORMAL: 0,
+    IN: 1,
+    OUT: 2,
+};
+
 const HTTP_URI_FLAGS =
     GLib.UriFlags.HAS_PASSWORD |
     GLib.UriFlags.ENCODED_PATH |
@@ -117,6 +123,18 @@ class PortalWindow extends Gtk.ApplicationWindow {
             default_height: 450,
         });
 
+        this.add_action_entries(
+            [{
+                name: 'zoom-in',
+                activate: () => this._setZoom(ZoomAction.IN),
+            }, {
+                name: 'zoom-out',
+                activate: () => this._setZoom(ZoomAction.OUT),
+            }, {
+                name: 'zoom-normal',
+                activate: () => this._setZoom(ZoomAction.NORMAL),
+            }]);
+
         const headerbar = new Gtk.HeaderBar();
         this._secureMenu = new PortalSecurityButton();
         headerbar.pack_start(this._secureMenu);
@@ -157,8 +175,6 @@ class PortalWindow extends Gtk.ApplicationWindow {
         this.set_child(this._webView);
         this.maximize();
         this.present_with_time(timestamp);
-
-        this.application.set_accels_for_action('app.quit', ['<Primary>q', '<Primary>w']);
     }
 
     _syncUri() {
@@ -193,9 +209,9 @@ class PortalWindow extends Gtk.ApplicationWindow {
         if (loadEvent === WebKit.LoadEvent.STARTED) {
             this._secureMenu.setSecurityIcon(PortalHelperSecurityLevel.NOT_YET_DETERMINED);
         } else if (loadEvent === WebKit.LoadEvent.COMMITTED) {
-            let tlsInfo = this._webView.get_tls_info();
-            let ret = tlsInfo[0];
-            let flags = tlsInfo[2];
+            const tlsInfo = this._webView.get_tls_info();
+            const ret = tlsInfo[0];
+            const flags = tlsInfo[2];
             if (ret && flags === 0)
                 this._secureMenu.setSecurityIcon(PortalHelperSecurityLevel.SECURE);
             else
@@ -209,7 +225,7 @@ class PortalWindow extends Gtk.ApplicationWindow {
 
     _onLoadFailedWithTlsErrors(view, failingURI, certificate, _errors) {
         this._secureMenu.setSecurityIcon(PortalHelperSecurityLevel.INSECURE);
-        let uri = GLib.Uri.parse(failingURI, HTTP_URI_FLAGS);
+        const uri = GLib.Uri.parse(failingURI, HTTP_URI_FLAGS);
         this._networkSession.allow_tls_certificate_for_host(certificate, uri.get_host());
         this._webView.load_uri(failingURI);
         return true;
@@ -271,10 +287,9 @@ class PortalWindow extends Gtk.ApplicationWindow {
                 const seconds =
                     (CONNECTIVITY_RECHECK_RATELIMIT_TIMEOUT - timeSinceLastRecheck) /
                     GLib.USEC_PER_SEC;
-                this._recheckTimeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, seconds, () => {
+                this._recheckTimeoutId = GLib.timeout_add_seconds_once(GLib.PRIORITY_DEFAULT, seconds, () => {
                     this._statusChangedCallback(PortalHelperResult.RECHECK);
                     this._recheckTimeoutId = 0;
-                    return GLib.SOURCE_REMOVE;
                 });
             }
         }
@@ -285,6 +300,58 @@ class PortalWindow extends Gtk.ApplicationWindow {
 
         decision.use();
         return true;
+    }
+
+    _getChangedZoomLevel(zoomAction) {
+        if (zoomAction === ZoomAction.NORMAL)
+            return 1.0;
+
+        // Adapted from ephy-zoom.c
+        const zoomSteps = [
+            0.30,
+            0.50,
+            0.67,
+            0.80,
+            0.90,
+            1.00,
+            1.10,
+            1.20,
+            1.33,
+            1.50,
+            1.70,
+            2.00,
+            2.40,
+            3.00,
+        ];
+
+        const {zoomLevel} = this._webView;
+
+        let i = zoomSteps.indexOf(zoomLevel);
+
+        if (i < 0) {
+            // No exact match found, try to find the nearest value
+            i = zoomSteps.findLastIndex(v => v < zoomLevel);
+        }
+
+        if (i < 0) {
+            // Still no match? Return default
+            return 1.0;
+        }
+
+        let newLevel;
+        if (zoomAction === ZoomAction.OUT && i > 0)
+            newLevel = zoomSteps[i - 1];
+        else if (zoomAction === ZoomAction.IN && i < zoomSteps.length - 1)
+            newLevel = zoomSteps[i + 1];
+        else
+            newLevel = zoomLevel; // ensure that we have a consistent value
+
+        return newLevel;
+    }
+
+    _setZoom(zoomAction) {
+        const zoomLevel = this._getChangedZoomLevel(zoomAction);
+        this._webView.set_zoom_level(zoomLevel);
     }
 });
 
@@ -300,9 +367,17 @@ class WebPortalHelper extends Adw.Application {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(HelperDBusInterface, this);
         this._queue = [];
 
-        let action = new Gio.SimpleAction({name: 'quit'});
+        const action = new Gio.SimpleAction({name: 'quit'});
         action.connect('activate', () => this.active_window.destroy());
         this.add_action(action);
+
+        this.set_accels_for_action('win.zoom-in',
+            ['<Primary>plus', '<Primary>KP_Add', '<Primary>equal', 'ZoomIn']);
+        this.set_accels_for_action('win.zoom-out',
+            ['<Primary>minus', '<Primary>KP_Subtract', 'ZoomOut']);
+        this.set_accels_for_action('win.zoom-normal',
+            ['<Primary>0', '<Primary>KP_0']);
+        this.set_accels_for_action('app.quit', ['<Primary>q', '<Primary>w']);
     }
 
     vfunc_dbus_register(connection, path) {
@@ -330,7 +405,7 @@ class WebPortalHelper extends Adw.Application {
 
     Close(connection) {
         for (let i = 0; i < this._queue.length; i++) {
-            let obj = this._queue[i];
+            const obj = this._queue[i];
 
             if (obj.connection === connection) {
                 if (obj.window)
@@ -345,7 +420,7 @@ class WebPortalHelper extends Adw.Application {
 
     Refresh(connection) {
         for (let i = 0; i < this._queue.length; i++) {
-            let obj = this._queue[i];
+            const obj = this._queue[i];
 
             if (obj.connection === connection) {
                 if (obj.window)
@@ -359,7 +434,7 @@ class WebPortalHelper extends Adw.Application {
         if (this._queue.length === 0)
             return;
 
-        let top = this._queue[0];
+        const top = this._queue[0];
         if (top.window != null)
             return;
 

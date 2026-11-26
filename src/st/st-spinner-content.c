@@ -78,8 +78,22 @@ st_spinner_content_init (StSpinnerContent *spinner)
 }
 
 static void
+st_spinner_content_finalize (GObject *gobject)
+{
+  StSpinnerContent *spinner = ST_SPINNER_CONTENT (gobject);
+
+  g_clear_object (&spinner->timeline);
+  g_clear_object (&spinner->actor);
+  g_clear_object (&spinner->texture);
+  g_clear_object (&spinner->buffer);
+
+  G_OBJECT_CLASS (st_spinner_content_parent_class)->finalize (gobject);
+}
+
+static void
 st_spinner_content_class_init (StSpinnerContentClass *klass)
 {
+  G_OBJECT_CLASS (klass)->finalize = st_spinner_content_finalize;
 }
 
 static void
@@ -355,7 +369,7 @@ st_spinner_content_redraw (StSpinnerContent *spinner)
       spinner->buffer = cogl_bitmap_new_with_size (ctx,
                                                    real_width,
                                                    real_height,
-                                                   COGL_PIXEL_FORMAT_CAIRO_ARGB32_COMPAT);
+                                                   COGL_PIXEL_FORMAT_ARGB32_NATIVE);
     }
 
   buffer = COGL_BUFFER (cogl_bitmap_get_buffer (spinner->buffer));

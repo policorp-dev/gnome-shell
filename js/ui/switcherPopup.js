@@ -68,6 +68,31 @@ export const SwitcherPopup = GObject.registerClass({
             coordinate: Clutter.BindCoordinate.ALL,
         }));
 
+        const longPressGesture = new Clutter.LongPressGesture({
+            long_press_duration_ms: 0,
+        });
+        longPressGesture.connect('may-recognize', () => {
+            const coords = longPressGesture.get_coords_abs();
+            const actorAtCoords =
+                global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, coords.x, coords.y);
+
+            return this._isActorOutside(actorAtCoords);
+        });
+        longPressGesture.connect('recognize', () => {
+            // User clicked outside
+            this.fadeAndDestroy();
+        });
+        this.add_action(longPressGesture);
+
+        const keyController = new Clutter.KeyController();
+        keyController.connect('key-press', this._onKeyPress.bind(this));
+        keyController.connect('modifier-change', this._onModifierChange.bind(this));
+        this.add_action(keyController);
+
+        const scrollController = new Clutter.ScrollController();
+        scrollController.connect('scroll', this._onScroll.bind(this));
+        this.add_action(scrollController);
+
         // Initially disable hover so we ignore the enter-event if
         // the switcher appears underneath the current pointer location
         this._disableHover();
@@ -76,17 +101,17 @@ export const SwitcherPopup = GObject.registerClass({
     vfunc_allocate(box) {
         this.set_allocation(box);
 
-        let childBox = new Clutter.ActorBox();
-        let primary = Main.layoutManager.primaryMonitor;
+        const childBox = new Clutter.ActorBox();
+        const primary = Main.layoutManager.primaryMonitor;
 
-        let leftPadding = this.get_theme_node().get_padding(St.Side.LEFT);
-        let rightPadding = this.get_theme_node().get_padding(St.Side.RIGHT);
-        let hPadding = leftPadding + rightPadding;
+        const leftPadding = this.get_theme_node().get_padding(St.Side.LEFT);
+        const rightPadding = this.get_theme_node().get_padding(St.Side.RIGHT);
+        const hPadding = leftPadding + rightPadding;
 
         // Allocate the switcherList
         // We select a size based on an icon size that does not overflow the screen
-        let [, childNaturalHeight] = this._switcherList.get_preferred_height(primary.width - hPadding);
-        let [, childNaturalWidth] = this._switcherList.get_preferred_width(childNaturalHeight);
+        const [, childNaturalHeight] = this._switcherList.get_preferred_height(primary.width - hPadding);
+        const [, childNaturalWidth] = this._switcherList.get_preferred_width(childNaturalHeight);
         childBox.x1 = Math.max(primary.x + leftPadding, primary.x + Math.floor((primary.width - childNaturalWidth) / 2));
         childBox.x2 = Math.min(primary.x + primary.width - rightPadding, childBox.x1 + childNaturalWidth);
         childBox.y1 = primary.y + Math.floor((primary.height - childNaturalHeight) / 2);
@@ -107,12 +132,7 @@ export const SwitcherPopup = GObject.registerClass({
         if (this._items.length === 0)
             return false;
 
-        let grab = Main.pushModal(this);
-        // We expect at least a keyboard grab here
-        if ((grab.get_seat_state() & Clutter.GrabState.KEYBOARD) === 0) {
-            Main.popModal(grab);
-            return false;
-        }
+        const grab = Main.pushModal(this);
         this._grab = grab;
         this._haveModal = true;
         this._modifierMask = primaryModifier(mask);
@@ -136,7 +156,7 @@ export const SwitcherPopup = GObject.registerClass({
         // details.) So we check now. (Have to do this after updating
         // selection.)
         if (this._modifierMask) {
-            let [x_, y_, mods] = global.get_pointer();
+            const [x_, y_, mods] = global.get_pointer();
             if (!(mods & this._modifierMask)) {
                 this._finish(global.get_current_time());
                 return true;
@@ -147,12 +167,11 @@ export const SwitcherPopup = GObject.registerClass({
 
         // We delay showing the popup so that fast Alt+Tab users aren't
         // disturbed by the popup briefly flashing.
-        this._initialDelayTimeoutId = GLib.timeout_add(
+        this._initialDelayTimeoutId = GLib.timeout_add_once(
             GLib.PRIORITY_DEFAULT,
             POPUP_DELAY_TIMEOUT,
             () => {
                 this._showImmediately();
-                return GLib.SOURCE_REMOVE;
             });
         GLib.Source.set_name_by_id(this._initialDelayTimeoutId, '[gnome-shell] Main.osdWindow.cancel');
         return true;
@@ -181,10 +200,11 @@ export const SwitcherPopup = GObject.registerClass({
         throw new GObject.NotImplementedError(`_keyPressHandler in ${this.constructor.name}`);
     }
 
-    vfunc_key_press_event(event) {
-        let keysym = event.get_key_symbol();
-        let action = global.display.get_keybinding_action(
-            event.get_key_code(), event.get_state());
+    _onKeyPress(controller) {
+        const [, keysym, keycode] = controller.get_key();
+        const [, pressed, latched, locked] = controller.get_state();
+        const action = global.display.get_keybinding_action(
+            keycode, pressed | latched | locked);
 
         this._disableHover();
 
@@ -204,29 +224,23 @@ export const SwitcherPopup = GObject.registerClass({
             keysym === Clutter.KEY_Return ||
             keysym === Clutter.KEY_KP_Enter ||
             keysym === Clutter.KEY_ISO_Enter)
-            this._finish(event.get_time());
+            this._finish(Clutter.get_current_event_time());
 
         return Clutter.EVENT_STOP;
     }
 
-    vfunc_key_release_event(event) {
+    _onModifierChange(controller) {
         if (this._modifierMask) {
-            let [x_, y_, mods] = global.get_pointer();
-            let state = mods & this._modifierMask;
+            const [, pressed, latched, locked] = controller.get_state();
+            const state = (pressed | latched | locked) & this._modifierMask;
 
             if (state === 0)
-                this._finish(event.get_time());
+                this._finish(Clutter.get_current_event_time());
         } else {
             this._resetNoModsTimeout();
         }
 
         return Clutter.EVENT_STOP;
-    }
-
-    vfunc_button_press_event() {
-        /* We clicked outside */
-        this.fadeAndDestroy();
-        return Clutter.EVENT_PROPAGATE;
     }
 
     _scrollHandler(direction) {
@@ -236,11 +250,12 @@ export const SwitcherPopup = GObject.registerClass({
             this._select(this._next());
     }
 
-    vfunc_scroll_event(event) {
+    _onScroll(_controller, _sprite, _source, _dx, dy) {
         this._disableHover();
 
-        this._scrollHandler(event.get_scroll_direction());
-        return Clutter.EVENT_PROPAGATE;
+        const direction =
+              dy > 0 ? Clutter.ScrollDirection.DOWN : Clutter.ScrollDirection.UP;
+        this._scrollHandler(direction);
     }
 
     _itemActivatedHandler(n) {
@@ -289,27 +304,29 @@ export const SwitcherPopup = GObject.registerClass({
         if (this._motionTimeoutId !== 0)
             GLib.source_remove(this._motionTimeoutId);
 
-        this._motionTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, DISABLE_HOVER_TIMEOUT, this._mouseTimedOut.bind(this));
+        this._motionTimeoutId = GLib.timeout_add_once(GLib.PRIORITY_DEFAULT, DISABLE_HOVER_TIMEOUT, this._mouseTimedOut.bind(this));
         GLib.Source.set_name_by_id(this._motionTimeoutId, '[gnome-shell] this._mouseTimedOut');
     }
 
     _mouseTimedOut() {
         this._motionTimeoutId = 0;
         this.mouseActive = true;
-        return GLib.SOURCE_REMOVE;
+    }
+
+    _isActorOutside(actor) {
+        return !this._switcherList?.contains(actor);
     }
 
     _resetNoModsTimeout() {
         if (this._noModsTimeoutId !== 0)
             GLib.source_remove(this._noModsTimeoutId);
 
-        this._noModsTimeoutId = GLib.timeout_add(
+        this._noModsTimeoutId = GLib.timeout_add_once(
             GLib.PRIORITY_DEFAULT,
             NO_MODS_TIMEOUT,
             () => {
                 this._finish(global.display.get_current_time_roundtrip());
                 this._noModsTimeoutId = 0;
-                return GLib.SOURCE_REMOVE;
             });
     }
 
@@ -397,7 +414,7 @@ export const SwitcherList = GObject.registerClass({
             y_expand: true,
         });
 
-        let layoutManager = this._list.get_layout_manager();
+        const layoutManager = this._list.get_layout_manager();
 
         this._list.spacing = 0;
         this._list.connect('style-changed', () => {
@@ -407,6 +424,7 @@ export const SwitcherList = GObject.registerClass({
         this._scrollView = new St.ScrollView({
             style_class: 'hfade',
             enable_mouse_scrolling: false,
+            enable_touch_scrolling: false,
             hscrollbar_policy: St.PolicyType.NEVER,
             vscrollbar_policy: St.PolicyType.NEVER,
             child: this._list,
@@ -443,13 +461,16 @@ export const SwitcherList = GObject.registerClass({
     }
 
     addItem(item, label) {
-        let bbox = new SwitcherButton(this._squareItems);
+        const bbox = new SwitcherButton(this._squareItems);
 
         bbox.set_child(item);
         this._list.add_child(bbox);
 
         bbox.connect('clicked', () => this._onItemClicked(bbox));
-        bbox.connect('motion-event', () => this._onItemMotion(bbox));
+
+        const motionController = new Clutter.MotionController();
+        motionController.connect('motion', () => this._onItemMotion(bbox));
+        bbox.add_action(motionController);
 
         bbox.label_actor = label;
 
@@ -459,7 +480,7 @@ export const SwitcherList = GObject.registerClass({
     }
 
     removeItem(index) {
-        let item = this._items.splice(index, 1);
+        const item = this._items.splice(index, 1);
         item[0].destroy();
         this.emit('item-removed', index);
     }
@@ -500,10 +521,10 @@ export const SwitcherList = GObject.registerClass({
         this._highlighted = index;
 
         const adjustment = this._scrollView.hadjustment;
-        let [value] = adjustment.get_values();
-        let [absItemX] = this._items[index].get_transformed_position();
-        let [result_, posX, posY_] = this.transform_stage_point(absItemX, 0);
-        let [containerWidth] = this.get_transformed_size();
+        const [value] = adjustment.get_values();
+        const [absItemX] = this._items[index].get_transformed_position();
+        const [result_, posX, posY_] = this.transform_stage_point(absItemX, 0);
+        const [containerWidth] = this.get_transformed_size();
         if (posX + this._items[index].get_width() > containerWidth)
             this._scrollToRight(index);
         else if (this._items[index].allocation.x1 - value < 0)
@@ -514,7 +535,7 @@ export const SwitcherList = GObject.registerClass({
         const adjustment = this._scrollView.hadjustment;
         let [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
 
-        let item = this._items[index];
+        const item = this._items[index];
 
         if (item.allocation.x1 < value)
             value = Math.max(0, item.allocation.x1);
@@ -537,7 +558,7 @@ export const SwitcherList = GObject.registerClass({
         const adjustment = this._scrollView.hadjustment;
         let [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
 
-        let item = this._items[index];
+        const item = this._items[index];
 
         if (item.allocation.x1 < value)
             value = Math.max(0, item.allocation.x1);
@@ -584,9 +605,9 @@ export const SwitcherList = GObject.registerClass({
     }
 
     vfunc_get_preferred_width(forHeight) {
-        let themeNode = this.get_theme_node();
-        let [maxChildMin] = this._maxChildWidth(forHeight);
-        let [minListWidth] = this._list.get_preferred_width(forHeight);
+        const themeNode = this.get_theme_node();
+        const [maxChildMin] = this._maxChildWidth(forHeight);
+        const [minListWidth] = this._list.get_preferred_width(forHeight);
 
         return themeNode.adjust_preferred_width(maxChildMin, minListWidth);
     }
@@ -596,35 +617,35 @@ export const SwitcherList = GObject.registerClass({
         let maxChildNat = 0;
 
         for (let i = 0; i < this._items.length; i++) {
-            let [childMin, childNat] = this._items[i].get_preferred_height(-1);
+            const [childMin, childNat] = this._items[i].get_preferred_height(-1);
             maxChildMin = Math.max(childMin, maxChildMin);
             maxChildNat = Math.max(childNat, maxChildNat);
         }
 
         if (this._squareItems) {
-            let [childMin] = this._maxChildWidth(-1);
+            const [childMin] = this._maxChildWidth(-1);
             maxChildMin = Math.max(childMin, maxChildMin);
             maxChildNat = maxChildMin;
         }
 
-        let themeNode = this.get_theme_node();
+        const themeNode = this.get_theme_node();
         return themeNode.adjust_preferred_height(maxChildMin, maxChildNat);
     }
 
     vfunc_allocate(box) {
         this.set_allocation(box);
 
-        let contentBox = this.get_theme_node().get_content_box(box);
-        let width = contentBox.x2 - contentBox.x1;
-        let height = contentBox.y2 - contentBox.y1;
+        const contentBox = this.get_theme_node().get_content_box(box);
+        const width = contentBox.x2 - contentBox.x1;
+        const height = contentBox.y2 - contentBox.y1;
 
-        let leftPadding = this.get_theme_node().get_padding(St.Side.LEFT);
-        let rightPadding = this.get_theme_node().get_padding(St.Side.RIGHT);
+        const leftPadding = this.get_theme_node().get_padding(St.Side.LEFT);
+        const rightPadding = this.get_theme_node().get_padding(St.Side.RIGHT);
 
-        let [minListWidth] = this._list.get_preferred_width(height);
+        const [minListWidth] = this._list.get_preferred_width(height);
 
-        let childBox = new Clutter.ActorBox();
-        let scrollable = minListWidth > width;
+        const childBox = new Clutter.ActorBox();
+        const scrollable = minListWidth > width;
 
         this._scrollView.allocate(contentBox);
 
@@ -653,12 +674,12 @@ export const SwitcherList = GObject.registerClass({
  * @param {St.Side} side
  */
 export function drawArrow(area, side) {
-    let themeNode = area.get_theme_node();
-    let borderColor = themeNode.get_border_color(side);
-    let bodyColor = themeNode.get_foreground_color();
+    const themeNode = area.get_theme_node();
+    const borderColor = themeNode.get_border_color(side);
+    const bodyColor = themeNode.get_foreground_color();
 
-    let [width, height] = area.get_surface_size();
-    let cr = area.get_context();
+    const [width, height] = area.get_surface_size();
+    const cr = area.get_context();
 
     cr.setLineWidth(1.0);
     cr.setSourceColor(borderColor);
@@ -695,4 +716,3 @@ export function drawArrow(area, side) {
     cr.fill();
     cr.$dispose();
 }
-

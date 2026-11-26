@@ -47,7 +47,9 @@ find_toplevel() {
 }
 
 # load defaults
-. $CONFIG_FILE
+if [[ -e "$CONFIG_FILE" ]]; then
+  . $CONFIG_FILE
+fi
 TOOLBOX=$DEFAULT_TOOLBOX
 
 TEMP=$(getopt \
@@ -102,7 +104,7 @@ done
 
 find_toplevel
 
-BUILD_DIR=build-$TOOLBOX
+BUILD_DIR=_build-$TOOLBOX
 
 toolbox run --container $TOOLBOX \
   meson test -C $BUILD_DIR ${MESON_ARGS[*]} "$@"

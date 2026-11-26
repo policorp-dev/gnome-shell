@@ -34,6 +34,7 @@
 
 #include "st-widget.h"
 
+#include "st-enum-types.h"
 #include "st-label.h"
 #include "st-private.h"
 #include "st-settings.h"
@@ -75,6 +76,10 @@ struct _StWidgetPrivate
   gulong texture_file_changed_id;
   guint update_child_styles_id;
 
+  int enter_count;
+
+  StKeynavFlags keynav_flags;
+
   ClutterActor *label_actor;
 
   StWidget *last_visible_child;
@@ -107,6 +112,7 @@ enum
   PROP_HOVER,
   PROP_CAN_FOCUS,
   PROP_LABEL_ACTOR,
+  PROP_KEYNAV_FLAGS,
 
   N_PROPS
 };
@@ -189,6 +195,10 @@ st_widget_set_property (GObject      *gobject,
       st_widget_set_label_actor (actor, g_value_get_object (value));
       break;
 
+    case PROP_KEYNAV_FLAGS:
+      st_widget_set_keynav_flags (actor, g_value_get_flags (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -233,6 +243,10 @@ st_widget_get_property (GObject    *gobject,
       g_value_set_object (value, priv->label_actor);
       break;
 
+    case PROP_KEYNAV_FLAGS:
+      g_value_set_flags (value, priv->keynav_flags);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -255,8 +269,7 @@ st_widget_remove_transition (StWidget *widget)
   if (priv->transition_animation)
     {
       g_object_run_dispose (G_OBJECT (priv->transition_animation));
-      g_object_unref (priv->transition_animation);
-      priv->transition_animation = NULL;
+      g_clear_object (&priv->transition_animation);
     }
 }
 
@@ -523,11 +536,7 @@ st_widget_style_changed_internal (StWidget         *widget,
   StThemeNode *old_theme_node = NULL;
 
   priv->is_style_dirty = TRUE;
-  if (priv->theme_node)
-    {
-      old_theme_node = priv->theme_node;
-      priv->theme_node = NULL;
-    }
+  old_theme_node = g_steal_pointer (&priv->theme_node);
 
   /* update the style only if we are mapped */
   if (clutter_actor_is_mapped (CLUTTER_ACTOR (widget)))
@@ -692,6 +701,8 @@ st_widget_enter (ClutterActor *actor,
 {
   StWidgetPrivate *priv = st_widget_get_instance_private (ST_WIDGET (actor));
 
+  priv->enter_count++;
+
   if (priv->track_hover)
     {
       ClutterStage *stage;
@@ -723,6 +734,8 @@ st_widget_leave (ClutterActor *actor,
                  ClutterEvent *event)
 {
   StWidgetPrivate *priv = st_widget_get_instance_private (ST_WIDGET (actor));
+
+  priv->enter_count--;
 
   if (priv->track_hover)
     {
@@ -989,6 +1002,18 @@ st_widget_class_init (StWidgetClass *klass)
                           CLUTTER_TYPE_ACTOR,
                           ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
+  /**
+   * StWidget:focus-flags:
+   *
+   * Flags applying as the root of a [class@FocusManager] group, modifying
+   * the behavior of focus keyboard navigation.
+   */
+  props[PROP_KEYNAV_FLAGS] =
+    g_param_spec_flags ("keynav-flags", NULL, NULL,
+                        ST_TYPE_KEYNAV_FLAGS,
+                        ST_KEYNAV_FLAG_NONE,
+                        ST_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+
   g_object_class_install_properties (gobject_class, N_PROPS, props);
 
   /**
@@ -1039,20 +1064,6 @@ find_class_name (const gchar *class_list,
     }
 
   return NULL;
-}
-
-static gboolean
-set_class_list (gchar       **class_list,
-                const gchar  *new_class_list)
-{
-  if (g_strcmp0 (*class_list, new_class_list) != 0)
-    {
-      g_free (*class_list);
-      *class_list = g_strdup (new_class_list);
-      return TRUE;
-    }
-  else
-    return FALSE;
 }
 
 static gboolean
@@ -1134,7 +1145,7 @@ st_widget_set_style_class_name (StWidget    *actor,
 
   priv = st_widget_get_instance_private (actor);
 
-  if (set_class_list (&priv->style_class, style_class_list))
+  if (g_set_str (&priv->style_class, style_class_list))
     {
       st_widget_style_changed (actor);
       g_object_notify_by_pspec (G_OBJECT (actor), props[PROP_STYLE_CLASS]);
@@ -1303,7 +1314,7 @@ st_widget_set_style_pseudo_class (StWidget    *actor,
 
   priv = st_widget_get_instance_private (actor);
 
-  if (set_class_list (&priv->pseudo_class, pseudo_class_list))
+  if (g_set_str (&priv->pseudo_class, pseudo_class_list))
     {
       st_widget_style_changed (actor);
       g_object_notify_by_pspec (G_OBJECT (actor), props[PROP_PSEUDO_CLASS]);
@@ -1385,11 +1396,8 @@ st_widget_set_style (StWidget  *actor,
 
   priv = st_widget_get_instance_private (actor);
 
-  if (g_strcmp0 (style, priv->inline_style))
+  if (g_set_str (&priv->inline_style, style))
     {
-      g_free (priv->inline_style);
-      priv->inline_style = g_strdup (style);
-
       st_widget_style_changed (actor);
 
       g_object_notify_by_pspec (G_OBJECT (actor), props[PROP_STYLE]);
@@ -1489,7 +1497,7 @@ st_widget_reactive_notify (StWidget   *widget,
   st_widget_update_insensitive (widget);
 
   if (priv->track_hover)
-    st_widget_sync_hover(widget);
+    st_widget_set_hover (widget, priv->enter_count > 0);
 }
 
 static ClutterActor *
@@ -1512,7 +1520,7 @@ find_nearest_visible_forward (ClutterActor *actor)
   return next;
 }
 
-static gboolean
+static void
 st_widget_update_child_styles (StWidget *widget)
 {
   StWidgetPrivate *priv = st_widget_get_instance_private (widget);
@@ -1540,7 +1548,6 @@ st_widget_update_child_styles (StWidget *widget)
     }
 
   priv->update_child_styles_id = 0;
-  return G_SOURCE_REMOVE;
 }
 
 static void
@@ -1551,7 +1558,7 @@ st_widget_queue_child_styles_update (StWidget *widget)
   if (priv->update_child_styles_id != 0)
     return;
 
-  priv->update_child_styles_id = g_idle_add ((GSourceFunc) st_widget_update_child_styles, widget);
+  priv->update_child_styles_id = g_idle_add_once ((GSourceOnceFunc) st_widget_update_child_styles, widget);
 }
 
 static void
@@ -1769,11 +1776,6 @@ st_widget_ensure_style (StWidget *widget)
  * automatically to reflect whether the pointer is in @widget (or one
  * of its children), and @widget's #StWidget:pseudo-class will have
  * the "hover" class added and removed from it accordingly.
- *
- * Note that currently it is not possible to correctly track the hover
- * state when another actor has a pointer grab. You can use
- * st_widget_sync_hover() to update the property manually in this
- * case.
  */
 void
 st_widget_set_track_hover (StWidget *widget,
@@ -1791,7 +1793,7 @@ st_widget_set_track_hover (StWidget *widget,
       g_object_notify_by_pspec (G_OBJECT (widget), props[PROP_TRACK_HOVER]);
 
       if (priv->track_hover)
-        st_widget_sync_hover (widget);
+        st_widget_set_hover (widget, priv->enter_count > 0);
       else
         st_widget_set_hover (widget, FALSE);
     }
@@ -1823,8 +1825,7 @@ st_widget_get_track_hover (StWidget *widget)
  * pseudo class accordingly.
  *
  * If you have set #StWidget:track-hover, you should not need to call
- * this directly. You can call st_widget_sync_hover() if the hover
- * state might be out of sync due to another actor's pointer grab.
+ * this directly.
  */
 void
 st_widget_set_hover (StWidget *widget,
@@ -1852,32 +1853,21 @@ st_widget_set_hover (StWidget *widget,
  * @widget: A #StWidget
  *
  * Sets @widget's hover state according to the current pointer
- * position. This can be used to ensure that it is correct after
- * (or during) a pointer grab.
+ * position.
+ *
+ * In the past, the hover state could get out of sync after
+ * (or during) a pointer grab. This is no longer the case,
+ * so there should be no need for this method anymore.
  */
 void
 st_widget_sync_hover (StWidget *widget)
 {
-  ClutterContext *context;
-  ClutterBackend *backend;
-  ClutterInputDevice *pointer;
-  ClutterActor *stage;
-  ClutterActor *pointer_actor;
-  ClutterSeat *seat;
+  StWidgetPrivate *priv;
 
-  stage = clutter_actor_get_stage (CLUTTER_ACTOR (widget));
-  if (!stage)
-    return;
+  g_return_if_fail (ST_IS_WIDGET (widget));
 
-  context  = clutter_actor_get_context (CLUTTER_ACTOR (widget));
-  backend = clutter_context_get_backend (context);
-  seat = clutter_backend_get_default_seat (backend);
-  pointer = clutter_seat_get_pointer (seat);
-  pointer_actor = clutter_stage_get_device_actor (CLUTTER_STAGE (stage), pointer, NULL);
-  if (pointer_actor && clutter_actor_get_reactive (CLUTTER_ACTOR (widget)))
-    st_widget_set_hover (widget, clutter_actor_contains (CLUTTER_ACTOR (widget), pointer_actor));
-  else
-    st_widget_set_hover (widget, FALSE);
+  priv = st_widget_get_instance_private (widget);
+  st_widget_set_hover (widget, priv->enter_count > 0);
 }
 
 /**
@@ -2350,7 +2340,7 @@ st_describe_actor (ClutterActor *actor)
 
   g_string_append_c (desc, ']');
 
-  return g_string_free (desc, FALSE);
+  return g_string_free_and_steal (desc);
 }
 
 /**
@@ -2391,8 +2381,7 @@ st_widget_set_label_actor (StWidget     *widget,
 
   if (priv->label_actor != label)
     {
-      if (priv->label_actor)
-        g_object_unref (priv->label_actor);
+      g_clear_object (&priv->label_actor);
 
       if (label != NULL)
         priv->label_actor = g_object_ref (label);
@@ -2598,4 +2587,44 @@ GList *
 st_widget_get_focus_chain (StWidget *widget)
 {
   return ST_WIDGET_GET_CLASS (widget)->get_focus_chain (widget);
+}
+
+/**
+ * st_widget_get_keynav_flags:
+ * @widget: An `StWidget`
+ *
+ * Gets the [flags@KeynavFlags] that this widget will use as the
+ * root of a [class@FocusManager] group.
+ *
+ * Returns: The keynav flags
+ **/
+StKeynavFlags
+st_widget_get_keynav_flags (StWidget *widget)
+{
+  StWidgetPrivate *priv = st_widget_get_instance_private (widget);
+
+  g_return_val_if_fail (ST_IS_WIDGET (widget), ST_KEYNAV_FLAG_NONE);
+
+  return priv->keynav_flags;
+}
+
+/**
+ * st_widget_set_keynav_flags:
+ * @widget: An `StWidget`
+ * @flags: The keynav flags
+ *
+ * Gets the [flags@KeynavFlags] that this widget will use as the
+ * root of a [class@FocusManager] group. These flags affect the behavior
+ * of keyboard navigation.
+ **/
+void
+st_widget_set_keynav_flags (StWidget      *widget,
+                            StKeynavFlags  flags)
+{
+  StWidgetPrivate *priv = st_widget_get_instance_private (widget);
+
+  g_return_if_fail (ST_IS_WIDGET (widget));
+
+  priv->keynav_flags = flags;
+  g_object_notify_by_pspec (G_OBJECT (widget), props[PROP_KEYNAV_FLAGS]);
 }

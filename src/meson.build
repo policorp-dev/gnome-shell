@@ -4,16 +4,16 @@ service_data = configuration_data()
 service_data.set('libexecdir', libexecdir)
 
 introspection_common = {
-  'install_dir_gir': pkgdatadir,
+  'install_gir': false,
+  'install_typelib': true,
   'install_dir_typelib': pkglibdir,
-  'install': true,
   'fatal_warnings': get_option('werror'),
 }
 
 subdir('calendar-server')
 subdir('hotplug-sniffer')
 subdir('st')
-if have_x11_client
+if have_xwayland
   subdir('tray')
 endif
 
@@ -77,7 +77,7 @@ gnome_shell_deps = [
   pango_dep,
 ]
 
-if have_x11_client
+if have_xwayland
   gnome_shell_deps += x11_dep
 endif
 
@@ -113,7 +113,7 @@ libshell_public_headers = [
   'shell-app-usage.h',
   'shell-blur-effect.h',
   'shell-camera-monitor.h',
-  'shell-glsl-effect.h',
+  'shell-edge-drag-gesture.h',
   'shell-global.h',
   'shell-invert-lightness-effect.h',
   'shell-action-modes.h',
@@ -131,7 +131,7 @@ libshell_public_headers = [
   'shell-workspace-background.h'
 ]
 
-if have_x11_client
+if have_xwayland
   libshell_public_headers += [
     'shell-tray-icon.h',
     'shell-tray-manager.h',
@@ -147,11 +147,10 @@ libshell_private_headers = [
   'shell-app-cache-private.h',
   'shell-app-system-private.h',
   'shell-global-private.h',
-  'shell-window-tracker-private.h',
   'shell-wm-private.h'
 ]
 
-if have_x11_client
+if have_xwayland
   libshell_private_headers += [
     'shell-tray-icon-private.h',
   ]
@@ -164,8 +163,8 @@ libshell_sources = [
   'shell-app-usage.c',
   'shell-blur-effect.c',
   'shell-camera-monitor.c',
+  'shell-edge-drag-gesture.c',
   'shell-global.c',
-  'shell-glsl-effect.c',
   'shell-invert-lightness-effect.c',
   'shell-keyring-prompt.c',
   'shell-keyring-prompt.h',
@@ -187,7 +186,7 @@ libshell_sources = [
   'shell-workspace-background.c'
 ]
 
-if have_x11_client
+if have_xwayland
   libshell_sources += [
     'shell-tray-icon.c',
     'shell-tray-manager.c',
@@ -231,13 +230,13 @@ dbus_generated += gnome.gdbus_codegen('switcheroo-control',
 libshell_no_gir_sources += dbus_generated
 
 libshell_link_with = []
-if have_x11_client
+if have_xwayland
   libshell_link_with += [libtray]
 endif
 
 libshell = library('shell-' + mutter_api_version,
   sources: libshell_gir_sources + libshell_no_gir_sources,
-  dependencies: gnome_shell_deps + [libshell_menu_dep, libst_dep, mutter_dep, gnome_desktop_dep, m_dep],
+  dependencies: gnome_shell_deps + [libshell_menu_dep, libst_dep, mutter_dep, gnome_desktop_dep, m_dep, cairo_dep],
   include_directories: [conf_inc, include_directories('tray')],
   c_args: gnome_shell_cflags,
   link_with: libshell_link_with,
@@ -280,7 +279,7 @@ libshell_gir = gnome.generate_gir(libshell,
   kwargs: introspection_common,
 )
 
-executable('gnome-shell', 'main.c',
+gnome_shell_binary = executable('gnome-shell', 'main.c',
   c_args: gnome_shell_cflags + typelib_cflags,
   dependencies: gnome_shell_deps + [libshell_dep, libst_dep, mutter_dep],
   include_directories: [conf_inc],
@@ -300,7 +299,7 @@ if have_portal_helper
   )
 endif
 
-executable('gnome-shell-perf-helper', 'shell-perf-helper.c', js_resources,
+gnome_shell_perf_helper = executable('gnome-shell-perf-helper', 'shell-perf-helper.c', js_resources,
   dependencies: [gtk_dep, gio_dep, m_dep],
   include_directories: [conf_inc],
   install_dir: libexecdir,

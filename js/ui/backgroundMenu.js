@@ -1,7 +1,6 @@
 import Clutter from 'gi://Clutter';
 import St from 'gi://St';
 
-import * as BoxPointer from './boxpointer.js';
 import * as PopupMenu from './popupMenu.js';
 
 import * as Main from './main.js';
@@ -34,30 +33,30 @@ export function addBackgroundMenu(actor, layoutManager) {
 
     function openMenu(x, y) {
         Main.layoutManager.setDummyCursorGeometry(x, y, 0, 0);
-        actor._backgroundMenu.open(BoxPointer.PopupAnimation.FULL);
+        actor._backgroundMenu.open();
     }
 
-    let clickAction = new Clutter.ClickAction();
-    clickAction.connect('long-press', (action, theActor, state) => {
-        if (state === Clutter.LongPressState.QUERY) {
-            return (action.get_button() === 0 ||
-                     action.get_button() === 1) &&
-                    !actor._backgroundMenu.isOpen;
-        }
-        if (state === Clutter.LongPressState.ACTIVATE) {
-            let [x, y] = action.get_coords();
-            openMenu(x, y);
-            actor._backgroundManager.ignoreRelease();
-        }
-        return true;
+    const longPressGesture = new Clutter.LongPressGesture({
+        required_button: Clutter.BUTTON_PRIMARY,
     });
-    clickAction.connect('clicked', action => {
-        if (action.get_button() === 3) {
-            let [x, y] = action.get_coords();
-            openMenu(x, y);
-        }
+    longPressGesture.connect('recognize', () => {
+        if (actor._backgroundMenu.isOpen)
+            return;
+
+        const {x, y} = longPressGesture.get_coords_abs();
+        openMenu(x, y);
     });
-    actor.add_action(clickAction);
+    actor.add_action(longPressGesture);
+
+    const clickGesture = new Clutter.ClickGesture({
+        required_button: Clutter.BUTTON_SECONDARY,
+        recognize_on_press: true,
+    });
+    clickGesture.connect('recognize', () => {
+        const {x, y} = clickGesture.get_coords_abs();
+        openMenu(x, y);
+    });
+    actor.add_action(clickGesture);
 
     actor.connect('destroy', () => {
         actor._backgroundMenu.destroy();

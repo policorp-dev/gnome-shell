@@ -16,7 +16,7 @@
 #include <locale.h>
 
 #include <gio/gio.h>
-#include <girepository.h>
+#include <girepository/girepository.h>
 #include <meta/meta-backend.h>
 #include <meta/meta-context.h>
 #include <meta/display.h>
@@ -27,7 +27,7 @@
 #include <meta/meta-workspace-manager.h>
 #include <mtk/mtk.h>
 
-#ifdef HAVE_X11
+#ifdef HAVE_XWAYLAND
 #include <meta/meta-x11-display.h>
 #endif
 
@@ -89,6 +89,9 @@ struct _ShellGlobal {
   gboolean frame_timestamps;
   gboolean frame_finish_timestamp;
 
+  guint before_paint_id;
+  guint after_swap_id;
+
   GDBusProxy *switcheroo_control;
   GCancellable *switcheroo_cancellable;
 
@@ -144,8 +147,8 @@ got_switcheroo_control_gpus_property_cb (GObject      *source_object,
                                          gpointer      user_data)
 {
   ShellGlobal *global;
-  GError *error = NULL;
-  GVariant *gpus;
+  g_autoptr (GError) error = NULL;
+  g_autoptr (GVariant) gpus = NULL;
 
   gpus = g_dbus_connection_call_finish (G_DBUS_CONNECTION (source_object),
                                         res, &error);
@@ -153,7 +156,6 @@ got_switcheroo_control_gpus_property_cb (GObject      *source_object,
     {
       if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
         g_debug ("Could not get GPUs property from switcheroo-control: %s", error->message);
-      g_clear_error (&error);
       return;
     }
 
@@ -168,16 +170,15 @@ switcheroo_control_ready_cb (GObject      *source_object,
                              gpointer      user_data)
 {
   ShellGlobal *global;
-  GError *error = NULL;
+  g_autoptr (GError) error = NULL;
   ShellNetHadessSwitcherooControl *control;
-  g_auto(GStrv) cached_props = NULL;
+  g_auto (GStrv) cached_props = NULL;
 
   control = shell_net_hadess_switcheroo_control_proxy_new_for_bus_finish (res, &error);
   if (!control)
     {
       if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
         g_debug ("Could not get switcheroo-control GDBusProxy: %s", error->message);
-      g_clear_error (&error);
       return;
     }
 
@@ -356,8 +357,9 @@ shell_global_init (ShellGlobal *global)
 {
   const char *datadir = g_getenv ("GNOME_SHELL_DATADIR");
   const char *shell_js = g_getenv("GNOME_SHELL_JS");
-  char *imagedir, **search_path;
-  char *path;
+  g_autofree char *imagedir = NULL;
+  g_auto (GStrv) search_path = NULL;
+  g_autofree char *path = NULL;
   const char *byteorder_string;
 
   if (!datadir)
@@ -370,12 +372,9 @@ shell_global_init (ShellGlobal *global)
    */
   imagedir = g_build_filename (datadir, "images/", NULL);
   if (g_file_test (imagedir, G_FILE_TEST_IS_DIR))
-    global->imagedir = imagedir;
+    global->imagedir = g_steal_pointer (&imagedir);
   else
-    {
-      g_free (imagedir);
-      global->imagedir = g_strdup_printf ("%s/", datadir);
-    }
+    global->imagedir = g_strdup_printf ("%s/", datadir);
 
   /* Ensure config dir exists for later use */
   global->userdatadir = g_build_filename (g_get_user_data_dir (), "gnome-shell", NULL);
@@ -395,7 +394,6 @@ shell_global_init (ShellGlobal *global)
                           g_getenv ("DISPLAY"));
   (void) g_mkdir_with_parents (path, 0700);
   global->runtime_state_path = g_file_new_for_path (path);
-  g_free (path);
 
   global->settings = g_settings_new ("org.gnome.shell");
 
@@ -439,8 +437,6 @@ shell_global_init (ShellGlobal *global)
                                      "search-path", search_path,
                                      NULL);
 
-  g_strfreev (search_path);
-
   global->save_ops = g_hash_table_new_full (g_file_hash,
                                             (GEqualFunc) g_file_equal,
                                             g_object_unref, g_object_unref);
@@ -467,6 +463,12 @@ shell_global_finalize (GObject *object)
   g_clear_object (&global->app_system);
   g_clear_object (&global->app_cache);
   g_clear_object (&global->app_usage);
+  g_clear_object (&global->wm);
+
+  g_clear_handle_id (&global->before_paint_id,
+                     clutter_threads_remove_repaint_func);
+  g_clear_handle_id (&global->after_swap_id,
+                     clutter_threads_remove_repaint_func);
 
   the_object = NULL;
 
@@ -686,50 +688,6 @@ _shell_global_destroy_gjs_context (ShellGlobal *self)
 }
 
 /**
- * shell_global_set_stage_input_region:
- * @global: the #ShellGlobal
- * @rectangles: (element-type Mtk.Rectangle): a list of #MtkRectangle
- * describing the input region.
- *
- * Sets the area of the stage that is responsive to mouse clicks when
- * we don't have a modal or grab.
- */
-void
-shell_global_set_stage_input_region (ShellGlobal *global,
-                                     GSList      *rectangles)
-{
-#ifdef HAVE_X11
-  MtkRectangle *rect;
-  XRectangle *rects;
-  int nrects, i;
-  GSList *r;
-  MetaDisplay *display;
-  MetaX11Display *x11_display;
-
-  g_return_if_fail (SHELL_IS_GLOBAL (global));
-
-  if (meta_is_wayland_compositor ())
-    return;
-
-  display = global->meta_display;
-  x11_display = meta_display_get_x11_display (display);
-  nrects = g_slist_length (rectangles);
-  rects = g_new (XRectangle, nrects);
-  for (r = rectangles, i = 0; r; r = r->next, i++)
-    {
-      rect = (MtkRectangle *)r->data;
-      rects[i].x = rect->x;
-      rects[i].y = rect->y;
-      rects[i].width = rect->width;
-      rects[i].height = rect->height;
-    }
-
-  meta_x11_display_set_stage_input_region (x11_display, rects, nrects);
-  g_free (rects);
-#endif
-}
-
-/**
  * shell_global_get_backend:
  *
  * Return value: (transfer none): The #MetaBackend
@@ -933,8 +891,8 @@ global_stage_after_paint (ClutterStage     *stage,
 {
   /* At this point, we've finished all layout and painting, but haven't
    * actually flushed or swapped */
-
-  ClutterBackend *backend = clutter_get_default_backend ();
+  ClutterContext *context = clutter_actor_get_context (CLUTTER_ACTOR (stage));
+  ClutterBackend *backend = clutter_context_get_backend (context);
   CoglContext *cogl_context = clutter_backend_get_cogl_context (backend);
   CoglDisplay *cogl_display = cogl_context_get_display (cogl_context);
   CoglRenderer *cogl_renderer = cogl_display_get_renderer (cogl_display);
@@ -999,18 +957,7 @@ ui_scaling_factor_changed (MetaSettings *settings,
   update_scaling_factor (global, settings);
 }
 
-static void
-entry_cursor_func (StEntry  *entry,
-                   gboolean  use_ibeam,
-                   gpointer  user_data)
-{
-  ShellGlobal *global = user_data;
-
-  meta_display_set_cursor (global->meta_display,
-                           use_ibeam ? META_CURSOR_TEXT : META_CURSOR_DEFAULT);
-}
-
-#ifdef HAVE_X11
+#ifdef HAVE_XWAYLAND
 static void
 on_x11_display_closed (MetaDisplay *display,
                        ShellGlobal *global)
@@ -1027,7 +974,7 @@ _shell_global_set_plugin (ShellGlobal *global,
   MetaDisplay *display;
   MetaBackend *backend;
   MetaSettings *settings;
-#ifdef HAVE_X11
+#ifdef HAVE_XWAYLAND
   MetaX11Display *x11_display;
 #endif
 
@@ -1048,7 +995,6 @@ _shell_global_set_plugin (ShellGlobal *global,
 
   global->stage = CLUTTER_STAGE (meta_backend_get_stage (global->backend));
 
-  st_entry_set_cursor_func (entry_cursor_func, global);
   st_clipboard_set_selection (meta_display_get_selection (display));
 
   g_signal_connect (global->stage, "notify::width",
@@ -1056,16 +1002,18 @@ _shell_global_set_plugin (ShellGlobal *global,
   g_signal_connect (global->stage, "notify::height",
                     G_CALLBACK (global_stage_notify_height), global);
 
-  clutter_threads_add_repaint_func (CLUTTER_REPAINT_FLAGS_PRE_PAINT,
-                                    global_stage_before_paint,
-                                    global, NULL);
+  global->before_paint_id =
+    clutter_threads_add_repaint_func (CLUTTER_REPAINT_FLAGS_PRE_PAINT,
+                                      global_stage_before_paint,
+                                      global, NULL);
 
   g_signal_connect (global->stage, "after-paint",
                     G_CALLBACK (global_stage_after_paint), global);
 
-  clutter_threads_add_repaint_func (CLUTTER_REPAINT_FLAGS_POST_PAINT,
-                                    global_stage_after_swap,
-                                    global, NULL);
+  global->after_swap_id =
+    clutter_threads_add_repaint_func (CLUTTER_REPAINT_FLAGS_POST_PAINT,
+                                      global_stage_after_swap,
+                                      global, NULL);
 
   shell_perf_log_define_event (shell_perf_log_get_default(),
                                "clutter.stagePaintStart",
@@ -1080,7 +1028,7 @@ _shell_global_set_plugin (ShellGlobal *global,
                                "End of frame, possibly including swap time",
                                "");
 
-#ifdef HAVE_X11
+#ifdef HAVE_XWAYLAND
   x11_display = meta_display_get_x11_display (display);
   if (x11_display && meta_x11_display_get_xdisplay (x11_display))
     g_signal_connect_object (global->meta_display, "x11-display-closing",
@@ -1110,191 +1058,6 @@ _shell_global_get_gjs_context (ShellGlobal *global)
  * http://bugzilla.gnome.org/show_bug.cgi?id=469231
  * http://bugzilla.gnome.org/show_bug.cgi?id=357585
  */
-
-static int
-set_cloexec (void *data, gint fd)
-{
-  if (fd >= GPOINTER_TO_INT (data))
-    fcntl (fd, F_SETFD, FD_CLOEXEC);
-
-  return 0;
-}
-
-#ifndef HAVE_FDWALK
-static int
-fdwalk (int (*cb)(void *data, int fd), void *data)
-{
-  gint open_max;
-  gint fd;
-  gint res = 0;
-
-#ifdef HAVE_SYS_RESOURCE_H
-  struct rlimit rl;
-#endif
-
-#ifdef __linux__
-  DIR *d;
-
-  if ((d = opendir("/proc/self/fd"))) {
-      struct dirent *de;
-
-      while ((de = readdir(d))) {
-          glong l;
-          gchar *e = NULL;
-
-          if (de->d_name[0] == '.')
-              continue;
-
-          errno = 0;
-          l = strtol(de->d_name, &e, 10);
-          if (errno != 0 || !e || *e)
-              continue;
-
-          fd = (gint) l;
-
-          if ((glong) fd != l)
-              continue;
-
-          if (fd == dirfd(d))
-              continue;
-
-          if ((res = cb (data, fd)) != 0)
-              break;
-        }
-
-      closedir(d);
-      return res;
-  }
-
-  /* If /proc is not mounted or not accessible we fall back to the old
-   * rlimit trick */
-
-#endif
-
-#ifdef HAVE_SYS_RESOURCE_H
-  if (getrlimit(RLIMIT_NOFILE, &rl) == 0 && rl.rlim_max != RLIM_INFINITY)
-      open_max = rl.rlim_max;
-  else
-#endif
-      open_max = sysconf (_SC_OPEN_MAX);
-
-  for (fd = 0; fd < open_max; fd++)
-      if ((res = cb (data, fd)) != 0)
-          break;
-
-  return res;
-}
-#endif
-
-static void
-pre_exec_close_fds(void)
-{
-  fdwalk (set_cloexec, GINT_TO_POINTER(3));
-}
-
-/**
- * shell_global_reexec_self:
- * @global: A #ShellGlobal
- *
- * Restart the current process.  Only intended for development purposes.
- */
-void
-shell_global_reexec_self (ShellGlobal *global)
-{
-  GPtrArray *arr;
-  gsize len;
-  MetaContext *meta_context;
-
-#if defined __linux__ || defined __sun
-  char *buf;
-  char *buf_p;
-  char *buf_end;
-  g_autoptr (GError) error = NULL;
-
-  if (!g_file_get_contents ("/proc/self/cmdline", &buf, &len, &error))
-    {
-      g_warning ("failed to get /proc/self/cmdline: %s", error->message);
-      return;
-    }
-
-  buf_end = buf+len;
-  arr = g_ptr_array_new ();
-  /* The cmdline file is NUL-separated */
-  for (buf_p = buf; buf_p < buf_end; buf_p = buf_p + strlen (buf_p) + 1)
-    g_ptr_array_add (arr, buf_p);
-
-  g_ptr_array_add (arr, NULL);
-#elif defined __OpenBSD__
-  gchar **args, **args_p;
-  gint mib[] = { CTL_KERN, KERN_PROC_ARGS, getpid(), KERN_PROC_ARGV };
-
-  if (sysctl (mib, G_N_ELEMENTS (mib), NULL, &len, NULL, 0) == -1)
-    return;
-
-  args = g_malloc0 (len);
-
-  if (sysctl (mib, G_N_ELEMENTS (mib), args, &len, NULL, 0) == -1) {
-    g_warning ("failed to get command line args: %d", errno);
-    g_free (args);
-    return;
-  }
-
-  arr = g_ptr_array_new ();
-  for (args_p = args; *args_p != NULL; args_p++) {
-    g_ptr_array_add (arr, *args_p);
-  }
-
-  g_ptr_array_add (arr, NULL);
-#elif defined __FreeBSD__
-  char *buf;
-  char *buf_p;
-  char *buf_end;
-  gint mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_ARGS, getpid() };
-
-  if (sysctl (mib, G_N_ELEMENTS (mib), NULL, &len, NULL, 0) == -1)
-    return;
-
-  buf = g_malloc0 (len);
-
-  if (sysctl (mib, G_N_ELEMENTS (mib), buf, &len, NULL, 0) == -1) {
-    g_warning ("failed to get command line args: %d", errno);
-    g_free (buf);
-    return;
-  }
-
-  buf_end = buf+len;
-  arr = g_ptr_array_new ();
-  /* The value returned by sysctl is NUL-separated */
-  for (buf_p = buf; buf_p < buf_end; buf_p = buf_p + strlen (buf_p) + 1)
-    g_ptr_array_add (arr, buf_p);
-
-  g_ptr_array_add (arr, NULL);
-#else
-  return;
-#endif
-
-  /* Close all file descriptors other than stdin/stdout/stderr, otherwise
-   * they will leak and stay open after the exec. In particular, this is
-   * important for file descriptors that represent mapped graphics buffer
-   * objects.
-   */
-  pre_exec_close_fds ();
-
-  meta_context = shell_global_get_context (global);
-  meta_context_restore_rlimit_nofile (meta_context, NULL);
-
-  meta_display_close (shell_global_get_display (global),
-                      shell_global_get_current_time (global));
-
-  execvp (arr->pdata[0], (char**)arr->pdata);
-  g_warning ("failed to reexec: %s", g_strerror (errno));
-  g_ptr_array_free (arr, TRUE);
-#if defined __linux__ || defined __FreeBSD__
-  g_free (buf);
-#elif defined __OpenBSD__
-  g_free (args);
-#endif
-}
 
 /**
  * shell_global_notify_error:
@@ -1491,25 +1254,24 @@ static gboolean
 run_leisure_functions (gpointer data)
 {
   ShellGlobal *global = data;
-  GSList *closures;
+  g_autoptr (GSList) closures = NULL;
   GSList *iter;
 
   global->leisure_function_id = 0;
 
   /* We started more work since we scheduled the idle */
   if (global->work_count > 0)
-    return FALSE;
+    return G_SOURCE_REMOVE;
 
   /* No leisure closures, so we are done */
   if (global->leisure_closures == NULL)
-    return FALSE;
+    return G_SOURCE_REMOVE;
 
-  closures = global->leisure_closures;
-  global->leisure_closures = NULL;
+  closures = g_steal_pointer (&global->leisure_closures);
 
   for (iter = closures; iter; iter = iter->next)
     {
-      LeisureClosure *closure = closures->data;
+      LeisureClosure *closure = iter->data;
       closure->func (closure->user_data);
 
       if (closure->notify)
@@ -1518,9 +1280,7 @@ run_leisure_functions (gpointer data)
       g_free (closure);
     }
 
-  g_slist_free (closures);
-
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static void
@@ -1670,7 +1430,7 @@ delete_variant_cb (GObject      *object,
                    gpointer      user_data)
 {
   ShellGlobal *global = user_data;
-  GError *error = NULL;
+  g_autoptr (GError) error = NULL;
 
   if (!g_file_delete_finish (G_FILE (object), result, &error))
     {
@@ -1680,8 +1440,6 @@ delete_variant_cb (GObject      *object,
           g_warning ("Could not delete runtime/persistent state file: %s\n",
                      error->message);
         }
-
-      g_error_free (error);
     }
 
   g_hash_table_remove (global->save_ops, object);
@@ -1742,7 +1500,7 @@ replace_variant_cb (GObject      *object,
                     gpointer      user_data)
 {
   ShellGlobal *global = user_data;
-  GError *error = NULL;
+  g_autoptr (GError) error = NULL;
 
   if (!replace_contents_finish (G_FILE (object), result, &error))
     {
@@ -1751,8 +1509,6 @@ replace_variant_cb (GObject      *object,
           g_warning ("Could not replace runtime/persistent state file: %s\n",
                      error->message);
         }
-
-      g_error_free (error);
     }
 
   g_hash_table_remove (global->save_ops, object);
@@ -1764,9 +1520,10 @@ save_variant (ShellGlobal *global,
               const char  *property_name,
               GVariant    *variant)
 {
-  GFile *path = g_file_get_child (dir, property_name);
+  g_autoptr (GFile) path = NULL;
   GCancellable *cancellable;
 
+  path = g_file_get_child (dir, property_name);
   cancellable = g_hash_table_lookup (global->save_ops, path);
   g_cancellable_cancel (cancellable);
 
@@ -1794,8 +1551,6 @@ save_variant (ShellGlobal *global,
        */
       replace_contents_async (path, bytes, cancellable, replace_variant_cb, global);
     }
-
-  g_object_unref (path);
 }
 
 static GVariant *
@@ -1804,11 +1559,12 @@ load_variant (GFile      *dir,
               const char *property_name)
 {
   GVariant *res = NULL;
-  GMappedFile *mfile;
-  GFile *path = g_file_get_child (dir, property_name);
-  char *pathstr;
-  GError *local_error = NULL;
+  g_autoptr (GMappedFile) mfile = NULL;
+  g_autoptr (GFile) path = NULL;
+  g_autofree char *pathstr = NULL;
+  g_autoptr (GError) local_error = NULL;
 
+  path = g_file_get_child (dir, property_name);
   pathstr = g_file_get_path (path);
   mfile = g_mapped_file_new (pathstr, FALSE, &local_error);
   if (!mfile)
@@ -1817,18 +1573,12 @@ load_variant (GFile      *dir,
         {
           g_warning ("Failed to open runtime state: %s", local_error->message);
         }
-      g_clear_error (&local_error);
     }
   else
     {
-      GBytes *bytes = g_mapped_file_get_bytes (mfile);
+      g_autoptr (GBytes) bytes = g_mapped_file_get_bytes (mfile);
       res = g_variant_new_from_bytes (G_VARIANT_TYPE (property_type), bytes, FALSE);
-      g_bytes_unref (bytes);
-      g_mapped_file_unref (mfile);
     }
-
-  g_object_unref (path);
-  g_free (pathstr);
 
   return res;
 }

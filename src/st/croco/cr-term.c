@@ -103,8 +103,7 @@ cr_term_new (void)
  *NULL if parsing failed.
  */
 CRTerm *
-cr_term_parse_expression_from_buf (const guchar * a_buf,
-                                   enum CREncoding a_encoding)
+cr_term_parse_expression_from_buf (const guchar * a_buf)
 {
         CRParser *parser = NULL;
         CRTerm *result = NULL;
@@ -113,7 +112,7 @@ cr_term_parse_expression_from_buf (const guchar * a_buf,
         g_return_val_if_fail (a_buf, NULL);
 
         parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf),
-                                         a_encoding, FALSE);
+                                         FALSE);
         g_return_val_if_fail (parser, NULL);
 
         status = cr_parser_try_to_skip_spaces_and_comments (parser);
@@ -462,7 +461,7 @@ cr_term_to_string (CRTerm const * a_this)
         }
 
         if (str_buf) {
-                result = (guchar *) g_string_free (str_buf, FALSE);
+                result = (guchar *) g_string_free_and_steal (str_buf);
                 str_buf = NULL;
         }
 
@@ -656,7 +655,7 @@ cr_term_one_to_string (CRTerm const * a_this)
         }
 
         if (str_buf) {
-                result = (guchar *) g_string_free (str_buf, FALSE);
+                result = (guchar *) g_string_free_and_steal (str_buf);
                 str_buf = NULL;
         }
 
@@ -779,8 +778,6 @@ cr_term_destroy (CRTerm * a_this)
                 a_this->next = NULL;
         }
 
-        if (a_this) {
-                g_free (a_this);
-        }
+        g_free (a_this);
 
 }

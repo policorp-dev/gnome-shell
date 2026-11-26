@@ -1,5 +1,5 @@
 project('gnome-shell', 'c',
-  version: '48.7',
+  version: '51.0',
   meson_version: '>= 1.3.0',
   license: 'GPL-2.0-or-later',
 )
@@ -10,7 +10,7 @@ split_version = meson.project_version().split('.')
 # the Cogl and Clutter libraries also use this API version.
 # The API version is increased each development cycle,
 # starting with 0 in 3.23.x
-mutter_api_version = '16'
+mutter_api_version = '51'
 
 clutter_pc = 'mutter-clutter-' + mutter_api_version
 cogl_pc = 'mutter-cogl-' + mutter_api_version
@@ -21,19 +21,21 @@ libmutter_test_pc = 'libmutter-test-' + mutter_api_version
 ecal_req = '>= 3.33.1'
 eds_req = '>= 3.33.1'
 gcr_req = '>= 3.90.0'
-gio_req = '>= 2.79.2'
-gi_req = '>= 1.49.1'
-gjs_req = '>= 1.81.2'
+gio_req = '>= 2.86.0'
+gjs_req = '>= 1.87.1'
 gtk_req = '>= 4.0'
-mutter_req = '>= 48.0'
+mutter_req = '>= 51.0'
 polkit_req = '>= 0.100'
-schemas_req = '>= 48.beta'
+schemas_req = '>= 50.alpha'
 systemd_req = '>= 246'
 gnome_desktop_req = '>= 40'
 pipewire_req = '>= 0.3.49'
 pango_req = '>= 1.46.0'
+json_glib_req = '>= 1.6'
+rsvg_req = '>= 2.46'
+glycin_req = '>= 2.0'
 
-nm_req = '>= 1.10.4'
+nm_req = '>= 1.24'
 secret_req = '>= 0.18'
 
 fs = import('fs')
@@ -69,11 +71,12 @@ else
 endif
 
 atk_bridge_dep = dependency('atk-bridge-2.0')
+cairo_dep = dependency('cairo')
 ecal_dep = dependency('libecal-2.0', version: ecal_req)
 eds_dep = dependency('libedataserver-1.2', version: eds_req)
 gcr_dep = dependency('gcr-4', version: gcr_req)
 gdk_pixbuf_dep = dependency('gdk-pixbuf-2.0')
-gi_dep = dependency('gobject-introspection-1.0', version: gi_req)
+gi_dep = dependency('girepository-2.0', version: gio_req)
 gio_dep = dependency('gio-2.0', version: gio_req)
 gio_unix_dep = dependency('gio-unix-2.0', version: gio_req)
 gjs_dep = dependency('gjs-1.0', version: gjs_req)
@@ -87,11 +90,13 @@ polkit_dep = dependency('polkit-agent-1', version: polkit_req)
 schemas_dep = dependency('gsettings-desktop-schemas', version: schemas_req)
 gnome_desktop_dep = dependency('gnome-desktop-4', version: gnome_desktop_req)
 pango_dep = dependency('pango', version: pango_req)
+json_glib_dep = dependency('json-glib-1.0', version: json_glib_req)
+rsvg_dep = dependency('librsvg-2.0', version: rsvg_req)
+glycin_dep = dependency('glycin-2', version: glycin_req)
 
 have_fonts = mutter_dep.get_variable('have_fonts') == 'true'
-have_x11 = mutter_dep.get_variable('have_x11') == 'true'
-have_x11_client = mutter_dep.get_variable('have_x11_client') == 'true'
-if have_x11_client or have_x11
+have_xwayland = mutter_dep.get_variable('have_xwayland') == 'true'
+if have_xwayland
   x11_dep = dependency('x11')
   xext_dep = dependency('xext')
   xfixes_dep = dependency('xfixes')
@@ -125,14 +130,26 @@ else
   have_pipewire = false
 endif
 
+libsystemd_dep = dependency('libsystemd', version: systemd_req, required: false)
+
+if not libsystemd_dep.found()
+  libsystemd_dep = dependency('libelogind', required: false)
+endif
+
+if not libsystemd_dep.found()
+  error('No libsystemd provider found: tried libsystemd and libelogind')
+endif
+
 if get_option('systemd')
-  libsystemd_dep = dependency('libsystemd', version: systemd_req)
+  if libsystemd_dep.name() == 'libelogind'
+    error('systemd option conflicts with elogind libsystemd provider')
+  endif
+
   systemd_dep = dependency('systemd', version: systemd_req)
   systemduserunitdir = systemd_dep.get_variable('systemduserunitdir',
     pkgconfig_define: ['prefix', prefix])
   have_systemd = true
 else
-  libsystemd_dep = []
   have_systemd = false
 endif
 
@@ -141,10 +158,13 @@ if get_option('man')
   subdir('man')
 endif
 
+have_asan_tests = get_option('b_sanitize') == 'address'
+
 mutter_typelibdir = mutter_dep.get_variable('typelibdir')
+mutter_pkglibdir = mutter_dep.get_variable('pkglibdir')
 python = find_program('python3')
 gjs = find_program('gjs')
-generate_app_list = find_program('meson/generate-app-list.py')
+generate_app_list = find_program('build-aux/generate-app-list.py')
 
 cc = meson.get_compiler('c')
 
@@ -158,8 +178,7 @@ cdata.set_quoted('PACKAGE_VERSION', meson.project_version())
 cdata.set('HAVE_NETWORKMANAGER', have_networkmanager)
 cdata.set('HAVE_PIPEWIRE', have_pipewire)
 cdata.set('HAVE_SYSTEMD', have_systemd)
-cdata.set('HAVE_X11', have_x11)
-cdata.set('HAVE_X11_CLIENT', have_x11_client)
+cdata.set('HAVE_XWAYLAND', have_xwayland)
 
 cdata.set('HAVE_FDWALK', cc.has_function('fdwalk'))
 cdata.set('HAVE_MALLINFO', cc.has_function('mallinfo'))
@@ -266,15 +285,11 @@ libgvc = subproject('gvc',
 )
 libgvc_gir = libgvc.get_variable('libgvc_gir')
 
-libshew = subproject('shew',
+libshew = dependency('libshew',
   default_options: [
     'package_name=@0@'.format(meson.project_name()),
   ]
 )
-
-libshew_version = libshew.get_variable('package_version')
-assert(libshew_version == meson.project_version(),
-  'shew version does not match project version')
 
 if get_option('extensions_tool')
   extension_tool = subproject('extensions-tool',
@@ -289,24 +304,21 @@ if get_option('extensions_tool')
   )
 endif
 
-if get_option('extensions_app')
-  extensions_app = subproject('extensions-app',
-    default_options: [
-      'package_name=@0@'.format(meson.project_name()),
-    ]
-  )
-
-  extensions_app_version = extensions_app.get_variable('package_version')
-  assert(extensions_app_version == meson.project_version(),
-    'Extensions app version does not match project version'
-  )
-endif
-
 if get_option('tests')
   common_test_env = environment()
   common_test_env.set('GSETTINGS_SCHEMA_DIR', meson.project_build_root() / 'data')
   common_test_env.set('GSETTINGS_BACKEND', 'memory')
   common_test_env.set('XDG_CURRENT_DESKTOP', '')
+  if have_asan_tests
+    asan_options = [
+      'halt_on_error=1',
+      'abort_on_error=1',
+      'detect_leaks=0',
+      'verify_asan_link_order=0',
+    ]
+    common_test_env.set('ASAN_OPTIONS', ':'.join(asan_options))
+    common_test_env.set('LD_PRELOAD', mutter_pkglibdir / 'libasan-preloader.so')
+  endif
 
   jasmine = find_program('jasmine')
 
@@ -323,7 +335,7 @@ subdir('js')
 subdir('src')
 subdir('po')
 
-if get_option('tests') and have_x11_client
+if get_option('tests') and have_xwayland
   subdir('tests')
 endif
 
@@ -336,16 +348,14 @@ gnome.post_install(
   gtk_update_icon_cache: true
 )
 
-meson.add_dist_script('meson/generate-stylesheets.py')
-meson.add_dist_script('meson/check-version.py', meson.project_version(), 'NEWS')
+meson.add_dist_script('build-aux/generate-stylesheets.py')
+meson.add_dist_script('build-aux/check-version.py', meson.project_version(), 'NEWS')
 
 summary_options = {
-  'x11': have_x11,
-  'x11_client': have_x11_client,
+  'have_xwayland': have_xwayland,
   'camera_monitor': get_option('camera_monitor'),
   'networkmanager': get_option('networkmanager'),
   'systemd': get_option('systemd'),
-  'extensions_app': get_option('extensions_app'),
   'extensions_tool': get_option('extensions_tool'),
   'man': get_option('man'),
   'gtk_doc': get_option('gtk_doc'),

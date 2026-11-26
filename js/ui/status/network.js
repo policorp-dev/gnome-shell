@@ -25,6 +25,7 @@ import {registerDestroyableType} from '../../misc/signalTracker.js';
 Gio._promisify(Gio.DBusConnection.prototype, 'call');
 Gio._promisify(NM.Client, 'new_async');
 Gio._promisify(NM.Client.prototype, 'check_connectivity_async');
+Gio._promisify(NM.Client.prototype, 'dbus_set_property');
 Gio._promisify(NM.DeviceWifi.prototype, 'request_scan_async');
 
 const WIFI_SCAN_FREQUENCY = 15;
@@ -483,7 +484,7 @@ const NMDeviceItem = GObject.registerClass({
     }
 
     _autoConnect() {
-        let connection = new NM.SimpleConnection();
+        const connection = new NM.SimpleConnection();
         this._client.add_and_activate_connection_async(connection, this._device, null, null, null);
     }
 
@@ -647,7 +648,7 @@ class NMModemDeviceItem extends NMDeviceItem {
 
         this._mobileDevice = null;
 
-        let capabilities = device.current_capabilities;
+        const capabilities = device.current_capabilities;
         if (device.udi.indexOf('/org/freedesktop/ModemManager1/Modem') === 0)
             this._mobileDevice = new ModemManager.BroadbandModem(device.udi, capabilities);
         else if (capabilities & NM.DeviceModemCapabilities.GSM_UMTS)
@@ -1058,7 +1059,7 @@ class NMWirelessNetworkItem extends PopupMenu.PopupBaseMenuItem {
 
     _updateAccessibleName() {
         const secureString = this._network.secure ? _('Secure') : _('Not secure');
-        let signalStrengthString = _('Signal strength %s%%').format(this._network.signal_strength);
+        const signalStrengthString = _('Signal strength %s%%').format(this._network.signal_strength);
         // translators: The first placeholder is the network name, the second and indication whether it is secure, and the last the signal strength indication
         this.accessible_name = _('%s, %s, %s').format(this._label.text, secureString, signalStrengthString);
     }
@@ -1082,7 +1083,7 @@ const NMWirelessDeviceItem = GObject.registerClass({
 
         this._deviceName = '';
 
-        this._networkItems = new Map();
+        this._networks = [];
         this._itemSorter = new ItemSorter({
             sortFunc: (one, two) => one.network.compare(two.network),
         });
@@ -1123,10 +1124,8 @@ const NMWirelessDeviceItem = GObject.registerClass({
         this._availableConnectionsChanged();
         this._updateItemsVisibility();
 
-        this.connect('destroy', () => {
-            for (const net of this._networkItems.keys())
-                net.destroy();
-        });
+        this.connect('destroy',
+            () => this._networks.forEach(net => net.destroy()));
     }
 
     get icon_name() {
@@ -1135,6 +1134,7 @@ const NMWirelessDeviceItem = GObject.registerClass({
 
         switch (this.state) {
         case NM.ActiveConnectionState.ACTIVATING:
+        case NM.ActiveConnectionState.DEACTIVATING:
             return 'network-wireless-acquiring-symbolic';
 
         case NM.ActiveConnectionState.ACTIVATED: {
@@ -1148,7 +1148,7 @@ const NMWirelessDeviceItem = GObject.registerClass({
                 if (this._device.mode !== NM80211Mode.ADHOC)
                     console.info('An active wireless connection, in infrastructure mode, involves no access point?');
 
-                return 'network-wireless-connected-symbolic';
+                return 'network-wireless-offline-symbolic';
             }
 
             const {strength} = this._activeAccessPoint;
@@ -1184,7 +1184,7 @@ const NMWirelessDeviceItem = GObject.registerClass({
         if (!connection)
             return false;
 
-        let ip4config = connection.get_setting_ip4_config();
+        const ip4config = connection.get_setting_ip4_config();
         if (!ip4config)
             return false;
 
@@ -1217,8 +1217,7 @@ const NMWirelessDeviceItem = GObject.registerClass({
 
     _availableConnectionsChanged() {
         const connections = this._device.get_available_connections();
-        for (const net of this._networkItems.keys())
-            net.checkConnections(connections);
+        this._networks.forEach(net => net.checkConnections(connections));
     }
 
     _addAccessPoint(ap) {
@@ -1234,8 +1233,7 @@ const NMWirelessDeviceItem = GObject.registerClass({
             return;
         }
 
-        let network = [...this._networkItems.keys()]
-            .find(n => n.checkAccessPoint(ap));
+        let network = this._networks.find(n => n.checkAccessPoint(ap));
 
         if (!network) {
             network = new WirelessNetwork(this._device);
@@ -1246,28 +1244,32 @@ const NMWirelessDeviceItem = GObject.registerClass({
             network.connectObject(
                 'notify::icon-name', () => this._resortItem(item),
                 'notify::is-active', () => this._resortItem(item),
+                'destroy', () => {
+                    const idx = this._networks.indexOf(network);
+                    if (idx >= 0)
+                        this._networks.splice(idx, 1);
+
+                    this._itemSorter.delete(item);
+                    item.destroy();
+                },
                 this);
 
             const pos = this._itemSorter.upsert(item);
             this.section.addMenuItem(item, pos);
-            this._networkItems.set(network, item);
+            this._networks.push(network);
         }
 
         network.addAccessPoint(ap);
     }
 
     _removeAccessPoint(ap) {
-        const network = [...this._networkItems.keys()]
-            .find(n => n.removeAccessPoint(ap));
+        ap.disconnectObject(this);
+
+        const network = this._networks.find(n => n.removeAccessPoint(ap));
 
         if (!network || network.hasAccessPoints())
             return;
 
-        const item = this._networkItems.get(network);
-        this._itemSorter.delete(item);
-        this._networkItems.delete(network);
-
-        item?.destroy();
         network.destroy();
     }
 
@@ -1542,6 +1544,7 @@ class NMVpnToggle extends NMToggle {
         super();
 
         this.menu.setHeader('network-vpn-symbolic', _('VPN'));
+        this.menuButtonAccessibleName = _('Open VPN menu');
         this.menu.addSettingsAction(_('VPN Settings'),
             'gnome-network-panel.desktop');
     }
@@ -1800,9 +1803,10 @@ class NMWirelessToggle extends NMDeviceToggle {
                 this._startScanning();
             else
                 this._stopScanning();
-        });
+        }, this);
 
         this.menu.setHeader('network-wireless-symbolic', _('Wi–Fi'));
+        this.menuButtonAccessibleName = _('Open Wi–Fi menu');
         this.menu.addHeaderSuffix(this._scanningSpinner);
         this.menu.addSettingsAction(_('All Networks'),
             'gnome-wifi-panel.desktop');
@@ -1824,7 +1828,20 @@ class NMWirelessToggle extends NMDeviceToggle {
         if (primaryItem?.is_hotspot)
             primaryItem.activate();
         else
-            this._client.wireless_enabled = !this._client.wireless_enabled;
+            this._toggleWirelessEnabled().catch(logError);
+    }
+
+    async _toggleWirelessEnabled() {
+        const enabled = !this._client.wireless_enabled;
+
+        await this._client.dbus_set_property(
+            NM.DBUS_PATH,
+            NM.DBUS_INTERFACE,
+            'WirelessEnabled',
+            new GLib.Variant('b', enabled),
+            2000,
+            null
+        );
     }
 
     async _scanDevice(device) {
@@ -1902,6 +1919,7 @@ class NMWiredToggle extends NMDeviceToggle {
         super(NM.DeviceType.ETHERNET);
 
         this.menu.setHeader('network-wired-symbolic', _('Wired Connections'));
+        this.menuButtonAccessibleName = _('Open wired connections menu');
         this.menu.addSettingsAction(_('Wired Settings'),
             'gnome-network-panel.desktop');
     }
@@ -1917,6 +1935,7 @@ class NMBluetoothToggle extends NMDeviceToggle {
         super(NM.DeviceType.BT);
 
         this.menu.setHeader('network-cellular-symbolic', _('Bluetooth Tethers'));
+        this.menuButtonAccessibleName = _('Open Bluetooth tethers menu');
         this.menu.addSettingsAction(_('Bluetooth Settings'),
             'gnome-network-panel.desktop');
     }
@@ -1937,6 +1956,7 @@ class NMModemToggle extends NMDeviceToggle {
         super(NM.DeviceType.MODEM);
 
         this.menu.setHeader('network-cellular-symbolic', _('Mobile Connections'));
+        this.menuButtonAccessibleName = _('Open mobile connections menu');
 
         const settingsLabel = _('Mobile Broadband Settings');
         this._wwanSettings = this.menu.addSettingsAction(settingsLabel,
@@ -1981,7 +2001,7 @@ class CaptivePortalHandler extends Signals.EventEmitter {
         const source = MessageTray.getSystemSource();
 
         const notification = new MessageTray.Notification({
-            title: _('Sign Into Wi–Fi Network'),
+            title: _('Sign in to Network'),
             body: name,
             source,
         });

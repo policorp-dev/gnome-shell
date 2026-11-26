@@ -1,8 +1,13 @@
 calendar_sources = [
   'gnome-shell-calendar-server.c',
+  'gnome-shell-calendar-server.h',
   'calendar-debug.h',
   'calendar-sources.c',
-  'calendar-sources.h'
+  'calendar-sources.h',
+  'reminder-launch-context.c',
+  'reminder-launch-context.h',
+  'reminder-watcher.c',
+  'reminder-watcher.h'
 ]
 
 calendar_server = executable('gnome-shell-calendar-server', calendar_sources,

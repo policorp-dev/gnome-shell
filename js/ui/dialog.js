@@ -32,6 +32,36 @@ class Dialog extends St.Widget {
 
         this._parentActor = parentActor;
         this._parentActor.add_child(this);
+
+        const keyController = new Clutter.KeyController();
+        keyController.connectObject(
+            'key-press', () => {
+                const [, symbol] = keyController.get_key();
+                this._pressedKey = symbol;
+                return Clutter.EVENT_PROPAGATE;
+            },
+            'key-release', () => {
+                const pressedKey = this._pressedKey;
+                this._pressedKey = null;
+
+                const [, symbol] = keyController.get_key();
+                if (symbol !== pressedKey)
+                    return Clutter.EVENT_PROPAGATE;
+
+                const buttonInfo = this._buttonKeys[symbol];
+                if (!buttonInfo)
+                    return Clutter.EVENT_PROPAGATE;
+
+                const {button, action} = buttonInfo;
+
+                if (action && button.reactive) {
+                    action();
+                    return Clutter.EVENT_STOP;
+                }
+                return Clutter.EVENT_PROPAGATE;
+            },
+            this);
+        this.add_action(keyController);
     }
 
     _createDialog() {
@@ -73,32 +103,6 @@ class Dialog extends St.Widget {
         this.makeInactive();
     }
 
-    vfunc_event(event) {
-        if (event.type() === Clutter.EventType.KEY_PRESS) {
-            this._pressedKey = event.get_key_symbol();
-        } else if (event.type() === Clutter.EventType.KEY_RELEASE) {
-            let pressedKey = this._pressedKey;
-            this._pressedKey = null;
-
-            let symbol = event.get_key_symbol();
-            if (symbol !== pressedKey)
-                return Clutter.EVENT_PROPAGATE;
-
-            let buttonInfo = this._buttonKeys[symbol];
-            if (!buttonInfo)
-                return Clutter.EVENT_PROPAGATE;
-
-            let {button, action} = buttonInfo;
-
-            if (action && button.reactive) {
-                action();
-                return Clutter.EVENT_STOP;
-            }
-        }
-
-        return Clutter.EVENT_PROPAGATE;
-    }
-
     _setInitialKeyFocus(actor) {
         this._initialKeyFocus?.disconnectObject(this);
 
@@ -113,8 +117,8 @@ class Dialog extends St.Widget {
     }
 
     addButton(buttonInfo) {
-        let {label, action, key} = buttonInfo;
-        let isDefault = buttonInfo['default'];
+        const {label, action, key} = buttonInfo;
+        const isDefault = buttonInfo['default'];
         let keys;
 
         if (key)
@@ -124,9 +128,9 @@ class Dialog extends St.Widget {
         else
             keys = [];
 
-        let button = new St.Button({
+        const button = new St.Button({
             style_class: 'modal-dialog-button',
-            button_mask: St.ButtonMask.ONE | St.ButtonMask.THREE,
+            button_mask: St.ButtonMask.PRIMARY | St.ButtonMask.SECONDARY,
             reactive: true,
             can_focus: true,
             x_expand: true,
@@ -143,7 +147,7 @@ class Dialog extends St.Widget {
         if (this._initialKeyFocus == null || isDefault)
             this._setInitialKeyFocus(button);
 
-        for (let i in keys)
+        for (const i in keys)
             this._buttonKeys[keys[i]] = buttonInfo;
 
         this.buttonLayout.add_child(button);
@@ -263,6 +267,8 @@ export const ListSection = GObject.registerClass({
 }, class ListSection extends St.BoxLayout {
     _init(params) {
         this._title = new St.Label({style_class: 'dialog-list-title'});
+        this._title.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        this._title.clutter_text.line_wrap = true;
 
         this.list = new St.BoxLayout({
             style_class: 'dialog-list-box',
@@ -317,7 +323,7 @@ export const ListSectionItem = GObject.registerClass({
     _init(params) {
         this._iconActorBin = new St.Bin();
 
-        let textLayout = new St.BoxLayout({
+        const textLayout = new St.BoxLayout({
             orientation: Clutter.Orientation.VERTICAL,
             y_expand: true,
             y_align: Clutter.ActorAlign.CENTER,

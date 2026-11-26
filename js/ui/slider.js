@@ -5,13 +5,35 @@ import GObject from 'gi://GObject';
 import * as BarLevel from './barLevel.js';
 
 const SLIDER_SCROLL_STEP = 0.02; /* Slider scrolling step in % */
+const SNAP_THRESHOLD = 0.04; /* Snap to marks within 4% */
 
-export const Slider = GObject.registerClass({
-    Signals: {
+export class Slider extends BarLevel.BarLevel {
+    static [GObject.signals] = {
         'drag-begin': {},
         'drag-end': {},
-    },
-}, class Slider extends BarLevel.BarLevel {
+    };
+
+    static {
+        GObject.registerClass(this);
+
+        const bindingPool = this.get_binding_pool();
+
+        bindingPool.install_closure(
+            'left', Clutter.KEY_Left, 0,
+            obj => {
+                obj._moveLeft();
+                return Clutter.EVENT_STOP;
+            }
+        );
+        bindingPool.install_closure(
+            'right', Clutter.KEY_Right, 0,
+            obj => {
+                obj._moveRight();
+                return Clutter.EVENT_STOP;
+            }
+        );
+    }
+
     _init(value) {
         super._init({
             value,
@@ -25,11 +47,51 @@ export const Slider = GObject.registerClass({
         });
 
         this._releaseId = 0;
-        this._dragging = false;
-
         this._handleRadius = 0;
 
+        this._panGesture = new Clutter.PanGesture();
+        this._panGesture.set_begin_threshold(0);
+        this._panGesture.connect('recognize', this._onPanBegin.bind(this));
+        this._panGesture.connect('pan-update', this._onPanUpdate.bind(this));
+        this._panGesture.connect('end', this._onPanEnd.bind(this));
+        this.add_action(this._panGesture);
+
+        const smoothScrollController = new Clutter.ScrollController({
+            flags: Clutter.ScrollControllerFlags.PHYSICAL_DIRECTION |
+                Clutter.ScrollControllerFlags.SCROLL_HORIZONTAL,
+        });
+        smoothScrollController.connect('scroll', this._onScroll.bind(this));
+        this.add_action(smoothScrollController);
+
+        const discreteScrollController = new Clutter.ScrollController({
+            flags: Clutter.ScrollControllerFlags.DISCRETE |
+                Clutter.ScrollControllerFlags.SCROLL_VERTICAL,
+        });
+        discreteScrollController.connect('scroll', (_c, _sprite, _source, _dx, dy) => {
+            this.step(-dy);
+        });
+        this.add_action(discreteScrollController);
+
         this._customAccessible.connect('get-minimum-increment', this._getMinimumIncrement.bind(this));
+
+        this._marks = new Set();
+        this._unsnappedValue = null;
+    }
+
+    addMark(value) {
+        this._marks.add(value);
+    }
+
+    clearMarks() {
+        this._marks.clear();
+    }
+
+    _snapToMark(value) {
+        for (const mark of this._marks) {
+            if (Math.abs(value - mark) < SNAP_THRESHOLD)
+                return mark;
+        }
+        return value;
     }
 
     vfunc_style_changed() {
@@ -44,9 +106,9 @@ export const Slider = GObject.registerClass({
         super.vfunc_repaint();
 
         // Add handle
-        let cr = this.get_context();
-        let themeNode = this.get_theme_node();
-        let [width, height] = this.get_surface_size();
+        const cr = this.get_context();
+        const themeNode = this.get_theme_node();
+        const [width, height] = this.get_surface_size();
         const rtl = this.get_text_direction() === Clutter.TextDirection.RTL;
 
         const handleY = height / 2;
@@ -56,7 +118,7 @@ export const Slider = GObject.registerClass({
         if (rtl)
             handleX = width - handleX;
 
-        let color = themeNode.get_foreground_color();
+        const color = themeNode.get_foreground_color();
         cr.setSourceColor(color);
         cr.arc(handleX, handleY, this._handleRadius, 0, 2 * Math.PI);
         cr.fill();
@@ -75,140 +137,79 @@ export const Slider = GObject.registerClass({
         return Math.max(barWidth, handleWidth);
     }
 
-    vfunc_button_press_event(event) {
-        return this.startDragging(event);
-    }
-
-    startDragging(event) {
-        if (this._dragging)
-            return Clutter.EVENT_PROPAGATE;
-
-        this._dragging = true;
-
-        let device = event.get_device();
-        let sequence = event.get_event_sequence();
-
+    _onPanBegin() {
         this._grab = global.stage.grab(this);
-
-        this._grabbedDevice = device;
-        this._grabbedSequence = sequence;
 
         // We need to emit 'drag-begin' before moving the handle to make
         // sure that no 'notify::value' signal is emitted before this one.
         this.emit('drag-begin');
 
-        let absX, absY;
-        [absX, absY] = event.get_coords();
-        this._moveHandle(absX, absY);
+        const coords = this._panGesture.get_centroid();
+        this._moveHandle(coords.x, coords.y);
         return Clutter.EVENT_STOP;
     }
 
-    _endDragging() {
-        if (this._dragging) {
-            if (this._releaseId) {
-                this.disconnect(this._releaseId);
-                this._releaseId = 0;
-            }
-
-            if (this._grab) {
-                this._grab.dismiss();
-                this._grab = null;
-            }
-
-            this._grabbedSequence = null;
-            this._grabbedDevice = null;
-            this._dragging = false;
-
-            this.emit('drag-end');
-        }
-        return Clutter.EVENT_STOP;
-    }
-
-    vfunc_button_release_event() {
-        if (this._dragging && !this._grabbedSequence)
-            return this._endDragging();
-
-        return Clutter.EVENT_PROPAGATE;
-    }
-
-    vfunc_touch_event(event) {
-        let sequence = event.get_event_sequence();
-
-        if (!this._dragging &&
-            event.type() === Clutter.EventType.TOUCH_BEGIN) {
-            this.startDragging(event);
-            return Clutter.EVENT_STOP;
-        } else if (this._grabbedSequence &&
-                   sequence.get_slot() === this._grabbedSequence.get_slot()) {
-            if (event.type() === Clutter.EventType.TOUCH_UPDATE)
-                return this._motionEvent(this, event);
-            else if (event.type() === Clutter.EventType.TOUCH_END)
-                return this._endDragging();
+    _onPanEnd() {
+        if (this._releaseId) {
+            this.disconnect(this._releaseId);
+            this._releaseId = 0;
         }
 
-        return Clutter.EVENT_PROPAGATE;
-    }
-
-    scroll(event) {
-        let direction = event.get_scroll_direction();
-        let delta = 0;
-
-        if (event.get_flags() & Clutter.EventFlags.FLAG_POINTER_EMULATED)
-            return Clutter.EVENT_PROPAGATE;
-
-        if (direction === Clutter.ScrollDirection.DOWN) {
-            delta = -SLIDER_SCROLL_STEP;
-        } else if (direction === Clutter.ScrollDirection.UP) {
-            delta = SLIDER_SCROLL_STEP;
-        } else if (direction === Clutter.ScrollDirection.SMOOTH) {
-            let [, dy] = event.get_scroll_delta();
-            // Even though the slider is horizontal, use dy to match
-            // the UP/DOWN above.
-            delta = -dy * SLIDER_SCROLL_STEP;
+        if (this._grab) {
+            this._grab.dismiss();
+            this._grab = null;
         }
 
-        this.value = Math.min(Math.max(0, this._value + delta), this._maxValue);
-
-        return Clutter.EVENT_STOP;
+        this.emit('drag-end');
     }
 
-    vfunc_scroll_event(event) {
-        return this.scroll(event);
+    _onPanUpdate() {
+        const coords = this._panGesture.get_centroid();
+        this._moveHandle(coords.x, coords.y);
     }
 
-    vfunc_motion_event(event) {
-        if (this._dragging && !this._grabbedSequence)
-            return this._motionEvent(this, event);
-
-        return Clutter.EVENT_PROPAGATE;
+    _applyDelta(delta) {
+        // Track unsnapped value to allow escaping snap zones when scrolling/using arrow keys.
+        // Without this, if the scroll step is smaller than the snap threshold,
+        // the slider gets stuck at the mark because each scroll snaps back.
+        const base = this._unsnappedValue ?? this._value;
+        const oldValue = this._value;
+        this._unsnappedValue = Math.clamp(base + delta, 0, this._maxValue);
+        this.value = this._snapToMark(this._unsnappedValue);
+        return this._value !== oldValue;
     }
 
-    _motionEvent(actor, event) {
-        let absX, absY;
-        [absX, absY] = event.get_coords();
-        this._moveHandle(absX, absY);
-        return Clutter.EVENT_STOP;
+    step(nSteps) {
+        return this._applyDelta(nSteps * SLIDER_SCROLL_STEP);
     }
 
-    vfunc_key_press_event(event) {
-        let key = event.get_key_symbol();
-        if (key === Clutter.KEY_Right || key === Clutter.KEY_Left) {
-            const rtl = this.get_text_direction() === Clutter.TextDirection.RTL;
-            const increaseKey = rtl ? Clutter.KEY_Left : Clutter.KEY_Right;
-            const delta = key === increaseKey ? 0.1 : -0.1;
-            this.value = Math.max(0, Math.min(this._value + delta, this._maxValue));
-            return Clutter.EVENT_STOP;
-        }
-        return super.vfunc_key_press_event(event);
+    _onScroll(_controller, _sprite, _source, dx) {
+        let nSteps = 0;
+
+        nSteps = dx;
+        if (this.get_text_direction() === Clutter.TextDirection.RTL)
+            nSteps *= -1;
+
+        this.step(nSteps);
     }
 
-    _moveHandle(absX, _absY) {
-        let relX, sliderX;
-        [sliderX] = this.get_transformed_position();
+    _moveLeft() {
         const rtl = this.get_text_direction() === Clutter.TextDirection.RTL;
-        let width = this._barLevelWidth;
+        const delta = rtl ? 0.1 : -0.1;
+        this._applyDelta(delta);
+    }
 
-        relX = absX - sliderX;
+    _moveRight() {
+        const rtl = this.get_text_direction() === Clutter.TextDirection.RTL;
+        const delta = rtl ? -0.1 : 0.1;
+        this._applyDelta(delta);
+    }
+
+    _moveHandle(x, _y) {
+        const rtl = this.get_text_direction() === Clutter.TextDirection.RTL;
+        const width = this._barLevelWidth;
+
+        let relX = x;
         if (rtl)
             relX = width - relX;
 
@@ -219,10 +220,11 @@ export const Slider = GObject.registerClass({
             newvalue = 1;
         else
             newvalue = (relX - this._handleRadius) / (width - 2 * this._handleRadius);
-        this.value = newvalue * this._maxValue;
+        this._unsnappedValue = newvalue * this._maxValue;
+        this.value = this._snapToMark(this._unsnappedValue);
     }
 
     _getMinimumIncrement() {
         return 0.1;
     }
-});
+}

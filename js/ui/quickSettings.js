@@ -13,10 +13,8 @@ import * as Main from './main.js';
 import * as PopupMenu from './popupMenu.js';
 import {Slider} from './slider.js';
 
-import {PopupAnimation} from './boxpointer.js';
-
 const DIM_BRIGHTNESS = -0.4;
-const POPUP_ANIMATION_TIME = 400;
+export const POPUP_ANIMATION_TIME = 400;
 
 export const QuickSettingsItem = GObject.registerClass({
     Properties: {
@@ -158,6 +156,10 @@ export const QuickMenuToggle = GObject.registerClass({
             'menu-enabled', null, null,
             GObject.ParamFlags.READWRITE,
             true),
+        'menu-button-accessible-name': GObject.ParamSpec.string(
+            'menu-button-accessible-name', null, null,
+            GObject.ParamFlags.READWRITE,
+            _('Open menu')),
     },
 }, class QuickMenuToggle extends QuickSettingsItem {
     _init(params) {
@@ -176,13 +178,12 @@ export const QuickMenuToggle = GObject.registerClass({
         });
         this._box.add_child(contents);
 
-        let separator = new St.Widget({style_class: 'quick-toggle-separator'});
+        const separator = new St.Widget({style_class: 'quick-toggle-separator'});
         this._box.add_child(separator);
 
         this._menuButton = new St.Button({
             style_class: 'quick-toggle-menu-button icon-button',
             child: new St.Icon({icon_name: 'go-next-symbolic'}),
-            accessible_name: _('Open menu'),
             can_focus: true,
             x_expand: false,
             y_expand: true,
@@ -215,6 +216,9 @@ export const QuickMenuToggle = GObject.registerClass({
 
         this.bind_property('menu-enabled',
             this._menuButton, 'visible',
+            GObject.BindingFlags.SYNC_CREATE);
+        this.bind_property('menu-button-accessible-name',
+            this._menuButton, 'accessible-name',
             GObject.BindingFlags.SYNC_CREATE);
         this.bind_property('reactive',
             this._menuButton, 'reactive',
@@ -251,6 +255,10 @@ export const QuickSlider = GObject.registerClass({
             'menu-enabled', null, null,
             GObject.ParamFlags.READWRITE,
             false),
+        'menu-button-accessible-name': GObject.ParamSpec.string(
+            'menu-button-accessible-name', null, null,
+            GObject.ParamFlags.READWRITE,
+            _('Open menu')),
     },
     Signals: {
         'icon-clicked': {},
@@ -319,17 +327,15 @@ export const QuickSlider = GObject.registerClass({
             style_class: 'slider-bin',
             child: this.slider,
             reactive: true,
-            can_focus: true,
             x_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
         });
         box.add_child(sliderBin);
 
-        // Make the slider bin transparent for a11y
-        const sliderAccessible = this.slider.get_accessible();
-        sliderAccessible.set_parent(sliderBin.get_parent().get_accessible());
-        sliderBin.set_accessible(sliderAccessible);
-        sliderBin.connect('event', (bin, event) => this.slider.event(event, false));
+        this.slider.connectObject(
+            'key-focus-in', () => sliderBin.add_style_pseudo_class('focus'),
+            'key-focus-out', () => sliderBin.remove_style_pseudo_class('focus'),
+            this);
 
         this._menuButton = new St.Button({
             child: new St.Icon({icon_name: 'go-next-symbolic'}),
@@ -337,10 +343,12 @@ export const QuickSlider = GObject.registerClass({
             can_focus: true,
             x_expand: false,
             y_expand: true,
-            accessible_name: _('Open menu'),
         });
         box.add_child(this._menuButton);
 
+        this.bind_property('menu-button-accessible-name',
+            this._menuButton, 'accessible-name',
+            GObject.BindingFlags.SYNC_CREATE);
         this.bind_property('menu-enabled',
             this._menuButton, 'visible',
             GObject.BindingFlags.SYNC_CREATE);
@@ -375,6 +383,7 @@ class QuickToggleMenu extends PopupMenu.PopupMenuBase {
         });
         this.actor._delegate = this;
         this.actor.add_child(this.box);
+        this.actor.set_keynav_flags(St.KeynavFlags.WRAP_VERTICALLY);
 
         global.focus_manager.add_group(this.actor);
 
@@ -444,12 +453,16 @@ class QuickToggleMenu extends PopupMenu.PopupMenuBase {
         headerLayout.attach_next_to(this._headerSpacer, actor, side, 1, 1);
     }
 
-    open(animate) {
-        if (this.isOpen)
-            return;
-
-        this.actor.show();
-        this.isOpen = true;
+    /**
+     * @param {object} params
+     * @param {bool} [params.animate=true] whether to animate the transition
+     * @param {Clutter.Event} [params.triggerEvent] the keyboard/mouse event that triggered opening this
+     *
+     * @returns {bool} whether the open state changed
+     */
+    open(params = {}) {
+        if (!super.open(params))
+            return false;
 
         const previousHeight = this.actor.height;
         this.actor.height = -1;
@@ -457,7 +470,8 @@ class QuickToggleMenu extends PopupMenu.PopupMenuBase {
         this.actor.height = previousHeight;
         const distance = Math.abs(targetHeight - previousHeight);
 
-        const duration = animate !== PopupAnimation.NONE
+        const {animate = true} = params;
+        const duration = animate
             ? POPUP_ANIMATION_TIME / 2
             : 0;
 
@@ -473,15 +487,22 @@ class QuickToggleMenu extends PopupMenu.PopupMenuBase {
                 this.actor.height = -1;
             },
         });
-        this.emit('open-state-changed', true);
+        return true;
     }
 
-    close(animate) {
-        if (!this.isOpen)
-            return;
+    /**
+     * @param {object} params
+     * @param {bool} [params.animate=true] whether to animate the transition
+     *
+     * @returns {bool} whether the open state changed
+     */
+    close(params = {}) {
+        if (!super.close(params))
+            return false;
 
+        const {animate = true} = params;
         const {opacity} = this.box;
-        const duration = animate !== PopupAnimation.NONE
+        const duration = animate
             ? POPUP_ANIMATION_TIME / 2
             : 0;
 
@@ -500,8 +521,7 @@ class QuickToggleMenu extends PopupMenu.PopupMenuBase {
             },
         });
 
-        this.isOpen = false;
-        this.emit('open-state-changed', false);
+        return true;
     }
 
     _syncChecked() {
@@ -655,10 +675,11 @@ const QuickSettingsLayout = GObject.registerClass({
         return [this.nColumns * childMin + spacing, this.nColumns * childNat + spacing];
     }
 
-    vfunc_get_preferred_height(container, _forWidth) {
+    vfunc_get_preferred_height(container, forWidth) {
         const rows = this._getRows(container);
 
-        let [minHeight, natHeight] = this._overlay.get_preferred_height(-1);
+        let [minHeight, natHeight] =
+            this._overlay.get_preferred_height(forWidth);
 
         const spacing = (rows.length - 1) * this.row_spacing;
         minHeight += spacing;
@@ -676,12 +697,13 @@ const QuickSettingsLayout = GObject.registerClass({
     vfunc_allocate(container, box) {
         const rows = this._getRows(container);
 
-        const [, overlayHeight] = this._overlay.get_preferred_height(-1);
+        const [, overlayHeight] =
+            this._overlay.get_preferred_height(box.get_width());
 
         const availWidth = box.get_width() - (this.nColumns - 1) * this.column_spacing;
         const childWidth = Math.floor(availWidth / this.nColumns);
 
-        this._overlay.allocate_available_size(0, 0, box.get_width(), box.get_height());
+        this._overlay.allocate_available_size(0, 0, box.get_width(), overlayHeight);
 
         const isRtl = container.text_direction === Clutter.TextDirection.RTL;
 
@@ -721,6 +743,10 @@ export const QuickSettingsMenu = class extends PopupMenu.PopupMenu {
         this.actor = new St.Widget({reactive: true, width: 0, height: 0});
         this.actor.add_child(this._boxPointer);
         this.actor._delegate = this;
+        // Undo superclass defaults
+        this._boxPointer.set_keynav_flags(St.KeynavFlags.NONE);
+
+        global.focus_manager.add_group(this.actor);
 
         this.connect('menu-closed', () => this.actor.hide());
 
@@ -755,33 +781,41 @@ export const QuickSettingsMenu = class extends PopupMenu.PopupMenu {
         this.box.add_child(this._grid);
         this._grid.add_child(placeholder);
 
+        const xConstraint = new Clutter.BindConstraint({
+            coordinate: Clutter.BindCoordinate.X,
+            source: this._boxPointer,
+        });
         const yConstraint = new Clutter.BindConstraint({
             coordinate: Clutter.BindCoordinate.Y,
             source: this._boxPointer,
         });
 
         // Pick up additional spacing from any intermediate actors
-        const updateOffset = () => {
+        const updateOffset = (constraint, axis) => {
             const laters = global.compositor.get_laters();
             laters.add(Meta.LaterType.BEFORE_REDRAW, () => {
                 const offset = this._grid.apply_relative_transform_to_point(
                     this._boxPointer, new Graphene.Point3D());
-                yConstraint.offset = offset.y;
+                constraint.offset = offset[axis];
                 return GLib.SOURCE_REMOVE;
             });
         };
-        this._grid.connect('notify::y', updateOffset);
-        this.box.connect('notify::y', updateOffset);
-        this._boxPointer.bin.connect('notify::y', updateOffset);
 
+        this._grid.connect('notify::x', () => updateOffset(xConstraint, 'x'));
+        this.box.connect('notify::x', () => updateOffset(xConstraint, 'x'));
+        this._boxPointer.bin.connect('notify::x',
+            () => updateOffset(xConstraint, 'x'));
+
+        this._grid.connect('notify::y', () => updateOffset(yConstraint, 'y'));
+        this.box.connect('notify::y',  () => updateOffset(yConstraint, 'y'));
+        this._boxPointer.bin.connect('notify::y',
+            () => updateOffset(yConstraint, 'y'));
+
+        this._overlay.add_constraint(xConstraint);
         this._overlay.add_constraint(yConstraint);
         this._overlay.add_constraint(new Clutter.BindConstraint({
-            coordinate: Clutter.BindCoordinate.X,
-            source: this._boxPointer,
-        }));
-        this._overlay.add_constraint(new Clutter.BindConstraint({
             coordinate: Clutter.BindCoordinate.WIDTH,
-            source: this._boxPointer,
+            source: this._grid,
         }));
 
         this.actor.add_child(this._overlay);
@@ -815,14 +849,12 @@ export const QuickSettingsMenu = class extends PopupMenu.PopupMenu {
         return this._grid.get_first_child();
     }
 
-    open(animate) {
-        this.actor.show();
-        super.open(animate);
-    }
+    close(params = {}) {
+        if (!super.close(params))
+            return false;
 
-    close(animate) {
-        this._activeMenu?.close(animate);
-        super.close(animate);
+        this._activeMenu?.close(params);
+        return true;
     }
 
     _setDimmed(dim) {
@@ -835,7 +867,7 @@ export const QuickSettingsMenu = class extends PopupMenu.PopupMenu {
         });
 
         this._boxPointer.ease_property('@effects.dim.brightness', color, {
-            mode: Clutter.AnimationMode.LINEAR,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             duration: POPUP_ANIMATION_TIME,
             onStopped: () => (this._dimEffect.enabled = dim),
         });

@@ -4,15 +4,11 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Graphene from 'gi://Graphene';
 import Meta from 'gi://Meta';
-import Shell from 'gi://Shell';
 import St from 'gi://St';
 
-import * as Animation from './animation.js';
-import {AppMenu} from './appMenu.js';
 import * as Config from '../misc/config.js';
 import * as CtrlAltTab from './ctrlAltTab.js';
 import * as DND from './dnd.js';
-import * as Overview from './overview.js';
 import * as PopupMenu from './popupMenu.js';
 import * as PanelMenu from './panelMenu.js';
 import {QuickSettingsMenu, SystemIndicator} from './quickSettings.js';
@@ -29,6 +25,7 @@ import * as SystemStatus from './status/system.js';
 import * as LocationStatus from './status/location.js';
 import * as NightLightStatus from './status/nightLight.js';
 import * as DarkModeStatus from './status/darkMode.js';
+import * as DoNotDisturb from './status/doNotDisturb.js';
 import * as BacklightStatus from './status/backlight.js';
 import * as ThunderboltStatus from './status/thunderbolt.js';
 import * as AutoRotateStatus from './status/autoRotate.js';
@@ -40,223 +37,11 @@ import {InputSourceIndicator} from './status/keyboard.js';
 import {DwellClickIndicator} from './status/dwellClick.js';
 import {ScreenRecordingIndicator, ScreenSharingIndicator} from './status/remoteAccess.js';
 
-const PANEL_ICON_SIZE = 16;
-const APP_MENU_ICON_MARGIN = 0;
-
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
 const N_QUICK_SETTINGS_COLUMNS = 2;
 
 const INACTIVE_WORKSPACE_DOT_SCALE = 0.75;
-
-/**
- * AppMenuButton:
- *
- * This class manages the "application menu" component.  It tracks the
- * currently focused application.  However, when an app is launched,
- * this menu also handles startup notification for it.  So when we
- * have an active startup notification, we switch modes to display that.
- */
-const AppMenuButton = GObject.registerClass({
-    Signals: {'changed': {}},
-}, class AppMenuButton extends PanelMenu.Button {
-    _init(panel) {
-        super._init(0.0, null, true);
-
-        this.accessible_role = Atk.Role.MENU;
-
-        this._startingApps = [];
-
-        this._menuManager = panel.menuManager;
-        this._targetApp = null;
-
-        let bin = new St.Bin({name: 'appMenu'});
-        this.add_child(bin);
-
-        this.bind_property('reactive', this, 'can-focus', 0);
-        this.reactive = false;
-
-        this._container = new St.BoxLayout({style_class: 'panel-status-menu-box'});
-        bin.set_child(this._container);
-
-        let textureCache = St.TextureCache.get_default();
-        textureCache.connect('icon-theme-changed',
-            this._onIconThemeChanged.bind(this));
-
-        let iconEffect = new Clutter.DesaturateEffect();
-        this._iconBox = new St.Bin({
-            style_class: 'app-menu-icon',
-            y_align: Clutter.ActorAlign.CENTER,
-        });
-        this._iconBox.add_effect(iconEffect);
-        this._container.add_child(this._iconBox);
-
-        this._iconBox.connect('style-changed', () => {
-            let themeNode = this._iconBox.get_theme_node();
-            iconEffect.enabled = themeNode.get_icon_style() === St.IconStyle.SYMBOLIC;
-        });
-
-        this._label = new St.Label({
-            y_expand: true,
-            y_align: Clutter.ActorAlign.CENTER,
-        });
-        this._container.add_child(this._label);
-
-        this._visible = !Main.overview.visible;
-        if (!this._visible)
-            this.hide();
-        Main.overview.connectObject(
-            'hiding', this._sync.bind(this),
-            'showing', this._sync.bind(this), this);
-
-        this._spinner = new Animation.Spinner(PANEL_ICON_SIZE, {
-            animate: true,
-            hideOnStop: true,
-        });
-        this._container.add_child(this._spinner);
-
-        let menu = new AppMenu(this);
-        this.setMenu(menu);
-        this._menuManager.addMenu(menu);
-
-        Shell.WindowTracker.get_default().connectObject('notify::focus-app',
-            this._focusAppChanged.bind(this), this);
-        Shell.AppSystem.get_default().connectObject('app-state-changed',
-            this._onAppStateChanged.bind(this), this);
-        global.window_manager.connectObject('switch-workspace',
-            this._sync.bind(this), this);
-
-        this._sync();
-    }
-
-    fadeIn() {
-        if (this._visible)
-            return;
-
-        this._visible = true;
-        this.reactive = true;
-        this.remove_all_transitions();
-        this.ease({
-            opacity: 255,
-            duration: Overview.ANIMATION_TIME,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-        });
-    }
-
-    fadeOut() {
-        if (!this._visible)
-            return;
-
-        this._visible = false;
-        this.reactive = false;
-        this.remove_all_transitions();
-        this.ease({
-            opacity: 0,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            duration: Overview.ANIMATION_TIME,
-        });
-    }
-
-    _syncIcon(app) {
-        const icon = app.create_icon_texture(PANEL_ICON_SIZE - APP_MENU_ICON_MARGIN);
-        this._iconBox.set_child(icon);
-    }
-
-    _onIconThemeChanged() {
-        if (this._iconBox.child == null)
-            return;
-
-        if (this._targetApp)
-            this._syncIcon(this._targetApp);
-    }
-
-    stopAnimation() {
-        this._spinner.stop();
-    }
-
-    startAnimation() {
-        this._spinner.play();
-    }
-
-    _onAppStateChanged(appSys, app) {
-        let state = app.state;
-        if (state !== Shell.AppState.STARTING)
-            this._startingApps = this._startingApps.filter(a => a !== app);
-        else if (state === Shell.AppState.STARTING)
-            this._startingApps.push(app);
-        // For now just resync on all running state changes; this is mainly to handle
-        // cases where the focused window's application changes without the focus
-        // changing.  An example case is how we map OpenOffice.org based on the window
-        // title which is a dynamic property.
-        this._sync();
-    }
-
-    _focusAppChanged() {
-        let tracker = Shell.WindowTracker.get_default();
-        let focusedApp = tracker.focus_app;
-        if (!focusedApp) {
-            // If the app has just lost focus to the panel, pretend
-            // nothing happened; otherwise you can't keynav to the
-            // app menu.
-            if (global.stage.key_focus != null)
-                return;
-        }
-        this._sync();
-    }
-
-    _findTargetApp() {
-        let workspaceManager = global.workspace_manager;
-        let workspace = workspaceManager.get_active_workspace();
-        let tracker = Shell.WindowTracker.get_default();
-        let focusedApp = tracker.focus_app;
-        if (focusedApp && focusedApp.is_on_workspace(workspace))
-            return focusedApp;
-
-        for (let i = 0; i < this._startingApps.length; i++) {
-            if (this._startingApps[i].is_on_workspace(workspace))
-                return this._startingApps[i];
-        }
-
-        return null;
-    }
-
-    _sync() {
-        let targetApp = this._findTargetApp();
-
-        if (this._targetApp !== targetApp) {
-            this._targetApp?.disconnectObject(this);
-
-            this._targetApp = targetApp;
-
-            if (this._targetApp) {
-                this._targetApp.connectObject('notify::busy', this._sync.bind(this), this);
-                this._label.set_text(this._targetApp.get_name());
-                this.set_accessible_name(this._targetApp.get_name());
-
-                this._syncIcon(this._targetApp);
-            }
-        }
-
-        let visible = this._targetApp != null && !Main.overview.visibleTarget;
-        if (visible)
-            this.fadeIn();
-        else
-            this.fadeOut();
-
-        let isBusy = this._targetApp != null &&
-                      (this._targetApp.get_state() === Shell.AppState.STARTING ||
-                       this._targetApp.get_busy());
-        if (isBusy)
-            this.startAnimation();
-        else
-            this.stopAnimation();
-
-        this.reactive = visible && !isBusy;
-
-        this.menu.setApp(this._targetApp);
-        this.emit('changed');
-    }
-});
 
 const WorkspaceDot = GObject.registerClass({
     Properties: {
@@ -410,8 +195,26 @@ class WorkspaceIndicators extends St.BoxLayout {
     }
 });
 
-const ActivitiesButton = GObject.registerClass(
 class ActivitiesButton extends PanelMenu.Button {
+    static {
+        GObject.registerClass(this);
+
+        const bindingPool = this.get_binding_pool();
+
+        bindingPool.install_closure(
+            'toggle', Clutter.KEY_Return, Clutter.RELEASE_MASK,
+            obj => {
+                obj._toggleAction();
+                return Clutter.EVENT_STOP;
+            });
+        bindingPool.install_closure(
+            'toggle', Clutter.KEY_space, Clutter.RELEASE_MASK,
+            obj => {
+                obj._toggleAction();
+                return Clutter.EVENT_STOP;
+            });
+    }
+
     _init() {
         super._init(0.0, null, true);
 
@@ -433,6 +236,13 @@ class ActivitiesButton extends PanelMenu.Button {
             this);
 
         this._xdndTimeOut = 0;
+
+        this._clickGesture = new Clutter.ClickGesture();
+        this._clickGesture.connect('recognize', () => {
+            if (Main.overview.shouldToggleByCornerOrButton())
+                Main.overview.toggle();
+        });
+        this.add_action(this._clickGesture);
     }
 
     handleDragOver(source, _actor, _x, _y, _time) {
@@ -441,7 +251,7 @@ class ActivitiesButton extends PanelMenu.Button {
 
         if (this._xdndTimeOut !== 0)
             GLib.source_remove(this._xdndTimeOut);
-        this._xdndTimeOut = GLib.timeout_add(GLib.PRIORITY_DEFAULT, BUTTON_DND_ACTIVATION_TIMEOUT, () => {
+        this._xdndTimeOut = GLib.timeout_add_once(GLib.PRIORITY_DEFAULT, BUTTON_DND_ACTIVATION_TIMEOUT, () => {
             this._xdndToggleOverview();
         });
         GLib.Source.set_name_by_id(this._xdndTimeOut, '[gnome-shell] this._xdndToggleOverview');
@@ -449,40 +259,30 @@ class ActivitiesButton extends PanelMenu.Button {
         return DND.DragMotionResult.CONTINUE;
     }
 
-    vfunc_event(event) {
-        if (event.type() === Clutter.EventType.TOUCH_END ||
-            event.type() === Clutter.EventType.BUTTON_RELEASE) {
-            if (Main.overview.shouldToggleByCornerOrButton())
-                Main.overview.toggle();
-        }
-
+    vfunc_scroll_event(event) {
         return Main.wm.handleWorkspaceScroll(event);
     }
 
-    vfunc_key_release_event(event) {
-        let symbol = event.get_key_symbol();
-        if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_space) {
-            if (Main.overview.shouldToggleByCornerOrButton()) {
-                Main.overview.toggle();
-                return Clutter.EVENT_STOP;
-            }
+    _toggleAction() {
+        if (Main.overview.shouldToggleByCornerOrButton()) {
+            Main.overview.toggle();
+            return Clutter.EVENT_STOP;
         }
 
         return Clutter.EVENT_PROPAGATE;
     }
 
     _xdndToggleOverview() {
-        let [x, y] = global.get_pointer();
-        let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, x, y);
+        const [x, y] = global.get_pointer();
+        const pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, x, y);
 
         if (pickedActor === this && Main.overview.shouldToggleByCornerOrButton())
             Main.overview.toggle();
 
         GLib.source_remove(this._xdndTimeOut);
         this._xdndTimeOut = 0;
-        return GLib.SOURCE_REMOVE;
     }
-});
+}
 
 const UnsafeModeIndicator = GObject.registerClass(
 class UnsafeModeIndicator extends SystemIndicator {
@@ -543,6 +343,7 @@ class QuickSettings extends PanelMenu.Button {
         this._thunderbolt = new ThunderboltStatus.Indicator();
         this._nightLight = new NightLightStatus.Indicator();
         this._darkMode = new DarkModeStatus.Indicator();
+        this._doNotDisturb = new DoNotDisturb.Indicator();
         this._backlight = new BacklightStatus.Indicator();
         this._powerProfiles = new PowerProfileStatus.Indicator();
         this._rfkill = new RFKillStatus.Indicator();
@@ -564,14 +365,15 @@ class QuickSettings extends PanelMenu.Button {
         if (this._network)
             this._indicators.add_child(this._network);
         this._indicators.add_child(this._darkMode);
+        this._indicators.add_child(this._doNotDisturb);
         this._indicators.add_child(this._backlight);
-        this._indicators.add_child(this._powerProfiles);
         if (this._bluetooth)
             this._indicators.add_child(this._bluetooth);
         this._indicators.add_child(this._rfkill);
         this._indicators.add_child(this._autoRotate);
         this._indicators.add_child(this._volumeOutput);
         this._indicators.add_child(this._unsafeMode);
+        this._indicators.add_child(this._powerProfiles);
         this._indicators.add_child(this._system);
 
         // add our quick settings items before any external ones
@@ -596,6 +398,7 @@ class QuickSettings extends PanelMenu.Button {
         this._addItemsBefore(this._powerProfiles.quickSettingsItems, sibling);
         this._addItemsBefore(this._nightLight.quickSettingsItems, sibling);
         this._addItemsBefore(this._darkMode.quickSettingsItems, sibling);
+        this._addItemsBefore(this._doNotDisturb.quickSettingsItems, sibling);
         this._addItemsBefore(this._backlight.quickSettingsItems, sibling);
         this._addItemsBefore(this._rfkill.quickSettingsItems, sibling);
         this._addItemsBefore(this._autoRotate.quickSettingsItems, sibling);
@@ -630,7 +433,6 @@ class QuickSettings extends PanelMenu.Button {
 
 const PANEL_ITEM_IMPLEMENTATIONS = {
     'activities': ActivitiesButton,
-    'appMenu': AppMenuButton,
     'quickSettings': QuickSettings,
     'dateMenu': DateMenuButton,
     'a11y': ATIndicator,
@@ -640,8 +442,21 @@ const PANEL_ITEM_IMPLEMENTATIONS = {
     'screenSharing': ScreenSharingIndicator,
 };
 
-export const Panel = GObject.registerClass(
-class Panel extends St.Widget {
+export class Panel extends St.Widget {
+    static {
+        GObject.registerClass(this);
+
+        const bindingPool = this.get_binding_pool();
+
+        bindingPool.install_closure(
+            'unfocus', Clutter.KEY_Escape, 0,
+            () => {
+                global.display.focus_default_window(Clutter.CURRENT_TIME);
+                return Clutter.EVENT_STOP;
+            }
+        );
+    }
+
     _init() {
         super._init({
             name: 'panel',
@@ -663,8 +478,13 @@ class Panel extends St.Widget {
         this._rightBox = new St.BoxLayout({name: 'panelRight'});
         this.add_child(this._rightBox);
 
-        this.connect('button-press-event', this._onButtonPress.bind(this));
-        this.connect('touch-event', this._onTouchEvent.bind(this));
+        this._clickGesture = new Clutter.ClickGesture({
+            recognize_on_press: true,
+        });
+        this._clickGesture.connect(
+            'recognize', this._onWindowDragGestureRecognize.bind(this));
+        this.add_action_full(
+            'window-drag', Clutter.EventPhase.TARGET, this._clickGesture);
 
         Main.overview.connectObject('showing',
             () => this.add_style_pseudo_class('overview'),
@@ -689,7 +509,7 @@ class Panel extends St.Widget {
     }
 
     vfunc_get_preferred_width(_forHeight) {
-        let primaryMonitor = Main.layoutManager.primaryMonitor;
+        const primaryMonitor = Main.layoutManager.primaryMonitor;
 
         if (primaryMonitor)
             return [0, primaryMonitor.width];
@@ -700,27 +520,26 @@ class Panel extends St.Widget {
     vfunc_allocate(box) {
         this.set_allocation(box);
 
-        let allocWidth = box.x2 - box.x1;
-        let allocHeight = box.y2 - box.y1;
+        const allocWidth = box.x2 - box.x1;
+        const allocHeight = box.y2 - box.y1;
 
-        let [, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
-        let [, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
-        let [, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
+        const [, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
+        const [, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
+        const [, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
-        let sideWidth, centerWidth;
-        centerWidth = centerNaturalWidth;
+        const centerWidth = centerNaturalWidth;
 
         // get workspace area and center date entry relative to it
-        let monitor = Main.layoutManager.findMonitorForActor(this);
+        const monitor = Main.layoutManager.findMonitorForActor(this);
         let centerOffset = 0;
         if (monitor) {
-            let workArea = Main.layoutManager.getWorkAreaForMonitor(monitor.index);
+            const workArea = Main.layoutManager.getWorkAreaForMonitor(monitor.index);
             centerOffset = 2 * (workArea.x - monitor.x) + workArea.width - monitor.width;
         }
 
-        sideWidth = Math.max(0, (allocWidth - centerWidth + centerOffset) / 2);
+        const sideWidth = Math.max(0, (allocWidth - centerWidth + centerOffset) / 2);
 
-        let childBox = new Clutter.ActorBox();
+        const childBox = new Clutter.ActorBox();
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
@@ -755,58 +574,32 @@ class Panel extends St.Widget {
         this._rightBox.allocate(childBox);
     }
 
-    _tryDragWindow(event) {
+    _onWindowDragGestureRecognize() {
         if (Main.modalCount > 0)
-            return Clutter.EVENT_PROPAGATE;
+            return;
 
-        const targetActor = global.stage.get_event_actor(event);
-        if (targetActor !== this)
-            return Clutter.EVENT_PROPAGATE;
+        const event = this._clickGesture.get_point_event(0);
+        const backend = global.stage.get_context().get_backend();
+        const sprite = backend.get_sprite(global.stage, event);
 
-        const [x, y] = event.get_coords();
-        let dragWindow = this._getDraggableWindowForPosition(x);
+        const coords = this._clickGesture.get_coords_abs();
+        const dragWindow = this._getDraggableWindowForPosition(coords.x);
 
         if (!dragWindow)
-            return Clutter.EVENT_PROPAGATE;
+            return;
 
-        const positionHint = new Graphene.Point({x, y});
-        return dragWindow.begin_grab_op(
+        dragWindow.begin_grab_op(
             Meta.GrabOp.MOVING,
-            event.get_device(),
-            event.get_event_sequence(),
+            sprite,
             event.get_time(),
-            positionHint) ? Clutter.EVENT_STOP : Clutter.EVENT_PROPAGATE;
-    }
-
-    _onButtonPress(actor, event) {
-        if (event.get_button() !== Clutter.BUTTON_PRIMARY)
-            return Clutter.EVENT_PROPAGATE;
-
-        return this._tryDragWindow(event);
-    }
-
-    _onTouchEvent(actor, event) {
-        if (event.type() !== Clutter.EventType.TOUCH_BEGIN)
-            return Clutter.EVENT_PROPAGATE;
-
-        return this._tryDragWindow(event);
-    }
-
-    vfunc_key_press_event(event) {
-        let symbol = event.get_key_symbol();
-        if (symbol === Clutter.KEY_Escape) {
-            global.display.focus_default_window(event.get_time());
-            return Clutter.EVENT_STOP;
-        }
-
-        return super.vfunc_key_press_event(event);
+            coords);
     }
 
     _toggleMenu(indicator) {
         if (!indicator || !indicator.mapped)
             return; // menu not supported by current session mode
 
-        let menu = indicator.menu;
+        const menu = indicator.menu;
         if (!indicator.reactive)
             return;
 
@@ -842,7 +635,7 @@ class Panel extends St.Widget {
     }
 
     set boxOpacity(value) {
-        let isReactive = value > 0;
+        const isReactive = value > 0;
 
         this._leftBox.opacity = value;
         this._leftBox.reactive = isReactive;
@@ -857,7 +650,7 @@ class Panel extends St.Widget {
     }
 
     _updatePanel() {
-        let panel = Main.sessionMode.panel;
+        const panel = Main.sessionMode.panel;
         this._hideIndicators();
         this._updateBox(panel.left, this._leftBox);
         this._updateBox(panel.center, this._centerBox);
@@ -880,8 +673,8 @@ class Panel extends St.Widget {
     }
 
     _hideIndicators() {
-        for (let role in PANEL_ITEM_IMPLEMENTATIONS) {
-            let indicator = this.statusArea[role];
+        for (const role in PANEL_ITEM_IMPLEMENTATIONS) {
+            const indicator = this.statusArea[role];
             if (!indicator)
                 continue;
             indicator.container.hide();
@@ -891,7 +684,7 @@ class Panel extends St.Widget {
     _ensureIndicator(role) {
         let indicator = this.statusArea[role];
         if (!indicator) {
-            let constructor = PANEL_ITEM_IMPLEMENTATIONS[role];
+            const constructor = PANEL_ITEM_IMPLEMENTATIONS[role];
             if (!constructor) {
                 // This icon is not implemented (this is a bug)
                 return null;
@@ -903,11 +696,11 @@ class Panel extends St.Widget {
     }
 
     _updateBox(elements, box) {
-        let nChildren = box.get_n_children();
+        const nChildren = box.get_n_children();
 
         for (let i = 0; i < elements.length; i++) {
-            let role = elements[i];
-            let indicator = this._ensureIndicator(role);
+            const role = elements[i];
+            const indicator = this._ensureIndicator(role);
             if (indicator == null)
                 continue;
 
@@ -916,17 +709,17 @@ class Panel extends St.Widget {
     }
 
     _addToPanelBox(role, indicator, position, box) {
-        let container = indicator.container;
+        const container = indicator.container;
         container.show();
 
-        let parent = container.get_parent();
+        const parent = container.get_parent();
         if (parent)
             parent.remove_child(container);
 
 
         box.insert_child_at_index(container, position);
         this.statusArea[role] = indicator;
-        let destroyId = indicator.connect('destroy', emitter => {
+        const destroyId = indicator.connect('destroy', emitter => {
             delete this.statusArea[role];
             emitter.disconnect(destroyId);
         });
@@ -942,12 +735,12 @@ class Panel extends St.Widget {
             throw new TypeError('Status indicator must be an instance of PanelMenu.Button');
 
         position ??= 0;
-        let boxes = {
+        const boxes = {
             left: this._leftBox,
             center: this._centerBox,
             right: this._rightBox,
         };
-        let boxContainer = boxes[box] || this._rightBox;
+        const boxContainer = boxes[box] || this._rightBox;
         this.statusArea[role] = indicator;
         this._addToPanelBox(role, indicator, position, boxContainer);
         return indicator;
@@ -976,13 +769,13 @@ class Panel extends St.Widget {
     }
 
     _getDraggableWindowForPosition(stageX) {
-        let workspaceManager = global.workspace_manager;
+        const workspaceManager = global.workspace_manager;
         const windows = workspaceManager.get_active_workspace().list_windows();
         const allWindowsByStacking =
             global.display.sort_windows_by_stacking(windows).reverse();
 
         return allWindowsByStacking.find(metaWindow => {
-            let rect = metaWindow.get_frame_rect();
+            const rect = metaWindow.get_frame_rect();
             return metaWindow.is_on_primary_monitor() &&
                    metaWindow.showing_on_its_workspace() &&
                    metaWindow.get_window_type() !== Meta.WindowType.DESKTOP &&
@@ -990,4 +783,4 @@ class Panel extends St.Widget {
                    stageX > rect.x && stageX < rect.x + rect.width;
         });
     }
-});
+}

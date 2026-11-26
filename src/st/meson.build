@@ -6,6 +6,8 @@ st_headers = [
   'st-box-layout.h',
   'st-button.h',
   'st-clipboard.h',
+  'st-cursor.h',
+  'st-dnd-start-gesture.h',
   'st-drawing-area.h',
   'st-entry.h',
   'st-focus-manager.h',
@@ -56,14 +58,11 @@ st_private_headers = [
   'croco/cr-cascade.h',
   'croco/cr-declaration.h',
   'croco/cr-doc-handler.h',
-  'croco/cr-enc-handler.h',
-  'croco/cr-fonts.h',
   'croco/cr-input.h',
   'croco/cr-num.h',
   'croco/cr-om-parser.h',
   'croco/cr-parser.h',
   'croco/cr-parsing-location.h',
-  'croco/cr-prop-list.h',
   'croco/cr-pseudo.h',
   'croco/cr-rgb.h',
   'croco/cr-selector.h',
@@ -90,14 +89,11 @@ croco_sources = [
   'croco/cr-cascade.c',
   'croco/cr-declaration.c',
   'croco/cr-doc-handler.c',
-  'croco/cr-enc-handler.c',
-  'croco/cr-fonts.c',
   'croco/cr-input.c',
   'croco/cr-num.c',
   'croco/cr-om-parser.c',
   'croco/cr-parser.c',
   'croco/cr-parsing-location.c',
-  'croco/cr-prop-list.c',
   'croco/cr-pseudo.c',
   'croco/cr-rgb.c',
   'croco/cr-selector.c',
@@ -119,6 +115,8 @@ st_sources = [
   'st-box-layout.c',
   'st-button.c',
   'st-clipboard.c',
+  'st-cursor.c',
+  'st-dnd-start-gesture.c',
   'st-drawing-area.c',
   'st-entry.c',
   'st-focus-manager.c',
@@ -158,16 +156,7 @@ st_enums = gnome.mkenums_simple('st-enum-types',
 
 st_gir_sources = st_sources + st_headers + st_enums
 
-data_to_c = find_program(meson.project_source_root() + '/src/data-to-c.py')
-
-glsl_sources = custom_target('scroll-view-fade-glsl',
-  input: ['st-scroll-view-fade.glsl'],
-  output: ['st-scroll-view-fade-generated.h'],
-  capture: true,
-  command: [data_to_c, '@INPUT@', 'st_scroll_view_fade_glsl']
-)
-
-st_nogir_sources = [glsl_sources]
+st_nogir_sources = []
 
 st_cflags = [
   '-I@0@/src'.format(meson.project_source_root()),
@@ -187,16 +176,19 @@ st_deps = [
   mutter_dep,
   gdk_pixbuf_dep,
   pango_dep,
+  cairo_dep,
 ]
 
 # Currently meson requires a shared library for building girs
 libst = shared_library('st-' + mutter_api_version,
-  sources: st_gir_sources + st_nogir_sources + croco_sources,
+  sources: st_gir_sources + st_nogir_sources + croco_sources + cursor_theme_resource,
   c_args: st_cflags,
   dependencies: st_deps + [
     libxml_dep,
     m_dep,
     schemas_dep,
+    json_glib_dep,
+    rsvg_dep,
   ],
   build_rpath: mutter_typelibdir,
   install_rpath: mutter_typelibdir,
@@ -211,7 +203,7 @@ libst_dep = declare_dependency(
   include_directories: [st_inc],
 )
 
-if get_option('tests') and have_x11_client
+if get_option('tests') and have_xwayland
   mutter_test_dep = dependency(libmutter_test_pc, version: mutter_req)
   test_theme = executable('test-theme',
     sources: 'test-theme.c',
@@ -223,6 +215,7 @@ if get_option('tests') and have_x11_client
 
   test('css-styling', test_theme,
     suite: 'st',
+    depends: compiled_schemas,
     workdir: meson.current_source_dir(),
   )
 endif

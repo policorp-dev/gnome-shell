@@ -3,7 +3,7 @@
 #include "config.h"
 
 #include <clutter/clutter.h>
-#include <girepository.h>
+#include <girepository/girepository.h>
 #include <meta/display.h>
 
 #include "shell-tray-manager.h"
@@ -167,7 +167,7 @@ shell_tray_manager_class_init (ShellTrayManagerClass *klass)
                                    PROP_BG_COLOR,
                                    g_param_spec_boxed ("bg-color", NULL, NULL,
                                                        COGL_TYPE_COLOR,
-                                                       G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                                       G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_NAME));
 }
 
 ShellTrayManager *

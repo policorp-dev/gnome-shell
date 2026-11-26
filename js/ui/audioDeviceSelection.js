@@ -10,6 +10,7 @@ import * as Dialog from './dialog.js';
 import * as ModalDialog from './modalDialog.js';
 
 import * as Main from './main.js';
+import {emitSignalToDestination} from '../misc/dbusUtils.js';
 import {loadInterfaceXML} from '../misc/fileUtils.js';
 
 const AudioDevice = {
@@ -42,7 +43,7 @@ const AudioDeviceSelectionDialog = GObject.registerClass({
     }
 
     _buildLayout() {
-        let content = new Dialog.MessageDialogContent({
+        const content = new Dialog.MessageDialogContent({
             title: _('Select Audio Device'),
         });
 
@@ -136,8 +137,8 @@ const AudioDeviceSelectionDialog = GObject.registerClass({
     }
 
     _openSettings() {
-        let desktopFile = 'gnome-sound-panel.desktop';
-        let app = Shell.AppSystem.get_default().lookup_app(desktopFile);
+        const desktopFile = 'gnome-sound-panel.desktop';
+        const app = Shell.AppSystem.get_default().lookup_app(desktopFile);
 
         if (!app) {
             log(`Settings panel for desktop file ${desktopFile} could not be loaded!`);
@@ -165,15 +166,11 @@ export class AudioDeviceSelectionDBus {
     }
 
     _onDeviceSelected(dialog, device) {
-        let connection = this._dbusImpl.get_connection();
-        let info = this._dbusImpl.get_info();
         const deviceName = Object.keys(AudioDevice)
             .filter(dev => AudioDevice[dev] === device)[0].toLowerCase();
-        connection.emit_signal(
-            this._audioSelectionDialog._sender,
-            this._dbusImpl.get_object_path(),
-            info ? info.name : null,
-            'DeviceSelected',
+
+        emitSignalToDestination(this._dbusImpl,
+            this._audioSelectionDialog._sender, 'DeviceSelected',
             GLib.Variant.new('(s)', [deviceName]));
     }
 
@@ -183,7 +180,7 @@ export class AudioDeviceSelectionDBus {
             return;
         }
 
-        let [deviceNames] = params;
+        const [deviceNames] = params;
         let devices = 0;
         deviceNames.forEach(n => (devices |= AudioDevice[n.toUpperCase()]));
 

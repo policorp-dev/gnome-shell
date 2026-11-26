@@ -170,7 +170,7 @@ class UnalignedLayoutStrategy extends LayoutStrategy {
         // thumbnails is much more important to preserve than the width of
         // them, so two windows with equal height, but maybe differering
         // widths line up.
-        let ratio = window.boundingBox.height / this._monitor.height;
+        const ratio = window.boundingBox.height / this._monitor.height;
 
         // The purpose of this manipulation here is to prevent windows
         // from getting too small. For something like a calculator window,
@@ -182,9 +182,9 @@ class UnalignedLayoutStrategy extends LayoutStrategy {
     }
 
     _computeRowSizes(layout) {
-        let {rows, scale} = layout;
+        const {rows, scale} = layout;
         for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
+            const row = rows[i];
             row.width = row.fullWidth * scale + (row.windows.length - 1) * this._columnSpacing;
             row.height = row.fullHeight * scale;
         }
@@ -194,8 +194,8 @@ class UnalignedLayoutStrategy extends LayoutStrategy {
         if (row.fullWidth + width <= idealRowWidth)
             return true;
 
-        let oldRatio = row.fullWidth / idealRowWidth;
-        let newRatio = (row.fullWidth + width) / idealRowWidth;
+        const oldRatio = row.fullWidth / idealRowWidth;
+        const newRatio = (row.fullWidth + width) / idealRowWidth;
 
         if (Math.abs(1 - newRatio) < Math.abs(1 - oldRatio))
             return true;
@@ -219,31 +219,31 @@ class UnalignedLayoutStrategy extends LayoutStrategy {
 
         const numRows = layoutParams.numRows;
 
-        let rows = [];
+        const rows = [];
         let totalWidth = 0;
         for (let i = 0; i < windows.length; i++) {
-            let window = windows[i];
-            let s = this._computeWindowScale(window);
+            const window = windows[i];
+            const s = this._computeWindowScale(window);
             totalWidth += window.boundingBox.width * s;
         }
 
-        let idealRowWidth = totalWidth / numRows;
+        const idealRowWidth = totalWidth / numRows;
 
         // Sort windows vertically to minimize travel distance.
         // This affects what rows the windows get placed in.
-        let sortedWindows = windows.slice();
+        const sortedWindows = windows.slice();
         sortedWindows.sort((a, b) => a.windowCenter.y - b.windowCenter.y);
 
         let windowIdx = 0;
         for (let i = 0; i < numRows; i++) {
-            let row = this._newRow();
+            const row = this._newRow();
             rows.push(row);
 
             for (; windowIdx < sortedWindows.length; windowIdx++) {
-                let window = sortedWindows[windowIdx];
-                let s = this._computeWindowScale(window);
-                let width = window.boundingBox.width * s;
-                let height = window.boundingBox.height * s;
+                const window = sortedWindows[windowIdx];
+                const s = this._computeWindowScale(window);
+                const width = window.boundingBox.width * s;
+                const height = window.boundingBox.height * s;
                 row.fullHeight = Math.max(row.fullHeight, height);
 
                 // either new width is < idealWidth or new width is nearer from idealWidth then oldWidth
@@ -259,7 +259,7 @@ class UnalignedLayoutStrategy extends LayoutStrategy {
         let gridHeight = 0;
         let maxRow;
         for (let i = 0; i < numRows; i++) {
-            let row = rows[i];
+            const row = rows[i];
             this._sortRow(row);
 
             if (!maxRow || row.fullWidth > maxRow.fullWidth)
@@ -277,22 +277,22 @@ class UnalignedLayoutStrategy extends LayoutStrategy {
     }
 
     computeScaleAndSpace(layout, area) {
-        let hspacing = (layout.maxColumns - 1) * this._columnSpacing;
-        let vspacing = (layout.numRows - 1) * this._rowSpacing;
+        const hspacing = (layout.maxColumns - 1) * this._columnSpacing;
+        const vspacing = (layout.numRows - 1) * this._rowSpacing;
 
-        let spacedWidth = area.width - hspacing;
-        let spacedHeight = area.height - vspacing;
+        const spacedWidth = area.width - hspacing;
+        const spacedHeight = area.height - vspacing;
 
-        let horizontalScale = spacedWidth / layout.gridWidth;
-        let verticalScale = spacedHeight / layout.gridHeight;
+        const horizontalScale = spacedWidth / layout.gridWidth;
+        const verticalScale = spacedHeight / layout.gridHeight;
 
         // Thumbnails should be less than 70% of the original size
-        let scale = Math.min(
+        const scale = Math.min(
             horizontalScale, verticalScale, WINDOW_PREVIEW_MAXIMUM_SCALE);
 
-        let scaledLayoutWidth = layout.gridWidth * scale + hspacing;
-        let scaledLayoutHeight = layout.gridHeight * scale + vspacing;
-        let space = (scaledLayoutWidth * scaledLayoutHeight) / (area.width * area.height);
+        const scaledLayoutWidth = layout.gridWidth * scale + hspacing;
+        const scaledLayoutHeight = layout.gridHeight * scale + vspacing;
+        const space = (scaledLayoutWidth * scaledLayoutHeight) / (area.width * area.height);
 
         layout.scale = scale;
 
@@ -302,19 +302,19 @@ class UnalignedLayoutStrategy extends LayoutStrategy {
     computeWindowSlots(layout, area) {
         this._computeRowSizes(layout);
 
-        let {rows, scale} = layout;
+        const {rows, scale} = layout;
 
-        let slots = [];
+        const slots = [];
 
         // Do this in three parts.
         let heightWithoutSpacing = 0;
         for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
+            const row = rows[i];
             heightWithoutSpacing += row.height;
         }
 
-        let verticalSpacing = (rows.length - 1) * this._rowSpacing;
-        let additionalVerticalScale = Math.min(1, (area.height - verticalSpacing) / heightWithoutSpacing);
+        const verticalSpacing = (rows.length - 1) * this._rowSpacing;
+        const additionalVerticalScale = Math.min(1, (area.height - verticalSpacing) / heightWithoutSpacing);
 
         // keep track how much smaller the grid becomes due to scaling
         // so it can be centered again
@@ -322,13 +322,13 @@ class UnalignedLayoutStrategy extends LayoutStrategy {
         let y = 0;
 
         for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
+            const row = rows[i];
 
             // If this window layout row doesn't fit in the actual
             // geometry, then apply an additional scale to it.
-            let horizontalSpacing = (row.windows.length - 1) * this._columnSpacing;
-            let widthWithoutSpacing = row.width - horizontalSpacing;
-            let additionalHorizontalScale = Math.min(1, (area.width - horizontalSpacing) / widthWithoutSpacing);
+            const horizontalSpacing = (row.windows.length - 1) * this._columnSpacing;
+            const widthWithoutSpacing = row.width - horizontalSpacing;
+            const additionalHorizontalScale = Math.min(1, (area.width - horizontalSpacing) / widthWithoutSpacing);
 
             if (additionalHorizontalScale < additionalVerticalScale) {
                 row.additionalScale = additionalHorizontalScale;
@@ -354,14 +354,14 @@ class UnalignedLayoutStrategy extends LayoutStrategy {
 
             let x = row.x;
             for (let j = 0; j < row.windows.length; j++) {
-                let window = row.windows[j];
+                const window = row.windows[j];
 
                 let s = scale * this._computeWindowScale(window) * row.additionalScale;
-                let cellWidth = window.boundingBox.width * s;
-                let cellHeight = window.boundingBox.height * s;
+                const cellWidth = window.boundingBox.width * s;
+                const cellHeight = window.boundingBox.height * s;
 
                 s = Math.min(s, WINDOW_PREVIEW_MAXIMUM_SCALE);
-                let cloneWidth = window.boundingBox.width * s;
+                const cloneWidth = window.boundingBox.width * s;
                 const cloneHeight = window.boundingBox.height * s;
 
                 let cloneX = x + (cellWidth - cloneWidth) / 2;
@@ -457,8 +457,8 @@ export const WorkspaceLayout = GObject.registerClass({
     }
 
     _isBetterScaleAndSpace(oldScale, oldSpace, scale, space) {
-        let spacePower = (space - oldSpace) * LAYOUT_SPACE_WEIGHT;
-        let scalePower = (scale - oldScale) * LAYOUT_SCALE_WEIGHT;
+        const spacePower = (space - oldSpace) * LAYOUT_SPACE_WEIGHT;
+        const scalePower = (scale - oldScale) * LAYOUT_SCALE_WEIGHT;
 
         if (scale > oldScale && space > oldSpace) {
             // Win win -- better scale and better space
@@ -707,10 +707,11 @@ export const WorkspaceLayout = GObject.registerClass({
             let workspaceBoxWidth, workspaceBoxHeight;
 
             if (windowInfo.metaWindow.showing_on_its_workspace()) {
-                workspaceBoxX = (child.boundingBox.x - workareaX) * allocationScale;
-                workspaceBoxY = (child.boundingBox.y - workareaY) * allocationScale;
-                workspaceBoxWidth = child.boundingBox.width * allocationScale;
-                workspaceBoxHeight = child.boundingBox.height * allocationScale;
+                const {boundingBox} = child;
+                workspaceBoxX = (boundingBox.x - workareaX) * allocationScale;
+                workspaceBoxY = (boundingBox.y - workareaY) * allocationScale;
+                workspaceBoxWidth = boundingBox.width * allocationScale;
+                workspaceBoxHeight = boundingBox.height * allocationScale;
             } else {
                 workspaceBoxX = workareaX * allocationScale;
                 workspaceBoxY = workareaY * allocationScale;
@@ -1068,20 +1069,20 @@ class Workspace extends St.Widget {
         if (monitorIndex !== Main.layoutManager.primaryIndex)
             this.add_style_class_name('external-monitor');
 
-        const clickAction = new Clutter.ClickAction();
-        clickAction.connect('clicked', action => {
+        const clickGesture = new Clutter.ClickGesture({
+            required_button: Clutter.BUTTON_PRIMARY,
+        });
+        clickGesture.connect('recognize', () => {
             // Switch to the workspace when not the active one, leave the
             // overview otherwise.
-            if (action.get_button() === 1 || action.get_button() === 0) {
-                const leaveOverview = this._shouldLeaveOverview();
+            const leaveOverview = this._shouldLeaveOverview();
 
-                this.metaWorkspace?.activate(global.get_current_time());
-                if (leaveOverview)
-                    Main.overview.hide();
-            }
+            this.metaWorkspace?.activate(global.get_current_time());
+            if (leaveOverview)
+                Main.overview.hide();
         });
-        this.bind_property('mapped', clickAction, 'enabled', GObject.BindingFlags.SYNC_CREATE);
-        this._container.add_action(clickAction);
+        this.bind_property('mapped', clickGesture, 'enabled', GObject.BindingFlags.SYNC_CREATE);
+        this._container.add_action(clickGesture);
 
         this.connect('style-changed', this._onStyleChanged.bind(this));
         this.connect('destroy', this._onDestroy.bind(this));
@@ -1137,7 +1138,7 @@ class Workspace extends St.Widget {
     }
 
     _doRemoveWindow(metaWin) {
-        let clone = this._removeWindowClone(metaWin);
+        const clone = this._removeWindowClone(metaWin);
 
         if (!clone)
             return;
@@ -1183,16 +1184,15 @@ class Workspace extends St.Widget {
     }
 
     _doAddWindow(metaWin) {
-        let win = metaWin.get_compositor_private();
+        const win = metaWin.get_compositor_private();
 
         if (!win) {
             // Newly-created windows are added to a workspace before
             // the compositor finds out about them...
-            let id = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            const id = GLib.idle_add_once(GLib.PRIORITY_DEFAULT, () => {
                 if (metaWin.get_compositor_private() &&
                     metaWin.get_workspace() === this.metaWorkspace)
                     this._doAddWindow(metaWin);
-                return GLib.SOURCE_REMOVE;
             });
             GLib.Source.set_name_by_id(id, '[gnome-shell] this._doAddWindow');
             return;
@@ -1219,8 +1219,8 @@ class Workspace extends St.Widget {
                 return;
 
             // Let the top-most ancestor handle all transients
-            let parent = metaWin.find_root_ancestor();
-            let clone = this._windows.find(c => c.metaWindow === parent);
+            const parent = metaWin.find_root_ancestor();
+            const clone = this._windows.find(c => c.metaWindow === parent);
 
             // If no clone was found, the parent hasn't been created yet
             // and will take care of the dialog when added
@@ -1273,14 +1273,11 @@ class Workspace extends St.Widget {
 
     // check for maximized windows on the workspace
     hasMaximizedWindows() {
-        for (let i = 0; i < this._windows.length; i++) {
-            let metaWindow = this._windows[i].metaWindow;
-            if (metaWindow.showing_on_its_workspace() &&
-                metaWindow.maximized_horizontally &&
-                metaWindow.maximized_vertically)
-                return true;
-        }
-        return false;
+        return this._windows.some(w => {
+            const {metaWindow} = w;
+            return metaWindow.showing_on_its_workspace() &&
+                   metaWindow.is_maximized();
+        });
     }
 
     _clearSkipTaskbarSignals() {
@@ -1338,7 +1335,7 @@ class Workspace extends St.Widget {
 
     // Create a clone of a (non-desktop) window and add it to the window list
     _addWindowClone(metaWindow) {
-        let clone = new WindowPreview(metaWindow, this, this._overviewAdjustment);
+        const clone = new WindowPreview(metaWindow, this, this._overviewAdjustment);
 
         clone.connect('selected',
             this._onCloneSelected.bind(this));
@@ -1352,7 +1349,7 @@ class Workspace extends St.Widget {
             Main.overview.endWindowDrag(metaWindow);
         });
         clone.connect('show-chrome', () => {
-            let focus = global.stage.key_focus;
+            const focus = global.stage.key_focus;
             if (focus == null || this.contains(focus))
                 clone.grab_key_focus();
 
@@ -1379,7 +1376,7 @@ class Workspace extends St.Widget {
 
     _removeWindowClone(metaWin) {
         // find the position of the window in our list
-        let index = this._lookupIndex(metaWin);
+        const index = this._lookupIndex(metaWin);
 
         if (index === -1)
             return null;
@@ -1416,8 +1413,8 @@ class Workspace extends St.Widget {
     }
 
     acceptDrop(source, actor, x, y, time) {
-        let workspaceManager = global.workspace_manager;
-        let workspaceIndex = this.metaWorkspace
+        const workspaceManager = global.workspace_manager;
+        const workspaceIndex = this.metaWorkspace
             ? this.metaWorkspace.index()
             : workspaceManager.get_active_workspace_index();
 

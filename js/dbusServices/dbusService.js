@@ -2,6 +2,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 import {programArgs} from 'system';
+import {setConsoleLogDomain} from 'console';
 
 import './misc/dbusErrors.js';
 
@@ -120,13 +121,11 @@ export class ServiceImplementation {
         if (this._shutdownTimeoutId)
             GLib.source_remove(this._shutdownTimeoutId);
 
-        this._shutdownTimeoutId = GLib.timeout_add_seconds(
+        this._shutdownTimeoutId = GLib.timeout_add_seconds_once(
             GLib.PRIORITY_DEFAULT, IDLE_SHUTDOWN_TIME,
             () => {
                 this._shutdownTimeoutId = 0;
                 this._maybeShutdown();
-
-                return GLib.SOURCE_REMOVE;
             });
     }
 
@@ -178,6 +177,8 @@ export class DBusService {
         this._name = name;
         this._service = service;
         this._loop = new GLib.MainLoop(null, false);
+
+        setConsoleLogDomain(name);
 
         this._service.connect('shutdown', () => this._loop.quit());
     }

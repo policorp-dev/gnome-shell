@@ -5,9 +5,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Graphene from 'gi://Graphene';
-import Meta from 'gi://Meta';
 import Pango from 'gi://Pango';
-import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import * as Main from './main.js';
@@ -16,9 +14,10 @@ import * as Mpris from './mpris.js';
 
 import * as Util from '../misc/util.js';
 import {formatTimeSpan} from '../misc/dateUtils.js';
+import {logErrorUnlessCancelled} from '../misc/errorUtils.js';
 
 const MAX_NOTIFICATION_BUTTONS = 3;
-const MESSAGE_ANIMATION_TIME = 100;
+export const MESSAGE_ANIMATION_TIME = 100;
 
 const EXPANDED_GROUP_OVERSHOT_HEIGHT = 50;
 const DEFAULT_EXPAND_LINES = 6;
@@ -29,6 +28,9 @@ const ADDITIONAL_BOTTOM_MARGIN_EXPANDED_GROUP = 15;
 const WIDTH_OFFSET_STACKED = 6;
 const HEIGHT_OFFSET_STACKED = 10;
 const HEIGHT_OFFSET_REDUCTION_STACKED = 1.4;
+
+const MAX_TITLE_LENGTH = 150;
+const MAX_BODY_LENGTH = 850;
 
 export const URLHighlighter = GObject.registerClass(
 class URLHighlighter extends St.Label {
@@ -41,9 +43,9 @@ class URLHighlighter extends St.Label {
         });
         this._linkColor = '#ccccff';
         this.connect('style-changed', () => {
-            let [hasColor, color] = this.get_theme_node().lookup_color('link-color', false);
+            const [hasColor, color] = this.get_theme_node().lookup_color('link-color', false);
             if (hasColor) {
-                let linkColor = color.to_string().substring(0, 7);
+                const linkColor = color.to_string().substring(0, 7);
                 if (linkColor !== this._linkColor) {
                     this._linkColor = linkColor;
                     this._highlightUrls();
@@ -54,26 +56,29 @@ class URLHighlighter extends St.Label {
         this.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
 
         this.setMarkup(text, allowMarkup);
+
+        this._clickGesture = new Clutter.ClickGesture();
+        this._clickGesture.connectObject(
+            'recognize', this._onClick.bind(this),
+            'may-recognize', this._checkInUrl.bind(this),
+            this);
+        this.add_action(this._clickGesture);
+
+        const motionController = new Clutter.MotionController();
+        motionController.connect('leave', () => this._onLeave());
+        motionController.connect('motion', this._onMotion.bind(this));
+        this.add_action(motionController);
     }
 
-    vfunc_button_press_event(event) {
-        // Don't try to URL highlight when invisible.
-        // The MessageTray doesn't actually hide us, so
-        // we need to check for paint opacities as well.
-        if (!this.visible || this.get_paint_opacity() === 0)
-            return Clutter.EVENT_PROPAGATE;
-
-        // Keep Notification from seeing this and taking
-        // a pointer grab, which would block our button-release-event
-        // handler, if an URL is clicked
-        return this._findUrlAtPos(event) !== -1;
+    _checkInUrl() {
+        const {x, y} = this._clickGesture.get_coords_abs();
+        const urlId = this._findUrlAtPos(x, y);
+        return urlId !== -1;
     }
 
-    vfunc_button_release_event(event) {
-        if (!this.visible || this.get_paint_opacity() === 0)
-            return Clutter.EVENT_PROPAGATE;
-
-        const urlId = this._findUrlAtPos(event);
+    _onClick() {
+        const {x, y} = this._clickGesture.get_coords_abs();
+        const urlId = this._findUrlAtPos(x, y);
         if (urlId !== -1) {
             let url = this._urls[urlId].url;
             if (!url.includes(':'))
@@ -81,35 +86,31 @@ class URLHighlighter extends St.Label {
 
             Gio.app_info_launch_default_for_uri(
                 url, global.create_app_launch_context(0, -1));
-            return Clutter.EVENT_STOP;
         }
-        return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_motion_event(event) {
+    _onMotion(_controller, _sprite, x, y) {
         if (!this.visible || this.get_paint_opacity() === 0)
-            return Clutter.EVENT_PROPAGATE;
+            return;
 
-        const urlId = this._findUrlAtPos(event);
+        const urlId = this._findUrlAtPos(x, y);
         if (urlId !== -1 && !this._cursorChanged) {
-            global.display.set_cursor(Meta.Cursor.POINTER);
+            this.set_cursor_type(Clutter.CursorType.POINTER);
             this._cursorChanged = true;
         } else if (urlId === -1) {
-            global.display.set_cursor(Meta.Cursor.DEFAULT);
+            this.set_cursor_type(Clutter.CursorType.DEFAULT);
             this._cursorChanged = false;
         }
-        return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_leave_event(event) {
+    _onLeave() {
         if (!this.visible || this.get_paint_opacity() === 0)
-            return Clutter.EVENT_PROPAGATE;
+            return;
 
         if (this._cursorChanged) {
             this._cursorChanged = false;
-            global.display.set_cursor(Meta.Cursor.DEFAULT);
+            this.set_cursor_type(Clutter.CursorType.DEFAULT);
         }
-        return super.vfunc_leave_event(event);
     }
 
     setMarkup(text, allowMarkup) {
@@ -124,12 +125,12 @@ class URLHighlighter extends St.Label {
 
     _highlightUrls() {
         // text here contain markup
-        let urls = Util.findUrls(this._text);
+        const urls = Util.findUrls(this._text);
         let markup = '';
         let pos = 0;
         for (let i = 0; i < urls.length; i++) {
-            let url = urls[i];
-            let str = this._text.substring(pos, url.pos);
+            const url = urls[i];
+            const str = this._text.substring(pos, url.pos);
             markup += `${str}<span foreground="${this._linkColor}"><u>${url.url}</u></span>`;
             pos = url.pos + url.url.length;
         }
@@ -137,12 +138,11 @@ class URLHighlighter extends St.Label {
         this.clutter_text.set_markup(markup);
     }
 
-    _findUrlAtPos(event) {
-        let [x, y] = event.get_coords();
+    _findUrlAtPos(x, y) {
         [, x, y] = this.transform_stage_point(x, y);
         let findPos = -1;
         for (let i = 0; i < this.clutter_text.text.length; i++) {
-            let [, px, py, lineHeight] = this.clutter_text.position_to_coords(i);
+            const [, px, py, lineHeight] = this.clutter_text.position_to_coords(i);
             if (py > y || py + lineHeight < y || x < px)
                 continue;
             findPos = i;
@@ -418,8 +418,8 @@ class MessageHeader extends St.BoxLayout {
     }
 });
 
-export const Message = GObject.registerClass({
-    Properties: {
+export class Message extends St.Button {
+    static [GObject.properties] = {
         'title': GObject.ParamSpec.string(
             'title', null, null,
             GObject.ParamFlags.READWRITE,
@@ -440,15 +440,37 @@ export const Message = GObject.registerClass({
             'datetime', null, null,
             GObject.ParamFlags.READWRITE,
             GLib.DateTime),
-    },
-    Signals: {
+    };
+
+    static [GObject.signals] = {
         'close': {
             flags: GObject.SignalFlags.RUN_LAST,
         },
         'expanded': {},
         'unexpanded': {},
-    },
-}, class Message extends St.Button {
+    };
+
+    static {
+        GObject.registerClass(this);
+
+        const bindingPool = this.get_binding_pool();
+
+        bindingPool.install_closure(
+            'close', Clutter.KEY_BackSpace, 0,
+            obj => {
+                obj._closeIfAllowed();
+                return Clutter.EVENT_STOP;
+            }
+        );
+        bindingPool.install_closure(
+            'close', Clutter.KEY_Delete, 0,
+            obj => {
+                obj._closeIfAllowed();
+                return Clutter.EVENT_STOP;
+            }
+        );
+    }
+
     constructor(source) {
         super({
             style_class: 'message',
@@ -461,7 +483,7 @@ export const Message = GObject.registerClass({
         this.expanded = false;
         this._useBodyMarkup = false;
 
-        let vbox = new St.BoxLayout({
+        const vbox = new St.BoxLayout({
             orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
         });
@@ -569,7 +591,7 @@ export const Message = GObject.registerClass({
     }
 
     set title(text) {
-        this._titleText = text;
+        this._titleText = this._limitString(text, MAX_TITLE_LENGTH);
         const title = text ? Util.fixMarkup(text.replace(/\n/g, ' '), false) : '';
         this.titleLabel.clutter_text.set_markup(title);
         this.notify('title');
@@ -580,7 +602,7 @@ export const Message = GObject.registerClass({
     }
 
     set body(text) {
-        this._bodyText = text;
+        this._bodyText = this._limitString(text, MAX_BODY_LENGTH);
         this._bodyLabel.setMarkup(text ? text.replace(/\n/g, ' ') : '',
             this._useBodyMarkup);
         this.notify('body');
@@ -619,6 +641,9 @@ export const Message = GObject.registerClass({
     }
 
     expand(animate) {
+        if (this.expanded)
+            return;
+
         this.expanded = true;
 
         this._actionBin.visible = !!this._actionBin.child;
@@ -673,20 +698,20 @@ export const Message = GObject.registerClass({
         return false;
     }
 
-    vfunc_key_press_event(event) {
-        let keysym = event.get_key_symbol();
-
-        if (keysym === Clutter.KEY_Delete ||
-            keysym === Clutter.KEY_KP_Delete ||
-            keysym === Clutter.KEY_BackSpace) {
-            if (this.canClose()) {
-                this.close();
-                return Clutter.EVENT_STOP;
-            }
-        }
-        return super.vfunc_key_press_event(event);
+    _closeIfAllowed() {
+        if (this.canClose())
+            this.close();
     }
-});
+
+    _limitString(string, limit) {
+        const segmenter = new Intl.Segmenter();
+        const graphemes =
+            Array.from(segmenter.segment(string))
+            .splice(0, limit)
+            .map(o => o.segment);
+        return graphemes.join('');
+    }
+}
 
 export const NotificationMessage = GObject.registerClass(
 class NotificationMessage extends Message {
@@ -770,7 +795,7 @@ class NotificationMessage extends Message {
     }
 });
 
-const MediaMessage = GObject.registerClass(
+export const MediaMessage = GObject.registerClass(
 class MediaMessage extends Message {
     constructor(player) {
         super(player.source);
@@ -793,13 +818,24 @@ class MediaMessage extends Message {
                 this._player.next();
             });
 
+        Main.sessionMode.connectObject('updated',
+            () => this._applyPolicy(), this);
         this._player.connectObject('changed', this._update.bind(this), this);
         this._update();
     }
 
     vfunc_clicked() {
+        if (Main.sessionMode.isLocked)
+            return;
+
         this._player.raise();
         Main.panel.closeCalendar();
+    }
+
+    _applyPolicy() {
+        this.visible =
+            this._policy.enable &&
+            (!Main.sessionMode.isLocked || this._policy.showInLockScreen);
     }
 
     _updateNavButton(button, sensitive) {
@@ -821,14 +857,30 @@ class MediaMessage extends Message {
             icon,
         });
 
-        let isPlaying = this._player.status === 'Playing';
-        let iconName = isPlaying
+        const isPlaying = this._player.status === 'Playing';
+        const iconName = isPlaying
             ? 'media-playback-pause-symbolic'
             : 'media-playback-start-symbolic';
         this._playPauseButton.child.icon_name = iconName;
 
         this._updateNavButton(this._prevButton, this._player.canGoPrevious);
         this._updateNavButton(this._nextButton, this._player.canGoNext);
+
+        const appId = this._player.app?.id.replace(/\.desktop$/, '') ?? 'generic';
+        if (this._policy?.id !== appId) {
+            this._policy?.disconnectObject(this);
+
+            this._policy = MessageTray.NotificationPolicy.newForApp(this._player.app);
+
+            // Register notification source
+            this._policy.store();
+
+            this._policy.connectObject(
+                'notify::enable', () => this._applyPolicy(),
+                'notify::show-in-lock-screen', () => this._applyPolicy(),
+                this);
+            this._applyPolicy();
+        }
     }
 });
 
@@ -853,7 +905,7 @@ export const NotificationMessageGroup = GObject.registerClass({
     },
 }, class NotificationMessageGroup extends St.Widget {
     constructor(source) {
-        const action =  new Clutter.ClickAction();
+        const action =  new Clutter.ClickGesture();
 
         // A widget that covers stacked messages so that they don't receive events
         const cover = new St.Widget({
@@ -909,7 +961,7 @@ export const NotificationMessageGroup = GObject.registerClass({
         });
 
         this._unexpandButton.connect('clicked', () => this.emit('expand-toggle-requested'));
-        action.connect('clicked', () => this.emit('expand-toggle-requested'));
+        action.connect('recognize', () => this.emit('expand-toggle-requested'));
 
         this._headerBox.add_child(this._unexpandButton);
         this.add_child(this._headerBox);
@@ -955,13 +1007,10 @@ export const NotificationMessageGroup = GObject.registerClass({
         this.notify('expanded');
         this._cover.hide();
 
-        await new Promise((resolve, _) => {
-            this.ease_property('@layout.expansion', 1, {
-                progress_mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                duration: GROUP_EXPENSION_TIME,
-                onComplete: () => resolve(),
-            });
-        });
+        await this.ease_property_async('@layout.expansion', 1, {
+            progress_mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            duration: GROUP_EXPENSION_TIME,
+        }).catch(logErrorUnlessCancelled);
     }
 
     async collapse() {
@@ -979,13 +1028,10 @@ export const NotificationMessageGroup = GObject.registerClass({
         this._cover.show();
         this._updateStackedMessagesFade();
 
-        await new Promise((resolve, _) => {
-            this.ease_property('@layout.expansion', 0, {
-                progress_mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                duration: GROUP_EXPENSION_TIME,
-                onComplete: () => resolve(),
-            });
-        });
+        await this.ease_property_async('@layout.expansion', 0, {
+            progress_mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            duration: GROUP_EXPENSION_TIME,
+        }).catch(logErrorUnlessCancelled);
 
         this._headerBox.hide();
     }
@@ -1334,7 +1380,7 @@ const MessageGroupExpanderLayout = GObject.registerClass({
 
     vfunc_allocate(container, box) {
         const childWidth = box.x2 - box.x1;
-        let fullY2 = box.y2;
+        const fullY2 = box.y2;
 
         if (this._cover.visible)
             this._cover.allocate(box);
@@ -1498,6 +1544,8 @@ export const MessageView = GObject.registerClass({
 
         this._setupMpris();
         this._setupNotifications();
+
+        this._expandedGroup = null;
     }
 
     get empty() {
@@ -1922,18 +1970,7 @@ const FadeEffect = GObject.registerClass({
             GObject.ParamFlags.READWRITE,
             Clutter.Actor),
     },
-}, class FadeEffect extends Shell.GLSLEffect {
-    constructor(params) {
-        super(params);
-
-        this._heightLocation = this.get_uniform_location('height');
-        this._topFadePositionLocation = this.get_uniform_location('top_fade_position');
-        this._bottomFadePositionLocation = this.get_uniform_location('bottom_fade_position');
-        this._opacityLocation = this.get_uniform_location('opacity');
-        this._topEdgeFadeLocation = this.get_uniform_location('top_edge_fade');
-        this._bottomEdgeFadeLocation = this.get_uniform_location('bottom_edge_fade');
-    }
-
+}, class FadeEffect extends Clutter.ShaderEffect {
     _updateEnabled() {
         if (!this._vadjustment) {
             this.enabled = false;
@@ -1969,7 +2006,7 @@ const FadeEffect = GObject.registerClass({
             return;
 
         this._opacity = opacity;
-        this.set_uniform_float(this._opacityLocation, 1, [opacity]);
+        this.set_uniform_float('opacity', 1, [opacity]);
         this.queue_repaint();
 
         this.notify('opacity');
@@ -1990,13 +2027,15 @@ const FadeEffect = GObject.registerClass({
     }
 
     _vadjustmentChanged() {
-        const newAdj = this.actor.vadjustment;
+        const newAdj = this.actor?.vadjustment;
         if (this._vadjustment === newAdj)
             return;
 
         this._vadjustment?.disconnectObject(this);
         this._vadjustment = newAdj;
-        this._vadjustment?.connectObject('changed', this._updateEnabled.bind(this));
+        this._vadjustment?.connectObject(
+            'changed', this._updateEnabled.bind(this),
+            this);
         this._updateEnabled();
     }
 
@@ -2006,7 +2045,9 @@ const FadeEffect = GObject.registerClass({
 
         this.actor?.disconnectObject(this);
 
-        actor?.connectObject('notify::vadjustment', this._vadjustmentChanged.bind(this));
+        actor?.connectObject(
+            'notify::vadjustment', this._vadjustmentChanged.bind(this),
+            this);
         super.vfunc_set_actor(actor);
         this._vadjustmentChanged();
     }
@@ -2017,24 +2058,24 @@ const FadeEffect = GObject.registerClass({
         if (this._highlightActor) {
             const position = this._highlightActor.apply_relative_transform_to_point(this.actor, new Graphene.Point3D());
 
-            this.set_uniform_float(this._topFadePositionLocation, 1, [position.y - value]);
-            this.set_uniform_float(this._bottomFadePositionLocation, 1, [(position.y + this._highlightActor.height - 1) - value]);
+            this.set_uniform_float('top_fade_position', 1, [position.y - value]);
+            this.set_uniform_float('bottom_fade_position', 1, [(position.y + this._highlightActor.height - 1) - value]);
         } else {
-            this.set_uniform_float(this._topFadePositionLocation, 1, [0.0]);
-            this.set_uniform_float(this._bottomFadePositionLocation, 1, [0.0]);
+            this.set_uniform_float('top_fade_position', 1, [0.0]);
+            this.set_uniform_float('bottom_fade_position', 1, [0.0]);
         }
 
-        this.set_uniform_float(this._heightLocation, 1, [pageSize]);
+        this.set_uniform_float('height', 1, [pageSize]);
 
-        this.set_uniform_float(this._topEdgeFadeLocation, 1, [Math.min(value, this._fadeMargin)]);
-        this.set_uniform_float(this._bottomEdgeFadeLocation, 1, [
+        this.set_uniform_float('top_edge_fade', 1, [Math.min(value, this._fadeMargin)]);
+        this.set_uniform_float('bottom_edge_fade', 1, [
             pageSize - Math.min(upper - pageSize - value, this._fadeMargin),
         ]);
 
         super.vfunc_paint_target(node, paintContext);
     }
 
-    vfunc_build_pipeline() {
+    vfunc_get_static_snippet() {
         const dec = `uniform sampler2D tex;                       \n
                      uniform float height;                        \n
                      uniform float opacity;                       \n
@@ -2066,6 +2107,8 @@ const FadeEffect = GObject.registerClass({
 
                      cogl_color_out *= ratio;                                                             \n`;
 
-        this.add_glsl_snippet(Cogl.SnippetHook.FRAGMENT, dec, src, true);
+        const snippet = Cogl.Snippet.new(Cogl.SnippetHook.FRAGMENT, dec, null);
+        snippet.set_replace(src);
+        return snippet;
     }
 });

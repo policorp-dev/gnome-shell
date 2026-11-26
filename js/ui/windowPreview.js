@@ -26,22 +26,37 @@ const ICON_OVERLAP = 0.7;
 
 const ICON_TITLE_SPACING = 6;
 
-export const WindowPreview = GObject.registerClass({
-    Properties: {
+export class WindowPreview extends Shell.WindowPreview {
+    static [GObject.properties] = {
         'overlay-enabled': GObject.ParamSpec.boolean(
             'overlay-enabled', null, null,
             GObject.ParamFlags.READWRITE,
             true),
-    },
-    Signals: {
+    };
+
+    static [GObject.signals] = {
         'drag-begin': {},
         'drag-cancelled': {},
         'drag-end': {},
         'selected': {param_types: [GObject.TYPE_UINT]},
         'show-chrome': {},
         'size-changed': {},
-    },
-}, class WindowPreview extends Shell.WindowPreview {
+    };
+
+    static {
+        GObject.registerClass(this);
+
+        const bindingPool = this.get_binding_pool();
+
+        bindingPool.install_closure(
+            'activate', Clutter.KEY_Return, 0,
+            obj => {
+                obj._activate();
+                return Clutter.EVENT_STOP;
+            }
+        );
+    }
+
     _init(metaWindow, workspace, overviewAdjustment) {
         this.metaWindow = metaWindow;
         this.metaWindow._delegate = this;
@@ -108,20 +123,22 @@ export const WindowPreview = GObject.registerClass({
             dragActorMaxSize: WINDOW_DND_SIZE,
             dragActorOpacity: DRAGGING_WINDOW_OPACITY,
         });
-        this._draggable.connect('drag-begin', this._onDragBegin.bind(this));
-        this._draggable.connect('drag-cancelled', this._onDragCancelled.bind(this));
-        this._draggable.connect('drag-end', this._onDragEnd.bind(this));
+        this._draggable.connectObject(
+            'drag-begin', this._onDragBegin.bind(this),
+            'drag-cancelled', this._onDragCancelled.bind(this),
+            'drag-end', this._onDragEnd.bind(this),
+            this);
         this.inDrag = false;
 
-        let clickAction = new Clutter.ClickAction();
-        clickAction.connect('clicked', () => this._activate());
-        clickAction.connect('long-press', (action, actor, state) => {
-            if (state === Clutter.LongPressState.ACTIVATE)
-                this.showOverlay(true);
-            return true;
-        });
+        const clickGesture = new Clutter.ClickGesture();
+        clickGesture.connect('recognize', () => this._activate());
+        this.add_action(clickGesture);
 
-        this._draggable.addClickAction(clickAction);
+        const longPressGesture = new Clutter.LongPressGesture();
+        longPressGesture.connect('recognize', () => this.showOverlay(true));
+        this.add_action(longPressGesture);
+
+        longPressGesture.can_not_cancel(this._draggable.startGesture);
 
         this._overlayEnabled = true;
         this._overlayShown = false;
@@ -231,6 +248,11 @@ export const WindowPreview = GObject.registerClass({
             this._title.ensure_style();
             this._icon.ensure_style();
         });
+
+        const motionController = new Clutter.MotionController();
+        motionController.connect('enter', () => this._onEnter());
+        motionController.connect('leave', () => this._onLeave());
+        this.add_action(motionController);
     }
 
     _updateIconScale() {
@@ -258,8 +280,8 @@ export const WindowPreview = GObject.registerClass({
         if (this.metaWindow.title)
             return this.metaWindow.title;
 
-        let tracker = Shell.WindowTracker.get_default();
-        let app = tracker.get_window_app(this.metaWindow);
+        const tracker = Shell.WindowTracker.get_default();
+        const app = tracker.get_window_app(this.metaWindow);
         return app.get_name();
     }
 
@@ -458,8 +480,8 @@ export const WindowPreview = GObject.registerClass({
     }
 
     _updateAttachedDialogs() {
-        let iter = win => {
-            let actor = win.get_compositor_private();
+        const iter = win => {
+            const actor = win.get_compositor_private();
 
             if (!actor)
                 return false;
@@ -522,8 +544,8 @@ export const WindowPreview = GObject.registerClass({
             // We'll fix up the stack after the drag
             return;
 
-        let parent = this.get_parent();
-        let actualAbove = this._getActualStackAbove();
+        const parent = this.get_parent();
+        const actualAbove = this._getActualStackAbove();
         if (actualAbove == null)
             parent.set_child_below_sibling(this, null);
         else
@@ -556,18 +578,13 @@ export const WindowPreview = GObject.registerClass({
         this.emit('selected', global.get_current_time());
     }
 
-    vfunc_enter_event(event) {
+    _onEnter() {
         this.showOverlay(true);
-        return super.vfunc_enter_event(event);
     }
 
-    vfunc_leave_event(event) {
+    _onLeave() {
         if (this._destroyed)
-            return super.vfunc_leave_event(event);
-
-        if ((event.get_flags() & Clutter.EventFlags.FLAG_GRAB_NOTIFY) !== 0 &&
-            global.stage.get_grab_actor() === this._closeButton)
-            return super.vfunc_leave_event(event);
+            return;
 
         if (this._idleHideOverlayId > 0)
             GLib.source_remove(this._idleHideOverlayId);
@@ -588,8 +605,6 @@ export const WindowPreview = GObject.registerClass({
             });
 
         GLib.Source.set_name_by_id(this._idleHideOverlayId, '[gnome-shell] this._idleHideOverlayId');
-
-        return super.vfunc_leave_event(event);
     }
 
     vfunc_key_focus_in() {
@@ -602,17 +617,6 @@ export const WindowPreview = GObject.registerClass({
 
         if (global.stage.get_grab_actor() !== this._closeButton)
             this.hideOverlay(true);
-    }
-
-    vfunc_key_press_event(event) {
-        let symbol = event.get_key_symbol();
-        let isEnter = symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter;
-        if (isEnter) {
-            this._activate();
-            return true;
-        }
-
-        return super.vfunc_key_press_event(event);
     }
 
     _restack() {
@@ -666,4 +670,4 @@ export const WindowPreview = GObject.registerClass({
 
         this.emit('drag-end');
     }
-});
+}

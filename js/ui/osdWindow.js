@@ -9,7 +9,7 @@ import * as Main from './main.js';
 
 const HIDE_TIMEOUT = 1500;
 const FADE_TIME = 100;
-const LEVEL_ANIMATION_TIME = 100;
+export const LEVEL_ANIMATION_TIME = 100;
 
 export const OsdWindow = GObject.registerClass(
 class OsdWindow extends Clutter.Actor {
@@ -22,7 +22,7 @@ class OsdWindow extends Clutter.Actor {
         });
 
         this._monitorIndex = monitorIndex;
-        let constraint = new Layout.MonitorConstraint({index: monitorIndex});
+        const constraint = new Layout.MonitorConstraint({index: monitorIndex});
         this.add_constraint(constraint);
 
         this._hbox = new St.BoxLayout({
@@ -106,7 +106,7 @@ class OsdWindow extends Clutter.Actor {
 
         if (this._hideTimeoutId)
             GLib.source_remove(this._hideTimeoutId);
-        this._hideTimeoutId = GLib.timeout_add(
+        this._hideTimeoutId = GLib.timeout_add_once(
             GLib.PRIORITY_DEFAULT, HIDE_TIMEOUT, this._hide.bind(this));
         GLib.Source.set_name_by_id(this._hideTimeoutId, '[gnome-shell] this._hide');
     }
@@ -130,7 +130,6 @@ class OsdWindow extends Clutter.Actor {
                 global.compositor.enable_unredirect();
             },
         });
-        return GLib.SOURCE_REMOVE;
     }
 
     _reset() {
@@ -171,18 +170,26 @@ export class OsdWindowManager {
         this._osdWindows[monitorIndex].show();
     }
 
-    show(monitorIndex, icon, label, level, maxLevel) {
-        if (monitorIndex !== -1) {
-            for (let i = 0; i < this._osdWindows.length; i++) {
-                if (i === monitorIndex)
-                    this._showOsdWindow(i, icon, label, level, maxLevel);
-                else
-                    this._osdWindows[i].cancel();
-            }
-        } else {
-            for (let i = 0; i < this._osdWindows.length; i++)
+    show(icon, label, levels) {
+        for (let i = 0; i < this._osdWindows.length; i++) {
+            if (levels[i]) {
+                const {level, maxLevel = -1} = levels[i];
                 this._showOsdWindow(i, icon, label, level, maxLevel);
+            } else {
+                this._osdWindows[i].cancel();
+            }
         }
+    }
+
+    showOne(monitorIndex, icon, label, level, maxLevel) {
+        this.show(icon, label, {
+            [monitorIndex]: {level, maxLevel},
+        });
+    }
+
+    showAll(icon, label, level, maxLevel) {
+        for (let i = 0; i < this._osdWindows.length; i++)
+            this._showOsdWindow(i, icon, label, level, maxLevel);
     }
 
     hideAll() {

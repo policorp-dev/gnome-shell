@@ -56,12 +56,8 @@ const SliderItem = GObject.registerClass({
         this.notify('value');
     }
 
-    vfunc_key_press_event(event) {
-        const key = event.get_key_symbol();
-        if (key === Clutter.KEY_Left || key === Clutter.KEY_Right)
-            return this._slider.vfunc_key_press_event(event);
-        else
-            return super.vfunc_key_press_event(event);
+    vfunc_navigate_focus(from, direction) {
+        return this._slider.navigate_focus(from, direction, false);
     }
 });
 
@@ -91,6 +87,8 @@ const DiscreteItem = GObject.registerClass({
         this.connect('notify::n-levels', () => this._syncLevels());
         this.connect('notify::value', () => this._syncChecked());
         this._syncLevels();
+
+        global.focus_manager.add_group(this);
     }
 
     _valueToLevel(value) {
@@ -136,10 +134,6 @@ const DiscreteItem = GObject.registerClass({
         this._levelButtons.set(key, box);
     }
 
-    vfunc_key_press_event(event) {
-        return global.focus_manager.navigate_from_event(event);
-    }
-
     _syncLevels() {
         this._levelButtons.get('off').visible = this.nLevels > 0;
         this._levelButtons.get('high').visible = this.nLevels > 1;
@@ -161,6 +155,7 @@ class KeyboardBrightnessToggle extends QuickMenuToggle {
         super._init({
             title: _('Keyboard'),
             iconName: 'display-brightness-symbolic',
+            menuButtonAccessibleName: _('Open keyboard brightness menu'),
         });
 
         this._proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,

@@ -36,7 +36,7 @@ describe('logErrorUnlessCancelled()', () => {
                 Gio.IOErrorEnum, code, message);
             return Gio.DBusError.new_for_dbus_error(
                 Gio.DBusError.encode_gerror(e), message);
-        }
+        };
 
         let e = createDBusError(Gio.IOErrorEnum.CANCELLED, 'Cancelled');
         expect(logErrorUnlessCancelled(e)).toBeFalse();

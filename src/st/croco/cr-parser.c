@@ -501,10 +501,7 @@ cr_parser_error_destroy (CRParserError * a_this)
 {
         g_return_if_fail (a_this);
 
-        if (a_this->msg) {
-                g_free (a_this->msg);
-                a_this->msg = NULL;
-        }
+        g_clear_pointer (&a_this->msg, g_free);
 
         g_free (a_this);
 }
@@ -603,10 +600,7 @@ cr_parser_clear_errors (CRParser * a_this)
                 }
         }
 
-        if (PRIVATE (a_this)->err_stack) {
-                g_list_free (PRIVATE (a_this)->err_stack);
-                PRIVATE (a_this)->err_stack = NULL;
-        }
+        g_clear_pointer (&PRIVATE (a_this)->err_stack, g_list_free);
 
         return CR_OK;
 }
@@ -1370,8 +1364,7 @@ cr_parser_parse_attribute_selector (CRParser * a_this,
         ENSURE_PARSING_COND (status == CR_OK
                              && token && token->type == IDENT_TK);
 
-        result->name = token->u.str;
-        token->u.str = NULL;
+        result->name = g_steal_pointer (&token->u.str);
         cr_token_destroy (token);
         token = NULL;
 
@@ -1407,11 +1400,9 @@ cr_parser_parse_attribute_selector (CRParser * a_this,
         ENSURE_PARSING_COND (status == CR_OK && token);
         
         if (token->type == IDENT_TK) {
-                result->value = token->u.str;
-                token->u.str = NULL;
+                result->value = g_steal_pointer (&token->u.str);
         } else if (token->type == STRING_TK) {
-                result->value = token->u.str;
-                token->u.str = NULL;
+                result->value = g_steal_pointer (&token->u.str);
         } else {
                 status = CR_PARSING_ERROR;
                 goto error;
@@ -1740,8 +1731,7 @@ cr_parser_parse_simple_selector (CRParser * a_this, CRSimpleSel ** a_sel)
                         add_sel = cr_additional_sel_new_with_type
                                 (ID_ADD_SELECTOR);
 
-                        add_sel->content.id_name = token->u.str;
-                        token->u.str = NULL;
+                        add_sel->content.id_name = g_steal_pointer (&token->u.str);
 
                         cr_parsing_location_copy 
                                 (&add_sel->location,
@@ -1766,8 +1756,7 @@ cr_parser_parse_simple_selector (CRParser * a_this, CRSimpleSel ** a_sel)
                                 add_sel = cr_additional_sel_new_with_type
                                         (CLASS_ADD_SELECTOR);
 
-                                add_sel->content.class_name = token->u.str;
-                                token->u.str = NULL;
+                                add_sel->content.class_name = g_steal_pointer (&token->u.str);
 
                                 add_sel_list =
                                         cr_additional_sel_append
@@ -1832,12 +1821,10 @@ cr_parser_parse_simple_selector (CRParser * a_this, CRSimpleSel ** a_sel)
 
                         if (token->type == IDENT_TK) {
                                 pseudo->type = IDENT_PSEUDO;
-                                pseudo->name = token->u.str;
-                                token->u.str = NULL;
+                                pseudo->name = g_steal_pointer (&token->u.str);
                                 found_sel = TRUE;
                         } else if (token->type == FUNCTION_TK) {
-                                pseudo->name = token->u.str;
-                                token->u.str = NULL;
+                                pseudo->name = g_steal_pointer (&token->u.str);
                                 cr_parser_try_to_skip_spaces_and_comments
                                         (a_this);
                                 status = cr_parser_parse_ident
@@ -1879,8 +1866,7 @@ cr_parser_parse_simple_selector (CRParser * a_this, CRSimpleSel ** a_sel)
         if (status == CR_OK && found_sel == TRUE) {
                 cr_parser_try_to_skip_spaces_and_comments (a_this);
 
-                sel->add_sel = add_sel_list;
-                add_sel_list = NULL;
+                sel->add_sel = g_steal_pointer (&add_sel_list);
                 
                 if (*a_sel == NULL) {
                         *a_sel = sel;
@@ -2157,8 +2143,7 @@ cr_parser_parse_function (CRParser * a_this,
                 goto error;
 
         if (token && token->type == FUNCTION_TK) {
-                *a_func_name = token->u.str;
-                token->u.str = NULL;
+                *a_func_name = g_steal_pointer (&token->u.str);
         } else {
                 status = CR_PARSING_ERROR;
                 goto error;
@@ -2480,8 +2465,7 @@ cr_parser_parse_stylesheet (CRParser * a_this)
                                         }
                                 }
 
-                                g_list_free (media_list);
-                                media_list = NULL;
+                                g_clear_list (&media_list, NULL);
                         }
 
                         if (import_string) {
@@ -2783,7 +2767,6 @@ cr_parser_new (CRTknzr * a_tknzr)
  * cr_parser_new_from_buf:
  *@a_buf: the buffer to parse.
  *@a_len: the length of the data in the buffer.
- *@a_enc: the encoding of the input buffer a_buf.
  *@a_free_buf: if set to TRUE, a_buf will be freed
  *during the destruction of the newly built instance 
  *of #CRParser. If set to FALSE, it is up to the caller to
@@ -2796,7 +2779,6 @@ cr_parser_new (CRTknzr * a_tknzr)
 CRParser *
 cr_parser_new_from_buf (guchar * a_buf,
                         gulong a_len,
-                        enum CREncoding a_enc, 
                         gboolean a_free_buf)
 {
         CRParser *result = NULL;
@@ -2804,7 +2786,7 @@ cr_parser_new_from_buf (guchar * a_buf,
 
         g_return_val_if_fail (a_buf && a_len, NULL);
 
-        input = cr_input_new_from_buf (a_buf, a_len, a_enc, a_free_buf);
+        input = cr_input_new_from_buf (a_buf, a_len, a_free_buf);
         g_return_val_if_fail (input, NULL);
 
         result = cr_parser_new_from_input (input);
@@ -2836,30 +2818,6 @@ cr_parser_new_from_input (CRInput * a_input)
         result = cr_parser_new (tokenizer);
         g_return_val_if_fail (result, NULL);
 
-        return result;
-}
-
-/**
- * cr_parser_new_from_file:
- * @a_file_uri: the uri of the file to parse.
- * @a_enc: the file encoding to use.
- *
- * Returns the newly built parser.
- */
-CRParser *
-cr_parser_new_from_file (const guchar * a_file_uri, enum CREncoding a_enc)
-{
-        CRParser *result = NULL;
-        CRTknzr *tokenizer = NULL;
-
-        tokenizer = cr_tknzr_new_from_uri (a_file_uri, a_enc);
-        if (!tokenizer) {
-                cr_utils_trace_info ("Could not open input file");
-                return NULL;
-        }
-
-        result = cr_parser_new (tokenizer);
-        g_return_val_if_fail (result, NULL);
         return result;
 }
 
@@ -2976,39 +2934,6 @@ cr_parser_get_use_core_grammar (CRParser const * a_this,
 }
 
 /**
- * cr_parser_parse_file:
- *@a_this: a pointer to the current instance of #CRParser.
- *@a_file_uri: the uri to the file to load. For the time being,
- *@a_enc: the encoding of the file to parse.
- *only local files are supported.
- *
- *Parses a the given in parameter.
- *
- *Returns CR_OK upon successful completion, an error code otherwise.
- */
-enum CRStatus
-cr_parser_parse_file (CRParser * a_this,
-                      const guchar * a_file_uri, enum CREncoding a_enc)
-{
-        enum CRStatus status = CR_ERROR;
-        CRTknzr *tknzr = NULL;
-
-        g_return_val_if_fail (a_this && PRIVATE (a_this)
-                              && a_file_uri, CR_BAD_PARAM_ERROR);
-
-        tknzr = cr_tknzr_new_from_uri (a_file_uri, a_enc);
-
-        g_return_val_if_fail (tknzr != NULL, CR_ERROR);
-
-        status = cr_parser_set_tknzr (a_this, tknzr);
-        g_return_val_if_fail (status == CR_OK, CR_ERROR);
-
-        status = cr_parser_parse (a_this);
-
-        return status;
-}
-
-/**
  * cr_parser_parse_expr:
  * @a_this: the current instance of #CRParser.
  * @a_expr: out parameter. the parsed expression.
@@ -3028,7 +2953,6 @@ cr_parser_parse_expr (CRParser * a_this, CRTerm ** a_expr)
         CRTerm *expr = NULL,
                 *expr2 = NULL;
         guchar next_byte = 0;
-        gulong nb_terms = 0;
 
         g_return_val_if_fail (a_this && PRIVATE (a_this)
                               && a_expr, CR_BAD_PARAM_ERROR);
@@ -3046,12 +2970,6 @@ cr_parser_parse_expr (CRParser * a_this, CRTerm ** a_expr)
                                              1, &next_byte);
                 if (status != CR_OK) {
                         if (status == CR_END_OF_INPUT_ERROR) {
-                                /*
-                                   if (!nb_terms)
-                                   {
-                                   goto error ;
-                                   }
-                                 */
                                 status = CR_OK;
                                 break;
                         } else {
@@ -3086,7 +3004,6 @@ cr_parser_parse_expr (CRParser * a_this, CRTerm ** a_expr)
                 expr = cr_term_append_term (expr, expr2);
                 expr2 = NULL;
                 operator = 0;
-                nb_terms++;
         }
 
         if (status == CR_OK) {
@@ -3238,8 +3155,7 @@ cr_parser_parse_declaration (CRParser * a_this,
                 cr_term_append_term (*a_expr, expr);
                 expr = NULL;
         } else {
-                *a_expr = expr;
-                expr = NULL;
+                *a_expr = g_steal_pointer (&expr);
         }
 
         cr_parser_clear_errors (a_this);
@@ -3679,8 +3595,7 @@ cr_parser_parse_import (CRParser * a_this,
                         }
                 }
 
-                g_list_free (*a_media_list);
-                *a_media_list = NULL;
+                g_clear_list (&*a_media_list, NULL);
         }
 
         if (*a_import_string) {
@@ -3746,8 +3661,7 @@ cr_parser_parse_media (CRParser * a_this)
         ENSURE_PARSING_COND (status == CR_OK
                              && token && token->type == IDENT_TK);
 
-        medium = token->u.str;
-        token->u.str = NULL;
+        medium = g_steal_pointer (&token->u.str);
         cr_token_destroy (token);
         token = NULL;
 
@@ -3832,8 +3746,7 @@ cr_parser_parse_media (CRParser * a_this)
                         cr_string_destroy (cur->data);
                 }
 
-                g_list_free (media_list);
-                media_list = NULL;
+                g_clear_list (&media_list, NULL);
         }
 
         cr_parser_clear_errors (a_this);
@@ -3860,8 +3773,7 @@ cr_parser_parse_media (CRParser * a_this)
                         cr_string_destroy (cur->data);
                 }
 
-                g_list_free (media_list);
-                media_list = NULL;
+                g_clear_list (&media_list, NULL);
         }
 
         cr_tknzr_set_cur_pos (PRIVATE (a_this)->tknzr, &init_pos);
@@ -3916,8 +3828,7 @@ cr_parser_parse_page (CRParser * a_this)
         ENSURE_PARSING_COND (status == CR_OK && token);
 
         if (token->type == IDENT_TK) {
-                page_selector = token->u.str;
-                token->u.str = NULL;
+                page_selector = g_steal_pointer (&token->u.str);
                 cr_token_destroy (token);
                 token = NULL;
         } else {
@@ -4167,8 +4078,7 @@ cr_parser_parse_charset (CRParser * a_this, CRString ** a_value,
         status = cr_tknzr_get_next_token (PRIVATE (a_this)->tknzr, &token);
         ENSURE_PARSING_COND (status == CR_OK
                              && token && token->type == STRING_TK);
-        charset_str = token->u.str;
-        token->u.str = NULL;
+        charset_str = g_steal_pointer (&token->u.str);
         cr_token_destroy (token);
         token = NULL;
 
@@ -4181,10 +4091,7 @@ cr_parser_parse_charset (CRParser * a_this, CRString ** a_value,
         cr_token_destroy (token);
         token = NULL;
 
-        if (charset_str) {
-                *a_value = charset_str;
-                charset_str = NULL;
-        }
+        *a_value = g_steal_pointer (&charset_str);
 
         PRIVATE (a_this)->state = CHARSET_PARSED_STATE;
         return CR_OK;
@@ -4470,7 +4377,6 @@ cr_parser_get_parsing_location (CRParser const *a_this,
  *@a_this: the current instance of #CRparser
  *@a_buf: the input buffer
  *@a_len: the length of the input buffer
- *@a_enc: the encoding of the buffer
  *
  *Parses a stylesheet from a buffer
  *
@@ -4479,7 +4385,7 @@ cr_parser_get_parsing_location (CRParser const *a_this,
 enum CRStatus
 cr_parser_parse_buf (CRParser * a_this,
                      const guchar * a_buf,
-                     gulong a_len, enum CREncoding a_enc)
+                     gulong a_len)
 {
         enum CRStatus status = CR_ERROR;
         CRTknzr *tknzr = NULL;
@@ -4487,7 +4393,7 @@ cr_parser_parse_buf (CRParser * a_this,
         g_return_val_if_fail (a_this && PRIVATE (a_this)
                               && a_buf, CR_BAD_PARAM_ERROR);
 
-        tknzr = cr_tknzr_new_from_buf ((guchar*)a_buf, a_len, a_enc, FALSE);
+        tknzr = cr_tknzr_new_from_buf ((guchar*)a_buf, a_len, FALSE);
 
         g_return_val_if_fail (tknzr != NULL, CR_ERROR);
 
@@ -4532,8 +4438,5 @@ cr_parser_destroy (CRParser * a_this)
                 PRIVATE (a_this) = NULL;
         }
 
-        if (a_this) {
-                g_free (a_this);
-                a_this = NULL;  /*useless. Just for the sake of coherence */
-        }
+        g_clear_pointer (&a_this, g_free);
 }

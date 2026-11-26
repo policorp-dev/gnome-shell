@@ -513,8 +513,7 @@ cr_statement_clear (CRStatement * a_this)
                                 }
 
                         }
-                        g_list_free (a_this->kind.media_rule->media_list);
-                        a_this->kind.media_rule->media_list = NULL;
+                        g_clear_list (&a_this->kind.media_rule->media_list, NULL);
                 }
                 g_free (a_this->kind.media_rule);
                 a_this->kind.media_rule = NULL;
@@ -623,12 +622,9 @@ cr_statement_ruleset_to_string (CRStatement const * a_this, glong a_indent)
                 cr_utils_dump_n_chars2 (' ', stringue, a_indent);
         }
         g_string_append (stringue, "}");
-        result = g_string_free (stringue, FALSE);
+        result = g_string_free_and_steal (stringue);
 
-        if (tmp_str) {
-                g_free (tmp_str);
-                tmp_str = NULL;
-        }
+        g_clear_pointer (&tmp_str, g_free);
         return result;
 }
 
@@ -675,7 +671,7 @@ cr_statement_font_face_rule_to_string (CRStatement const * a_this,
                 g_string_append (stringue, "\n}");
         }
         if (stringue) {
-                result = g_string_free (stringue, FALSE);
+                result = g_string_free_and_steal (stringue);
                 stringue = NULL ;
         }
         return result ;
@@ -715,13 +711,10 @@ cr_statement_charset_to_string (CRStatement const *a_this,
                 cr_utils_dump_n_chars2 (' ', stringue, a_indent);
                 g_string_append_printf (stringue, 
                                         "@charset \"%s\" ;", str);
-                if (str) {
-                        g_free (str);
-                        str = NULL;
-                }
+                g_clear_pointer (&str, g_free);
         }
         if (stringue) {
-                str = g_string_free (stringue, FALSE);
+                str = g_string_free_and_steal (stringue);
         }
         return str ;
 }
@@ -774,7 +767,7 @@ cr_statement_at_page_rule_to_string (CRStatement const *a_this,
                 }
                 g_string_append (stringue, "\n}\n");
         }
-        result = g_string_free (stringue, FALSE) ;
+        result = g_string_free_and_steal (stringue) ;
         stringue = NULL ;
         return result ;
 }
@@ -835,7 +828,7 @@ cr_statement_media_rule_to_string (CRStatement const *a_this,
                 g_string_append (stringue, "\n}");
         }
         if (stringue) {
-                str = g_string_free (stringue, FALSE) ;
+                str = g_string_free_and_steal (stringue) ;
         }
         return str ;
 }
@@ -895,7 +888,7 @@ cr_statement_import_rule_to_string (CRStatement const *a_this,
                 g_string_append (stringue, " ;");
         }
         if (stringue) {
-                str = g_string_free (stringue, FALSE) ;
+                str = g_string_free_and_steal (stringue) ;
                 stringue = NULL ;
         }
         return str ;
@@ -910,7 +903,6 @@ cr_statement_import_rule_to_string (CRStatement const *a_this,
  * cr_statement_does_buf_parses_against_core:
  *
  *@a_buf: the buffer to parse.
- *@a_encoding: the character encoding of a_buf.
  *
  *Tries to parse a buffer and says whether if the content of the buffer
  *is a css statement as defined by the "Core CSS Grammar" (chapter 4 of the
@@ -919,15 +911,14 @@ cr_statement_import_rule_to_string (CRStatement const *a_this,
  *Returns TRUE if the buffer parses against the core grammar, false otherwise.
  */
 gboolean
-cr_statement_does_buf_parses_against_core (const guchar * a_buf,
-                                           enum CREncoding a_encoding)
+cr_statement_does_buf_parses_against_core (const guchar * a_buf)
 {
         CRParser *parser = NULL;
         enum CRStatus status = CR_OK;
         gboolean result = FALSE;
 
         parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf),
-                                         a_encoding, FALSE);
+                                         FALSE);
         g_return_val_if_fail (parser, FALSE);
 
         status = cr_parser_set_use_core_grammar (parser, TRUE);
@@ -952,7 +943,6 @@ cr_statement_does_buf_parses_against_core (const guchar * a_buf,
  * cr_statement_parse_from_buf:
  *
  *@a_buf: the buffer to parse.
- *@a_encoding: the character encoding of a_buf.
  *
  *Parses a buffer that contains a css statement and returns 
  *an instance of #CRStatement in case of successful parsing.
@@ -962,7 +952,7 @@ cr_statement_does_buf_parses_against_core (const guchar * a_buf,
  *of successful parsing, NULL otherwise.
  */
 CRStatement *
-cr_statement_parse_from_buf (const guchar * a_buf, enum CREncoding a_encoding)
+cr_statement_parse_from_buf (const guchar * a_buf)
 {
         CRStatement *result = NULL;
 
@@ -974,46 +964,40 @@ cr_statement_parse_from_buf (const guchar * a_buf, enum CREncoding a_encoding)
          *pull based incremental parsing comes.
          */
 
-        result = cr_statement_ruleset_parse_from_buf (a_buf, a_encoding);
+        result = cr_statement_ruleset_parse_from_buf (a_buf);
         if (!result) {
-                result = cr_statement_at_charset_rule_parse_from_buf
-                        (a_buf, a_encoding);
+                result = cr_statement_at_charset_rule_parse_from_buf (a_buf);
         } else {
                 goto out;
         }
 
         if (!result) {
-                result = cr_statement_at_media_rule_parse_from_buf
-                        (a_buf, a_encoding);
+                result = cr_statement_at_media_rule_parse_from_buf (a_buf);
         } else {
                 goto out;
         }
 
         if (!result) {
-                result = cr_statement_at_charset_rule_parse_from_buf
-                        (a_buf, a_encoding);
+                result = cr_statement_at_charset_rule_parse_from_buf (a_buf);
         } else {
                 goto out;
         }
 
         if (!result) {
-                result = cr_statement_font_face_rule_parse_from_buf
-                        (a_buf, a_encoding);
+                result = cr_statement_font_face_rule_parse_from_buf (a_buf);
 
         } else {
                 goto out;
         }
 
         if (!result) {
-                result = cr_statement_at_page_rule_parse_from_buf
-                        (a_buf, a_encoding);
+                result = cr_statement_at_page_rule_parse_from_buf (a_buf);
         } else {
                 goto out;
         }
 
         if (!result) {
-                result = cr_statement_at_import_rule_parse_from_buf
-                        (a_buf, a_encoding);
+                result = cr_statement_at_import_rule_parse_from_buf (a_buf);
         } else {
                 goto out;
         }
@@ -1026,7 +1010,6 @@ cr_statement_parse_from_buf (const guchar * a_buf, enum CREncoding a_encoding)
  * cr_statement_ruleset_parse_from_buf:
  *
  *@a_buf: the buffer to parse.
- *@a_enc: the character encoding of a_buf.
  *
  *Parses a buffer that contains a ruleset statement an instantiates
  *a #CRStatement of type RULESET_STMT.
@@ -1035,8 +1018,7 @@ cr_statement_parse_from_buf (const guchar * a_buf, enum CREncoding a_encoding)
  *NULL otherwise.
  */
 CRStatement *
-cr_statement_ruleset_parse_from_buf (const guchar * a_buf,
-                                     enum CREncoding a_enc)
+cr_statement_ruleset_parse_from_buf (const guchar * a_buf)
 {
         enum CRStatus status = CR_OK;
         CRStatement *result = NULL;
@@ -1046,8 +1028,8 @@ cr_statement_ruleset_parse_from_buf (const guchar * a_buf,
 
         g_return_val_if_fail (a_buf, NULL);
 
-        parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf), 
-                                         a_enc, FALSE);
+        parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf),
+                                         FALSE);
 
         g_return_val_if_fail (parser, NULL);
 
@@ -1137,8 +1119,7 @@ cr_statement_new_ruleset (CRStyleSheet * a_sheet,
 
         if (!result->kind.ruleset) {
                 cr_utils_trace_info ("Out of memory");
-                if (result)
-                        g_free (result);
+                g_free (result);
                 return NULL;
         }
 
@@ -1165,7 +1146,6 @@ cr_statement_new_ruleset (CRStyleSheet * a_sheet,
  * cr_statement_at_media_rule_parse_from_buf:
  *
  *@a_buf: the input to parse.
- *@a_enc: the encoding of the buffer.
  *
  *Parses a buffer that contains an "\@media" declaration
  *and builds an \@media css statement.
@@ -1174,8 +1154,7 @@ cr_statement_new_ruleset (CRStyleSheet * a_sheet,
  *be successfully parsed.
  */
 CRStatement *
-cr_statement_at_media_rule_parse_from_buf (const guchar * a_buf,
-                                           enum CREncoding a_enc)
+cr_statement_at_media_rule_parse_from_buf (const guchar * a_buf)
 {
         CRParser *parser = NULL;
         CRStatement *result = NULL;
@@ -1183,8 +1162,8 @@ cr_statement_at_media_rule_parse_from_buf (const guchar * a_buf,
         CRDocHandler *sac_handler = NULL;
         enum CRStatus status = CR_OK;
 
-        parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf), 
-                                         a_enc, FALSE);
+        parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf),
+                                         FALSE);
         if (!parser) {
                 cr_utils_trace_info ("Instantiation of the parser failed");
                 goto cleanup;
@@ -1350,7 +1329,6 @@ cr_statement_new_at_import_rule (CRStyleSheet * a_container_sheet,
  * cr_statement_at_import_rule_parse_from_buf:
  *
  *@a_buf: the buffer to parse.
- *@a_encoding: the encoding of a_buf.
  *
  *Parses a buffer that contains an "\@import" rule and
  *instantiate a #CRStatement of type AT_IMPORT_RULE_STMT
@@ -1359,8 +1337,7 @@ cr_statement_new_at_import_rule (CRStyleSheet * a_container_sheet,
  *a successful parsing, NULL otherwise.
  */
 CRStatement *
-cr_statement_at_import_rule_parse_from_buf (const guchar * a_buf,
-                                            enum CREncoding a_encoding)
+cr_statement_at_import_rule_parse_from_buf (const guchar * a_buf)
 {
         enum CRStatus status = CR_OK;
         CRParser *parser = NULL;
@@ -1370,7 +1347,7 @@ cr_statement_at_import_rule_parse_from_buf (const guchar * a_buf,
         CRParsingLocation location = {0} ;
 
         parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf),
-                                         a_encoding, FALSE);
+                                         FALSE);
         if (!parser) {
                 cr_utils_trace_info ("Instantiation of parser failed.");
                 goto cleanup;
@@ -1409,8 +1386,7 @@ cr_statement_at_import_rule_parse_from_buf (const guchar * a_buf,
                                 media_list->data = NULL;
                         }
                 }
-                g_list_free (media_list);
-                media_list = NULL;
+                g_clear_list (&media_list, NULL);
         }
         if (import_string) {
                 cr_string_destroy (import_string);
@@ -1476,7 +1452,6 @@ cr_statement_new_at_page_rule (CRStyleSheet * a_sheet,
  * cr_statement_at_page_rule_parse_from_buf:
  *
  *@a_buf: the character buffer to parse.
- *@a_encoding: the character encoding of a_buf.
  *
  *Parses a buffer that contains an "\@page" production and,
  *if the parsing succeeds, builds the page statement.
@@ -1485,8 +1460,7 @@ cr_statement_new_at_page_rule (CRStyleSheet * a_sheet,
  *NULL otherwise.
  */
 CRStatement *
-cr_statement_at_page_rule_parse_from_buf (const guchar * a_buf,
-                                          enum CREncoding a_encoding)
+cr_statement_at_page_rule_parse_from_buf (const guchar * a_buf)
 {
         enum CRStatus status = CR_OK;
         CRParser *parser = NULL;
@@ -1497,7 +1471,7 @@ cr_statement_at_page_rule_parse_from_buf (const guchar * a_buf,
         g_return_val_if_fail (a_buf, NULL);
 
         parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf),
-                                         a_encoding, FALSE);
+                                         FALSE);
         if (!parser) {
                 cr_utils_trace_info ("Instantiation of the parser failed.");
                 goto cleanup;
@@ -1594,7 +1568,6 @@ cr_statement_new_at_charset_rule (CRStyleSheet * a_sheet,
  * cr_statement_at_charset_rule_parse_from_buf:
  *
  *@a_buf: the buffer to parse.
- *@a_encoding: the character encoding of the buffer.
  *
  *Parses a buffer that contains an '\@charset' rule and
  *creates an instance of #CRStatement of type AT_CHARSET_RULE_STMT.
@@ -1602,8 +1575,7 @@ cr_statement_new_at_charset_rule (CRStyleSheet * a_sheet,
  *Returns the newly built instance of #CRStatement.
  */
 CRStatement *
-cr_statement_at_charset_rule_parse_from_buf (const guchar * a_buf,
-                                             enum CREncoding a_encoding)
+cr_statement_at_charset_rule_parse_from_buf (const guchar * a_buf)
 {
         enum CRStatus status = CR_OK;
         CRParser *parser = NULL;
@@ -1613,7 +1585,7 @@ cr_statement_at_charset_rule_parse_from_buf (const guchar * a_buf,
         g_return_val_if_fail (a_buf, NULL);
 
         parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf),
-                                         a_encoding, FALSE);
+                                         FALSE);
         if (!parser) {
                 cr_utils_trace_info ("Instantiation of the parser failed.");
                 goto cleanup;
@@ -1691,7 +1663,6 @@ cr_statement_new_at_font_face_rule (CRStyleSheet * a_sheet,
  *
  *
  *@a_buf: the buffer to parse.
- *@a_encoding: the character encoding of a_buf.
  *
  *Parses a buffer that contains an "\@font-face" rule and builds
  *an instance of #CRStatement of type AT_FONT_FACE_RULE_STMT out of it.
@@ -1700,8 +1671,7 @@ cr_statement_new_at_font_face_rule (CRStyleSheet * a_sheet,
  *parsing, NULL otherwise.
  */
 CRStatement *
-cr_statement_font_face_rule_parse_from_buf (const guchar * a_buf,
-                                            enum CREncoding a_encoding)
+cr_statement_font_face_rule_parse_from_buf (const guchar * a_buf)
 {
         CRStatement *result = NULL;
         CRStatement **resultptr = NULL;
@@ -1710,7 +1680,7 @@ cr_statement_font_face_rule_parse_from_buf (const guchar * a_buf,
         enum CRStatus status = CR_OK;
 
         parser = cr_parser_new_from_buf ((guchar*)a_buf, strlen ((const char *) a_buf),
-                                         a_encoding, FALSE);
+                                         FALSE);
         if (!parser)
                 goto cleanup;
 
@@ -2082,7 +2052,7 @@ cr_statement_ruleset_set_decl_list (CRStatement * a_this,
  */
 enum CRStatus
 cr_statement_ruleset_append_decl2 (CRStatement * a_this,
-                                   CRString * a_prop, 
+                                   CRString * a_prop,
                                    CRTerm * a_value)
 {
         CRDeclaration *new_decls = NULL;
@@ -2553,7 +2523,7 @@ cr_statement_list_to_string (CRStatement const *a_this, gulong a_indent)
                         str = NULL ;
                 }                
         }
-        str = g_string_free (stringue, FALSE) ;
+        str = g_string_free_and_steal (stringue) ;
         return str ;
 }
 
@@ -2764,20 +2734,14 @@ cr_statement_destroy (CRStatement * a_this)
 
         /*walk backward and free next element */
         for (cur = cur->prev; cur && cur->prev; cur = cur->prev) {
-                if (cur->next) {
-                        g_free (cur->next);
-                        cur->next = NULL;
-                }
+                g_clear_pointer (&cur->next, g_free);
         }
 
         if (!cur)
                 return;
 
         /*free the one remaining list */
-        if (cur->next) {
-                g_free (cur->next);
-                cur->next = NULL;
-        }
+        g_clear_pointer (&cur->next, g_free);
 
         g_free (cur);
         cur = NULL;

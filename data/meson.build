@@ -1,7 +1,6 @@
 data_builddir = meson.current_build_dir()
 
 desktop_files = [
-  'org.gnome.Shell.desktop',
   'org.gnome.Shell.Extensions.desktop',
 ]
 service_files = []
@@ -11,19 +10,9 @@ if have_portal_helper
   service_files += 'org.gnome.Shell.PortalHelper.service'
 endif
 
-desktopconf = configuration_data()
-# We substitute in bindir so it works as an autostart
-# file when built in a non-system prefix
-desktopconf.set('bindir', bindir)
-desktopconf.set('systemd_hidden', have_systemd ? 'true' : 'false')
-
 foreach desktop_file : desktop_files
   i18n.merge_file(
-    input: configure_file(
-      input: desktop_file + '.in.in',
-      output: desktop_file + '.in',
-      configuration: desktopconf
-    ),
+    input: desktop_file + '.in',
     output: desktop_file,
     po_dir: po_dir,
     install: true,
@@ -31,6 +20,22 @@ foreach desktop_file : desktop_files
     type: 'desktop'
   )
 endforeach
+
+desktopconf = configuration_data()
+desktopconf.set('libexecdir', libexecdir)
+
+i18n.merge_file(
+  input: configure_file(
+    input: 'org.gnome.Shell.CalendarServer.desktop.in.in',
+    output: 'org.gnome.Shell.CalendarServer.desktop.in',
+    configuration: desktopconf
+  ),
+  output: 'org.gnome.Shell.CalendarServer.desktop',
+  po_dir: po_dir,
+  install: true,
+  install_dir: desktopdir,
+  type: 'desktop'
+)
 
 desktop_directories = [
   'X-GNOME-Shell-Utilities.directory',
@@ -70,11 +75,14 @@ data_resources = [
   {'name': 'osk-layouts'},
   {'name': 'theme', 'deps': theme_deps}
 ]
+
+install_subdir('sounds', install_dir: pkgdatadir)
+data_resources_targets = []
 foreach resource : data_resources
   name = resource.get('name')
   deps = resource.get('deps', [])
 
-  gnome.compile_resources(
+  data_resources_targets += gnome.compile_resources(
     'gnome-shell-' + name,
     'gnome-shell-@0@.gresource.xml'.format(name),
     source_dir: name,
@@ -84,6 +92,11 @@ foreach resource : data_resources
     install_dir: pkgdatadir
   )
 endforeach
+
+cursor_theme_resource = gnome.compile_resources(
+  'gnome-shell-cursor-theme',
+  'gnome-shell-cursor-theme.gresource.xml',
+  source_dir: 'cursor-theme')
 
 perfconf = configuration_data()
 perfconf.set('datadir', datadir)
@@ -124,45 +137,22 @@ install_data('00_org.gnome.shell.gschema.override', install_dir: schemadir)
 if have_systemd
   unitconf = configuration_data()
   unitconf.set('bindir', bindir)
-  supported_sessions = ['wayland']
-  if have_x11
-    configure_file(
-      input: 'org.gnome.Shell@x11.service.in',
-      output: 'org.gnome.Shell@x11.service',
-      configuration: unitconf,
-      install_dir: systemduserunitdir
-    )
-    supported_sessions += ['x11']
-  endif
-
   configure_file(
-    input: 'org.gnome.Shell@wayland.service.in',
-    output: 'org.gnome.Shell@wayland.service',
+    input: 'org.gnome.Shell@.service.in',
+    output: 'org.gnome.Shell@.service',
     configuration: unitconf,
     install_dir: systemduserunitdir
   )
 
-
-  units = files('org.gnome.Shell-disable-extensions.service')
-  targetconf = configuration_data()
-  sessions_wants = []
-  foreach session: supported_sessions
-    sessions_wants += 'org.gnome.Shell@' + session + '.service'
-  endforeach
-  targetconf.set('SUPPORTED_SESSIONS', ' '.join(sessions_wants))
-  target = configure_file(
-    input: 'org.gnome.Shell.target.in',
-    output: 'org.gnome.Shell.target',
-    configuration: targetconf
+  install_data (
+    'org.gnome.Shell-disable-extensions.service',
+    install_dir: systemduserunitdir,
   )
-  units += target
-
-  install_data(units, install_dir: systemduserunitdir)
 endif
 
 # for unit tests - gnome.compile_schemas() only looks in srcdir
-custom_target('compile-schemas',
+compiled_schemas = custom_target('compile-schemas',
   input: schema,
   output: 'gschemas.compiled',
   command: [find_program('glib-compile-schemas'), '--strict', data_builddir],
-  build_by_default: true)
+)

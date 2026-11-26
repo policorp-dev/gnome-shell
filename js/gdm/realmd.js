@@ -16,7 +16,7 @@ export class Manager extends Signals.EventEmitter {
     constructor() {
         super();
 
-        this._aggregateProvider = Provider(Gio.DBus.system,
+        this._aggregateProvider = new Provider(Gio.DBus.system,
             'org.freedesktop.realmd',
             '/org/freedesktop/realmd',
             this._reloadRealms.bind(this));
@@ -32,13 +32,13 @@ export class Manager extends Signals.EventEmitter {
     }
 
     _reloadRealms() {
-        let realmPaths = this._aggregateProvider.Realms;
+        const realmPaths = this._aggregateProvider.Realms;
 
         if (!realmPaths)
             return;
 
         for (let i = 0; i < realmPaths.length; i++) {
-            Realm(Gio.DBus.system,
+            new Realm(Gio.DBus.system,
                 'org.freedesktop.realmd',
                 realmPaths[i],
                 this._onRealmLoaded.bind(this));
@@ -74,8 +74,8 @@ export class Manager extends Signals.EventEmitter {
     _updateLoginFormat() {
         let newLoginFormat;
 
-        for (let realmPath in this._realms) {
-            let realm = this._realms[realmPath];
+        for (const realmPath in this._realms) {
+            const realm = this._realms[realmPath];
             if (realm.LoginFormats && realm.LoginFormats.length > 0) {
                 newLoginFormat = realm.LoginFormats[0];
                 break;
@@ -98,7 +98,7 @@ export class Manager extends Signals.EventEmitter {
     }
 
     release() {
-        Service(Gio.DBus.system,
+        new Service(Gio.DBus.system,
             'org.freedesktop.realmd',
             '/org/freedesktop/realmd',
             service => service.ReleaseAsync().catch(logError));

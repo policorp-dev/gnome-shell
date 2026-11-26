@@ -11,7 +11,6 @@ import UPower from 'gi://UPowerGlib';
 import * as SystemActions from '../../misc/systemActions.js';
 import * as Main from '../main.js';
 import * as PopupMenu from '../popupMenu.js';
-import {PopupAnimation} from '../boxpointer.js';
 
 import {QuickSettingsItem, QuickToggle, SystemIndicator} from '../quickSettings.js';
 import {loadInterfaceXML} from '../../misc/fileUtils.js';
@@ -74,9 +73,16 @@ const PowerToggle = GObject.registerClass({
             return;
 
         // The icons
-        let chargingState = this._proxy.State === UPower.DeviceState.CHARGING
-            ? '-charging' : '';
-        let fillLevel = 10 * Math.floor(this._proxy.Percentage / 10);
+        let chargingState;
+        if (this._proxy.State === UPower.DeviceState.CHARGING)
+            chargingState = '-charging';
+        else if (this._proxy.State === UPower.DeviceState.PENDING_CHARGE &&
+                 this._proxy.ChargeThresholdEnabled)
+            chargingState = '-plugged-in';
+        else
+            chargingState = '';
+
+        const fillLevel = 10 * Math.floor(this._proxy.Percentage / 10);
         const charged =
             this._proxy.State === UPower.DeviceState.FULLY_CHARGED ||
             (this._proxy.State === UPower.DeviceState.CHARGING && fillLevel === 100);
@@ -118,7 +124,7 @@ class ScreenshotItem extends QuickSettingsItem {
                 Main.screenshotUI.open().catch(logError);
                 return GLib.SOURCE_REMOVE;
             });
-            topMenu.close(PopupAnimation.NONE);
+            topMenu.close({animate: false});
         });
     }
 });
