@@ -1,0 +1,50 @@
+Index: gnome-shell/data/theme/gnome-shell-dark.css
+===================================================================
+--- gnome-shell.orig/data/theme/gnome-shell-dark.css
++++ gnome-shell/data/theme/gnome-shell-dark.css
+@@ -3182,7 +3182,11 @@ StScrollBar {
+   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); }
+ 
+ #lockDialogGroup {
+-  background-color: #222226; }
++  background: #2c001e url(file:///usr/share/desktop-base/active-theme/login/background-nologo.svg);
++  background-repeat: no-repeat;
++  background-size: cover;
++  background-position: center;
++}
+ 
+ .unlock-dialog-clock {
+   color: #fafafb;
+Index: gnome-shell/data/theme/gnome-shell-high-contrast.css
+===================================================================
+--- gnome-shell.orig/data/theme/gnome-shell-high-contrast.css
++++ gnome-shell/data/theme/gnome-shell-high-contrast.css
+@@ -3527,7 +3527,11 @@ StScrollBar {
+   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); }
+ 
+ #lockDialogGroup {
+-  background-color: #000000; }
++  background: #2c001e url(file:///usr/share/desktop-base/active-theme/login/background-nologo.svg);
++  background-repeat: no-repeat;
++  background-size: cover;
++  background-position: center;
++}
+ 
+ .unlock-dialog-clock {
+   color: #ffffff;
+Index: gnome-shell/data/theme/gnome-shell-light.css
+===================================================================
+--- gnome-shell.orig/data/theme/gnome-shell-light.css
++++ gnome-shell/data/theme/gnome-shell-light.css
+@@ -3182,7 +3182,10 @@ StScrollBar {
+   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); }
+ 
+ #lockDialogGroup {
+-  background-color: #222226; }
++  background: #2c001e url(file:///usr/share/desktop-base/active-theme/login/background-nologo.svg);
++  background-repeat: no-repeat;
++  background-size: cover;
++  background-position: center;}
+ 
+ .unlock-dialog-clock {
+   color: #fafafb;
