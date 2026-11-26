@@ -1,3 +1,9 @@
+gnome-shell (51.Policorp-3) unstable; urgency=medium
+
+  * New upstream release 51 (Policorp)
+
+ -- Edson Juliano Drosdeck <edson@policorp.com.br>  Thu, 26 Nov 2026 19:19:48 +0000
+
 gnome-shell (51.0-3) unstable; urgency=medium
 
   * Release to unstable
