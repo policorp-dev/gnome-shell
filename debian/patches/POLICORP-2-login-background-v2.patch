@@ -1,0 +1,17 @@
+Index: gnome-shell/js/ui/screenShield.js
+===================================================================
+--- gnome-shell.orig/js/ui/screenShield.js
++++ gnome-shell/js/ui/screenShield.js
+@@ -71,7 +71,11 @@ export class ScreenShield extends Signal
+             pivot_point: new Graphene.Point({x: 0.5, y: 0.5}),
+             name: 'lockDialogGroup',
+         });
+-
++	
++	if (Main.sessionMode.isGreeter) {
++            this._lockDialogGroup.set_style('background-image: url("file:///usr/share/desktop-base/active-theme/login/background-nologo.svg"); background-size: cover;');
++        }
++    
+         this.actor.add_child(this._lockScreenGroup);
+         this.actor.add_child(this._lockDialogGroup);
+ 
