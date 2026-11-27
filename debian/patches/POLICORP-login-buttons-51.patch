@@ -1,0 +1,65 @@
+Description: Restore Policorp GDM login controls styling for GNOME Shell 51
+Forwarded: not-needed
+
+--- a/data/theme/gnome-shell-sass/widgets/_login-lock.scss
++++ b/data/theme/gnome-shell-sass/widgets/_login-lock.scss
+@@ -635,3 +635,59 @@
+     }
+   }
+ }
++
++// Policorp GDM styling; keep the lock screen and high contrast unchanged.
++@if $contrast != 'high' {
++  .login-dialog {
++    .login-dialog-prompt-entry {
++      background-color: #ffffff;
++      color: rgba(0, 0, 0, 0.7);
++      &:hover { background-color: #ffffff; color: #000000; }
++      &:focus {
++        background-color: st-mix(st-mix(-st-accent-color, #ffffff, 60%), #f8f8f8, 5%);
++        color: #000000;
++        box-shadow: none !important;
++      }
++      &:insensitive { background-color: #ffffff; color: rgba(0, 0, 0, 0.5); }
++      StLabel.hint-text { color: rgba(0, 0, 0, 0.7); }
++    }
++
++    .login-dialog-button {
++      &.cancel-button,
++      &.switch-user-button,
++      &.login-dialog-session-list-button {
++        background-color: #ffffff;
++        color: #000000;
++        &:focus { box-shadow: none !important; }
++      }
++    }
++
++    .login-dialog-not-listed-button {
++      background-color: transparent;
++      &:focus { box-shadow: none !important; }
++    }
++
++    .login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item {
++      background-color: rgba(0, 0, 0, 0.1);
++      &:selected, &:focus {
++        box-shadow: none !important;
++        @if $variant == 'dark' { background-color: rgba(0, 0, 0, 0.1); }
++        @else { background-color: rgba(0, 0, 0, 0.3); }
++        &:hover { background-color: rgba(0, 0, 0, 0.3); }
++      }
++      &:hover {
++        @if $variant == 'dark' { background-color: rgba(133, 193, 233, 0.9); }
++        @else { background-color: rgba(0, 0, 0, 0.9); }
++      }
++      &:active, &:active:hover, &:active:focus {
++        background-color: rgba(0, 0, 0, 0.3);
++      }
++      .login-dialog-timed-login-indicator {
++        background-color: rgba(250, 250, 251, 0.4);
++      }
++      &:logged-in .user-icon StIcon {
++        background-color: st-transparentize(-st-accent-color, 0.4);
++      }
++    }
++  }
++}
